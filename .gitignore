@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+dist/
+build/
+
+# Test / gate reports (produced in CI, not committed)
+reports/
+
+# Vendored OWASP source (CC-BY-SA-4.0, fetched on demand by npm run vendor:owasp)
+.claude/skills/owasp-secure-coding-bdd/vendor/
+
+# Installer artifacts
+.claude/.esk-installed
+.claude/*.esk.bak
+.claude/ESK-INSTALL-LOG.md
+
+# Env / local
+.env
+.env.local
+.DS_Store

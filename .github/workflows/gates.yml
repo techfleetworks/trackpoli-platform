@@ -1,0 +1,174 @@
+# Enterprise skills -> enforced CI gates for TrackPoli, ONE named check per skill (100% coverage).
+# Each skill's mechanical gate is its own required status check ("skill (<name>)"), so the checks list
+# shows a green tick per skill. Surface-dependent gates are guarded (green until their surface lands,
+# then enforcing). verifiable-quality-gates runs the component discrimination suite (every vendored gate
+# SCRIPT has a test that fails if it stops detecting). always-on/routing/receipt/arch-review are the
+# cross-cutting governance checks. All are required in .github/rulesets/main-protection.json.
+name: gates
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  skill:
+    name: skill (${{ matrix.skill }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - skill: architectural-decision-records
+            run: npm run check:adr
+          - skill: arch-encode
+            run: npm run check:discriminate
+          - skill: judge-arch
+            run: npm run check:architecture && npm run check:links
+          - skill: enterprise-architecture-standards
+            run: npm run check:architecture
+          - skill: verifiable-quality-gates
+            run: npm test
+          - skill: skeptical-audit
+            run: npm run check:evidence
+          - skill: pattern-selector
+            run: npm run check:patterns
+          - skill: compliance-data-lifecycle
+            run: >
+              npm run check:retention &&
+              if find supabase/migrations -type f -name '*.sql' | grep -q .; then npm run check:pii; else echo "no SQL migrations yet - pii gate skipped"; fi
+          - skill: release-deployment-safety
+            run: if find supabase/migrations -type f -name '*.sql' | grep -q .; then npm run check:migrations; else echo "no migrations yet - skipped"; fi
+          - skill: bdd-comprehensive-testing
+            run: if find features -type f -name '*.feature' | grep -q .; then npm run check:gherkin && npm run check:bdd-tags; else echo "no feature files yet - skipped"; fi
+          - skill: comprehensive-test-strategy
+            run: if [ -f reports/junit.xml ]; then npm run check:test-shape; else echo "no JUnit report yet - skipped"; fi
+          - skill: owasp-secure-coding-bdd
+            run: if find src -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.jsx' -o -name '*.mjs' \) | grep -q .; then npm run check:owasp:lints; else echo "no application source yet - skipped"; fi
+          - skill: universal-browser-device-support
+            run: if find src -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.jsx' \) | grep -q .; then npm run check:no-ua; else echo "no application source yet - skipped"; fi
+          - skill: universal-accessibility-wcag
+            run: if [ -f a11y-conformance.json ] || [ -f reports/axe-results.json ]; then npm run check:a11y:checklist; else echo "no accessibility surface yet - skipped"; fi
+          - skill: sre-operational-readiness
+            run: if find monitoring/alerts -type f \( -name '*.yml' -o -name '*.yaml' \) | grep -q .; then npm run check:alerts; else echo "no alert rules yet - skipped"; fi
+          - skill: usability-ux-universal-design
+            run: >
+              grep -q usability-ux-universal-design skill-receipt.config.json &&
+              echo "usability-ux-universal-design is coupled to every UI change via the receipt gate; the library ships no standalone lint, so its enforcement is the receipt + judge-arch review."
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: ${{ matrix.skill }}
+        run: ${{ matrix.run }}
+
+  always-on:
+    # The committed delivery mechanism for the standards directive must stay intact.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Directive emits (canary)
+        run: |
+          node always-on/emit-directive.mjs SessionStart | grep -q "Enterprise engineering skills" \
+            || { echo "FAIL: always-on/emit-directive.mjs did not emit the standards directive"; exit 1; }
+      - name: Hook wired for both events
+        run: |
+          for ev in SessionStart SubagentStart; do
+            grep -q "\"$ev\"" .claude/settings.json && grep -q "emit-directive.mjs" .claude/settings.json \
+              || { echo "FAIL: .claude/settings.json no longer wires the $ev always-on hook"; exit 1; }
+          done
+
+  routing:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Compute changed and added files versus the base
+        id: diff
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags origin "$BASE_REF"
+          base=$(git merge-base HEAD "origin/$BASE_REF")
+          changed=$(git diff --name-only --diff-filter=ACMR "$base" HEAD | paste -sd, -)
+          added=$(git diff --name-only --diff-filter=A "$base" HEAD | paste -sd, -)
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+          echo "added=$added" >> "$GITHUB_OUTPUT"
+      - name: Change-type routing gate
+        env:
+          CHANGED: ${{ steps.diff.outputs.changed }}
+          ADDED: ${{ steps.diff.outputs.added }}
+        run: node .claude/skills/judge-arch/scripts/check-change-routing.mjs --config routing-rules.config.json --changed-list "$CHANGED" --added-list "$ADDED"
+
+  receipt:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Compute changed files and the base receipt log
+        id: diff
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags origin "$BASE_REF"
+          base=$(git merge-base HEAD "origin/$BASE_REF")
+          changed=$(git diff --name-only --diff-filter=ACMR "$base" HEAD | paste -sd, -)
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+          git show "$base:docs/skill-receipts/log.jsonl" > base-receipts.jsonl 2>/dev/null || : > base-receipts.jsonl
+      - name: Skill-application receipt gate
+        env:
+          CHANGED: ${{ steps.diff.outputs.changed }}
+        run: node .claude/skills/judge-arch/scripts/check-skill-receipt.mjs --receipt docs/skill-receipts/log.jsonl --skills-dir .claude/skills --config skill-receipt.config.json --changed-list "$CHANGED" --base base-receipts.jsonl
+
+  arch-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Compute changed application-code files and the base review log
+        id: diff
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags origin "$BASE_REF"
+          base=$(git merge-base HEAD "origin/$BASE_REF")
+          code=$(git diff --name-only --diff-filter=ACMR "$base" HEAD \
+            | grep -E '^(src/|supabase/functions/).*\.(ts|tsx)$' \
+            | grep -v -E '\.(test|spec)\.(ts|tsx)$|/AGENTS\.md$' | paste -sd, - || true)
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          git show "$base:docs/arch-reviews/log.jsonl" > base-arch-reviews.jsonl 2>/dev/null || : > base-arch-reviews.jsonl
+      - name: Architecture-review coverage gate
+        if: steps.diff.outputs.code != ''
+        env:
+          CODE: ${{ steps.diff.outputs.code }}
+          SHA: ${{ steps.diff.outputs.sha }}
+        run: node .claude/skills/judge-arch/scripts/check-arch-review-coverage.mjs --log docs/arch-reviews/log.jsonl --change "$SHA" --changed-list "$CODE" --base base-arch-reviews.jsonl
+      - name: No application code changed
+        if: steps.diff.outputs.code == ''
+        run: echo "No src/supabase application code in this PR - architecture review not required."

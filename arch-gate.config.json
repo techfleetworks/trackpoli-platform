@@ -1,0 +1,74 @@
+{
+  "_preset": "trackpoli (adapted from react-supabase)",
+  "_comment": "Mechanical architecture gate for TrackPoli: Next.js (App Router) + Supabase (facts, workflow, auth) + Sanity (editorial prose). Encodes the layering UI -> data hooks -> services/domain -> lib/integrations, exactly one client per backend, edge functions composing a shared layer, and the Supabase/Sanity data-ownership boundary from decisions.md. Rule names are stable ids: a waiver's 'rule' must match one exactly. Greenfield repo, so these are clean-invariant rules enforced blocking from the first commit; no baseline waivers.",
+  "_ignore_note": "The vendored engine (.claude, always-on) is the upstream standard, governed by its own CI, not TrackPoli's gate; this gate scans TrackPoli's own code (src, supabase/functions, sanity). discriminate-fixtures/vendor/worktrees are intentionally-bad or generated trees.",
+  "ignore": ["public", "docs", "scripts", "e2e", "tests", "test", ".next", "node_modules", ".claude", "always-on", "discriminate-fixtures", "vendor", "worktrees", "supabase/functions/_shared"],
+  "_builtins_note": "ON because TrackPoli is new: emptyCatch/swallowReturn catch a catch that neither recovers, retries nor reports; keepInSync catches the duplicated-fact 'kept in sync' smell, which is the Supabase/Sanity mirror risk.",
+  "builtins": { "emptyCatch": true, "swallowReturn": true, "keepInSync": true },
+  "rules": [
+    {
+      "name": "UI must not access a backend directly",
+      "include": ["src/app/**/*.{ts,tsx}", "src/components/**/*.{ts,tsx}", "src/pages/**/*.{ts,tsx}"],
+      "exclude": ["src/components/ui/**", "**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "**/AGENTS.md"],
+      "forbid": [
+        "supabase\\.(from|rpc|storage|functions)\\b",
+        "from ['\"]@/lib/supabase/client['\"]",
+        "createClient\\s*\\(",
+        "sanityClient\\.(create|createOrReplace|createIfNotExists|patch|delete)\\b"
+      ],
+      "message": "Data access inside a component/page/route. Route reads through the hook/service that OWNS this data so there is one read path, and route writes through the admin service; a schema/RLS/Sanity change then touches one file, not dozens."
+    },
+    {
+      "name": "Services and domain must not import UI or touch web globals",
+      "include": ["src/services/**/*.{ts,tsx}", "src/domain/**/*.{ts,tsx}"],
+      "exclude": ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "**/AGENTS.md"],
+      "forbid": [
+        "from ['\"]react['\"]",
+        "from ['\"]next/",
+        "\\bwindow\\.",
+        "\\bdocument\\.",
+        "\\blocalStorage\\b",
+        "\\bsessionStorage\\b",
+        "\\b(req|request)\\.(headers|cookies|body)\\b",
+        "\\bNextRequest\\b",
+        "\\bNextResponse\\b"
+      ],
+      "message": "Service/domain code leaks a web/HTTP/UI concern and can no longer be tested or reused without a request or a browser. The request stops at the route boundary and becomes plain data before it reaches a service."
+    },
+    {
+      "name": "Exactly one Supabase client",
+      "include": ["src/**/*.{ts,tsx}"],
+      "exclude": ["src/lib/supabase/client.ts", "src/lib/supabase/server.ts", "src/lib/supabase/admin.ts", "src/lib/supabase/types.ts", "**/*.test.{ts,tsx}", "src/test/**"],
+      "forbid": ["createClient\\s*(<[^>]*>)?\\s*\\(", "createServerClient\\s*\\("],
+      "message": "A second Supabase client. There is exactly one configured client per context (browser/server/admin) in src/lib/supabase. Import the canonical client; never construct another (auth/session/RLS config must live in one place)."
+    },
+    {
+      "name": "Exactly one Sanity client",
+      "include": ["src/**/*.{ts,tsx}"],
+      "exclude": ["src/lib/sanity/client.ts", "src/sanity/**", "**/*.test.{ts,tsx}"],
+      "forbid": ["createClient\\s*\\(\\s*\\{[^}]*projectId"],
+      "message": "A second Sanity client. There is one configured Sanity client in src/lib/sanity. Import it; never construct another."
+    },
+    {
+      "name": "Sanity owns prose, not facts (no factual fields in Sanity schemas)",
+      "include": ["src/sanity/**/*.{ts,tsx}", "sanity/**/*.{ts,tsx}"],
+      "exclude": ["**/*.test.{ts,tsx}"],
+      "forbid": ["name:\\s*['\"](partyId|office|constituency|voteCount|seatsHeld|registrationNumber|dateOfBirth|electionDate)['\"]"],
+      "message": "A factual field is being defined in a Sanity schema. Facts are owned by Supabase (decisions.md: one owner per fact). Sanity documents reference a Supabase record id and hold prose only; they never duplicate a factual field."
+    },
+    {
+      "name": "Edge functions must not hand-roll auth or read service-role secrets in the handler",
+      "include": ["supabase/functions/**/index.ts"],
+      "exclude": ["supabase/functions/_shared/**"],
+      "forbid": ["SUPABASE_SERVICE_ROLE_KEY", "\\.from\\(['\"]user_roles['\"]\\)"],
+      "message": "Auth/admin logic hand-rolled per function drifts and cannot be hardened in one place. Use the shared request-auth + admin-client helpers in supabase/functions/_shared."
+    },
+    {
+      "name": "Edge functions must not hand-roll CORS or responses in the handler",
+      "include": ["supabase/functions/**/index.ts"],
+      "exclude": ["supabase/functions/_shared/**"],
+      "forbid": ["Access-Control-Allow-Origin", "new Response\\(\\s*JSON\\.stringify"],
+      "message": "Inline CORS/response shaping duplicated per function drifts (a missing preflight header silently fails requests). Use the shared cors/json helpers in supabase/functions/_shared."
+    }
+  ]
+}

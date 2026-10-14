@@ -1,0 +1,8 @@
+[
+  { "field": "admin_users.email", "class": "restricted", "basis": "legitimate interest - backend data-steward access control", "retention": "account lifetime + 30d" },
+  { "field": "admin_users.full_name", "class": "restricted", "basis": "legitimate interest - attribution of data edits in the audit log", "retention": "account lifetime + 30d" },
+  { "field": "audit_log.actor_id", "class": "internal", "basis": "legitimate interest - tamper-evident record of who changed published data", "retention": "7 years (accountability record)" },
+  { "field": "politicians.full_name", "class": "public", "basis": "public interest - record of a person holding or seeking public office", "retention": "indefinite (public-record of public office)" },
+  { "field": "politicians.date_of_birth", "class": "public", "basis": "public interest - published biographical fact of a public office-holder", "retention": "indefinite (public-record of public office)" },
+  { "field": "support_inbox.email", "class": "not-personal", "basis": "n/a - shared inbox alias, not a person", "retention": "n/a" }
+]

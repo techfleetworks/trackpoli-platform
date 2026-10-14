@@ -1,0 +1,25 @@
+{
+  "_comment": "Routing-coupling map for check-skill-receipt.mjs. When a PR touches one of these surfaces, the coupled skill(s) MUST be marked `applied` in the receipt (never not-applicable), removing the mark-everything-N/A escape. Globs are scoped to TrackPoli's OWN source and to *.sql / docs/adr, so vendoring the engine under .claude/skills/** or editing always-on/** never force-couples a skill. Each gap found later becomes one more rule here.",
+  "rules": [
+    {
+      "id": "behavior-change",
+      "when": ["src/**/*.ts", "src/**/*.tsx", "supabase/functions/**/*.ts"],
+      "requires": ["bdd-comprehensive-testing", "comprehensive-test-strategy"]
+    },
+    {
+      "id": "ui-change",
+      "when": ["src/app/**/*.tsx", "src/components/**/*.tsx", "src/**/*.css"],
+      "requires": ["universal-accessibility-wcag", "usability-ux-universal-design", "universal-browser-device-support"]
+    },
+    {
+      "id": "security-surface",
+      "when": ["src/**/auth/**", "src/**/*session*", "src/**/*login*", "src/**/*password*", "src/**/*token*", "supabase/functions/**/index.ts"],
+      "requires": ["owasp-secure-coding-bdd"]
+    },
+    {
+      "id": "decision-or-schema",
+      "when": ["docs/adr/**", "supabase/migrations/**/*.sql"],
+      "requires": ["architectural-decision-records"]
+    }
+  ]
+}
