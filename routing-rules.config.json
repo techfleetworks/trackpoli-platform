@@ -1,0 +1,39 @@
+{
+  "_comment": "Change-type -> required-artifact routing for TrackPoli. check-change-routing.mjs fires a rule when the PR's added/changed files match its 'when' globs, then requires each 'requires' artifact in the SAME change (or a valid, dated waiver). Globs are scoped to TrackPoli's OWN source (src/**, supabase/**) and to *.sql, so they never fire on the vendored engine under .claude/skills/** or on always-on/**. '**' spans directories; '*' and '?' do not cross '/'. A rule keyed on 'added' needs --added-list (CI computes it).",
+  "rules": [
+    {
+      "id": "schema-change-needs-adr-and-safety",
+      "description": "A Supabase schema change is a decision and a deployment risk. Record the why (ADR) and let the migration-safety gate prove it is expand-and-contract safe.",
+      "when": { "changed": ["supabase/migrations/**/*.sql"] },
+      "requires": [
+        { "artifact": "adr", "changed": ["docs/adr/*.md"], "ownerGate": "architectural-decision-records", "hint": "record why the schema changed under docs/adr/" },
+        { "artifact": "migration-safety-record", "changed": ["supabase/migrations/**/*.sql"], "ownerGate": "release-deployment-safety (check:migrations)", "hint": "the migration file itself, carrying an expand-and-contract, concurrent-index, safe NOT NULL path" }
+      ]
+    },
+    {
+      "id": "auth-change-needs-security-scenario",
+      "description": "A change to authentication, sessions, or access control must ship a @security scenario that exercises the control (owasp-secure-coding-bdd).",
+      "when": { "changed": ["src/**/auth/**", "src/**/*session*", "src/**/*login*", "src/**/*password*", "supabase/functions/**/index.ts"] },
+      "requires": [
+        { "artifact": "security-scenario", "changed": ["features/**/*.feature"], "ownerGate": "owasp-secure-coding-bdd (check:security-coverage)", "hint": "add a @security Given/When/Then exercising the auth/access control" }
+      ]
+    },
+    {
+      "id": "ui-change-needs-a11y-verdict",
+      "description": "A user-facing UI change must carry an accessibility verdict (universal-accessibility-wcag).",
+      "when": { "changed": ["src/app/**/*.tsx", "src/components/**/*.tsx"] },
+      "requires": [
+        { "artifact": "a11y-verdict", "changed": ["a11y-conformance.json", "reports/axe-results.json"], "ownerGate": "universal-accessibility-wcag (check:a11y:axe, check:a11y:checklist)", "hint": "attach the axe run output or the manual WCAG checklist verdict for the changed surface" }
+      ]
+    },
+    {
+      "id": "source-change-needs-test",
+      "description": "Production source should not change without a test moving with it (bdd-comprehensive-testing + comprehensive-test-strategy).",
+      "when": { "changed": ["src/**/*.ts", "src/**/*.tsx"] },
+      "requires": [
+        { "artifact": "test", "changed": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "features/**/*.feature", "tests/**"], "ownerGate": "comprehensive-test-strategy", "hint": "add or update the test (or feature scenario) covering the changed behavior" }
+      ]
+    }
+  ],
+  "waivers": []
+}

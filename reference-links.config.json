@@ -1,0 +1,12 @@
+{
+  "_comment": "Extends check-reference-links.mjs built-in ignores (AGENTS.md, SECURITY.md, decisions.md, architecture.md, copilot-instructions.md, and the NNNN-*.md template placeholder). Add a name here only when docs legitimately NAME a filename that is not an in-tree reference file (a teaching example, a template placeholder). For a one-off example on a single line, prefer an inline 'link-check:ignore' on that line instead.",
+  "ignoreBasenames": [
+    "NOTICE.md",
+    "your-draft.md",
+    ".AGENTS.md",
+    "0007-use-postgres-for-billing.md",
+    "0012-async-order-events-over-sync-calls.md",
+    "0007-database.md",
+    "0007-billing-service.md"
+  ]
+}
