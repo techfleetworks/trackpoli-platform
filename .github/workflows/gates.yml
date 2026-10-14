@@ -161,14 +161,15 @@ jobs:
             | grep -E '^(src/|supabase/functions/).*\.(ts|tsx)$' \
             | grep -v -E '\.(test|spec)\.(ts|tsx)$|/AGENTS\.md$' | paste -sd, - || true)
           echo "code=$code" >> "$GITHUB_OUTPUT"
-          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           git show "$base:docs/arch-reviews/log.jsonl" > base-arch-reviews.jsonl 2>/dev/null || : > base-arch-reviews.jsonl
       - name: Architecture-review coverage gate
         if: steps.diff.outputs.code != ''
+        # Keyed on the PR branch (github.head_ref), not the commit SHA: a review log entry committed in the
+        # same commit cannot contain its own future hash, but it can name the branch it is for.
         env:
           CODE: ${{ steps.diff.outputs.code }}
-          SHA: ${{ steps.diff.outputs.sha }}
-        run: node .claude/skills/judge-arch/scripts/check-arch-review-coverage.mjs --log docs/arch-reviews/log.jsonl --change "$SHA" --changed-list "$CODE" --base base-arch-reviews.jsonl
+          CHANGE_REF: ${{ github.head_ref }}
+        run: node .claude/skills/judge-arch/scripts/check-arch-review-coverage.mjs --log docs/arch-reviews/log.jsonl --change "$CHANGE_REF" --changed-list "$CODE" --base base-arch-reviews.jsonl
       - name: No application code changed
         if: steps.diff.outputs.code == ''
         run: echo "No src/supabase application code in this PR - architecture review not required."
