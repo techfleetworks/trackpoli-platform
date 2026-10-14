@@ -1,0 +1,247 @@
+{
+  "1.1.1": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "1.2.1": {
+    "status": "not-applicable",
+    "note": "no audio or video content"
+  },
+  "1.2.2": {
+    "status": "not-applicable",
+    "note": "no audio or video content"
+  },
+  "1.2.3": {
+    "status": "not-applicable",
+    "note": "no audio or video content"
+  },
+  "1.2.4": {
+    "status": "not-applicable",
+    "note": "no audio or video content"
+  },
+  "1.2.5": {
+    "status": "not-applicable",
+    "note": "no audio or video content"
+  },
+  "1.3.1": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "1.3.2": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "1.3.3": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "1.3.4": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "1.3.5": {
+    "status": "not-applicable",
+    "note": "no input fields on this page"
+  },
+  "1.4.1": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "1.4.2": {
+    "status": "not-applicable",
+    "note": "no audio content"
+  },
+  "1.4.3": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "1.4.4": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "1.4.5": {
+    "status": "not-applicable",
+    "note": "no images of text"
+  },
+  "1.4.10": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "1.4.11": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "1.4.12": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "1.4.13": {
+    "status": "not-applicable",
+    "note": "no content appears on hover or focus"
+  },
+  "2.1.1": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "2.1.2": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "2.1.4": {
+    "status": "not-applicable",
+    "note": "no single-character key shortcuts"
+  },
+  "2.2.1": {
+    "status": "not-applicable",
+    "note": "no time limits"
+  },
+  "2.2.2": {
+    "status": "not-applicable",
+    "note": "no moving, blinking or auto-updating content"
+  },
+  "2.3.1": {
+    "status": "not-applicable",
+    "note": "no flashing content"
+  },
+  "2.4.1": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "2.4.2": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "2.4.3": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "2.4.4": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "2.4.5": {
+    "status": "not-applicable",
+    "note": "single-page scaffold; revisit when multiple pages exist"
+  },
+  "2.4.6": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "2.4.7": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "2.4.11": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "2.5.1": {
+    "status": "not-applicable",
+    "note": "no path-based or multipoint gestures"
+  },
+  "2.5.2": {
+    "status": "not-applicable",
+    "note": "no custom pointer down-event handlers"
+  },
+  "2.5.3": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "2.5.4": {
+    "status": "not-applicable",
+    "note": "no motion-actuated functionality"
+  },
+  "2.5.7": {
+    "status": "not-applicable",
+    "note": "no dragging interactions"
+  },
+  "2.5.8": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "3.1.1": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "3.1.2": {
+    "status": "not-applicable",
+    "note": "all content is in one language (English)"
+  },
+  "3.2.1": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "3.2.2": {
+    "status": "not-applicable",
+    "note": "no inputs that could change context"
+  },
+  "3.2.3": {
+    "status": "not-applicable",
+    "note": "single-page scaffold; no repeated navigation yet"
+  },
+  "3.2.4": {
+    "status": "not-applicable",
+    "note": "single-page scaffold; no repeated components yet"
+  },
+  "3.2.6": {
+    "status": "not-applicable",
+    "note": "no help mechanism yet"
+  },
+  "3.3.1": {
+    "status": "not-applicable",
+    "note": "no forms or inputs"
+  },
+  "3.3.2": {
+    "status": "not-applicable",
+    "note": "no forms or inputs"
+  },
+  "3.3.3": {
+    "status": "not-applicable",
+    "note": "no forms or inputs"
+  },
+  "3.3.4": {
+    "status": "not-applicable",
+    "note": "no forms, legal or financial actions"
+  },
+  "3.3.7": {
+    "status": "not-applicable",
+    "note": "no forms that re-ask for information"
+  },
+  "3.3.8": {
+    "status": "not-applicable",
+    "note": "no authentication on this page"
+  },
+  "4.1.2": {
+    "status": "pass-manual",
+    "reviewer": "trackpoli-author-review (code inspection; pending independent human and assistive-tech sign-off)",
+    "date": "2026-10-14"
+  },
+  "4.1.3": {
+    "status": "not-applicable",
+    "note": "no status messages"
+  }
+}
