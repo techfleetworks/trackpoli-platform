@@ -19,3 +19,13 @@ export function supabaseAnonKey(): string {
 export function supabaseServiceRoleKey(): string {
   return requireEnv("SUPABASE_SERVICE_ROLE_KEY", process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
+
+/** Shared secret the TrackPoli server sends when calling the pre-auth Edge Functions (server-only). */
+export function internalCallSecret(): string {
+  return requireEnv("INTERNAL_CALL_SECRET", process.env.INTERNAL_CALL_SECRET);
+}
+
+/** Whether the browser-safe Supabase env is present, so SSR/build can no-op gracefully when it is not. */
+export function hasSupabaseEnv(): boolean {
+  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+}
