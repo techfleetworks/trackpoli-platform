@@ -16,6 +16,7 @@
     "test:unit": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
+    "check:bundle": "node scripts/check-bundle-size.mjs",
     "dev:all": "supabase start && next dev",
     "gen:types": "supabase gen types typescript --local --schema public > src/lib/database.types.ts",
 
