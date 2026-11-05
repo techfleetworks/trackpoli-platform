@@ -42,6 +42,7 @@ export function SignInPage() {
   const [attemptsRemaining, setAttemptsRemaining] = useState<number | null>(null);
   const [locked, setLocked] = useState<{ lockedUntil: string | null } | null>(null);
   const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
 
   const handleToken = useCallback((token: string) => setTurnstileToken(token), []);
 
@@ -98,6 +99,9 @@ export function SignInPage() {
       setFieldError(true);
     } finally {
       setSubmitting(false);
+      // Turnstile tokens are single-use: clear the token and reset the widget so a retry gets a fresh one.
+      setTurnstileToken("");
+      setTurnstileResetKey((key) => key + 1);
     }
   }
 
@@ -185,7 +189,7 @@ export function SignInPage() {
           Continue with Google
         </Button>
 
-        <TurnstileSlot onToken={handleToken} />
+        <TurnstileSlot onToken={handleToken} resetKey={turnstileResetKey} />
 
         <Button variant="filled" type="submit" disabled={!canSubmit}>
           Sign in

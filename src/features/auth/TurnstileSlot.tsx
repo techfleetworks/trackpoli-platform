@@ -3,9 +3,12 @@
 // Cloudflare Turnstile widget slot (Q-1-16). When NEXT_PUBLIC_TURNSTILE_SITE_KEY is set it loads the
 // Turnstile script and renders the managed widget, handing the solved token up via onToken. When the key
 // is not configured (e.g. local dev before the credential exists) it shows a neutral placeholder so the
-// screen is complete and reports an empty token; the real bot check appears once the key is set. Placement
-// is just above the Sign in button (assumption — the widget is not in the Figma design). onToken must be a
-// stable reference (pass a state setter) so the widget is not re-rendered on every keystroke.
+// screen is complete and reports an empty token; the real bot check appears once the key is set.
+//
+// Turnstile tokens are single-use, so after a failed sign-in the widget must be reset to issue a fresh
+// token — bump `resetKey` to do that. Placement is just above the Sign in button (the widget is not in the
+// Figma design). onToken must be a stable reference (pass a state setter) so the widget is not re-rendered
+// on every keystroke.
 
 import { useEffect, useRef } from "react";
 import styles from "./TurnstileSlot.module.css";
@@ -24,6 +27,7 @@ interface TurnstileApi {
       "expired-callback": () => void;
     },
   ): string;
+  reset(widgetId: string): void;
 }
 
 declare global {
@@ -32,9 +36,9 @@ declare global {
   }
 }
 
-export function TurnstileSlot({ onToken }: { onToken: (token: string) => void }) {
+export function TurnstileSlot({ onToken, resetKey = 0 }: { onToken: (token: string) => void; resetKey?: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const renderedRef = useRef(false);
+  const widgetIdRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (!SITE_KEY) {
@@ -43,9 +47,8 @@ export function TurnstileSlot({ onToken }: { onToken: (token: string) => void })
     }
 
     function renderWidget() {
-      if (renderedRef.current || !containerRef.current || !window.turnstile) return;
-      renderedRef.current = true;
-      window.turnstile.render(containerRef.current, {
+      if (widgetIdRef.current !== undefined || !containerRef.current || !window.turnstile) return;
+      widgetIdRef.current = window.turnstile.render(containerRef.current, {
         sitekey: SITE_KEY as string,
         theme: "light",
         callback: (token) => onToken(token),
@@ -71,6 +74,15 @@ export function TurnstileSlot({ onToken }: { onToken: (token: string) => void })
     script.addEventListener("load", renderWidget, { once: true });
     document.head.appendChild(script);
   }, [onToken]);
+
+  // Reset the widget to issue a fresh token after a failed attempt (tokens are single-use).
+  useEffect(() => {
+    if (resetKey === 0 || !SITE_KEY) return;
+    if (window.turnstile && widgetIdRef.current !== undefined) {
+      window.turnstile.reset(widgetIdRef.current);
+      onToken("");
+    }
+  }, [resetKey, onToken]);
 
   if (!SITE_KEY) {
     return (

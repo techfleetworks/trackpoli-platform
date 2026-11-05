@@ -1,41 +1,42 @@
 #!/usr/bin/env node
-// Bundle-size gate (TP1-02). The client JavaScript Next ships must stay under budget, so a heavy
+// Bundle-size gate (TP1-02). Caps the FIRST-LOAD client JavaScript every route ships, so a heavy
 // dependency or an accidental client import that bloats the admin app is caught in CI rather than in
-// users' browsers. This is a coarse Phase-1 backstop — the total gzipped client JS — which P1-12 can
-// refine to per-route First Load JS once the app shell and more routes exist. Run after `npm run build`.
+// users' browsers. Measured from Next's build-manifest (main + polyfill + per-route chunks), which
+// EXCLUDES on-demand dynamic imports (e.g. Sentry, which loads only when a DSN is configured). Coarse
+// Phase-1 backstop; P1-12 can refine to per-route reporting. Run after `npm run build`.
 
-import { readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 
-const CHUNKS_DIR = ".next/static/chunks";
-// Gzipped total client JS budget. Baseline ~178 KB (React 19 + Next runtime + the sign-in screen);
+const MANIFEST = ".next/build-manifest.json";
+// Gzipped first-load client JS budget. Baseline ~168 KB (React 19 + Next runtime + the sign-in screen);
 // headroom left for Phase-1 growth. Lower it (and split per-route) when the app shell lands in P1-12.
 const BUDGET_KB = 260;
 
-function walk(dir) {
-  const out = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const p = join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...walk(p));
-    else if (entry.name.endsWith(".js")) out.push(p);
-  }
-  return out;
-}
-
-let files;
+let manifest;
 try {
-  files = walk(CHUNKS_DIR);
+  manifest = JSON.parse(readFileSync(MANIFEST, "utf8"));
 } catch {
-  console.error(`[check-bundle-size] FAIL - ${CHUNKS_DIR} not found. Run 'npm run build' first.`);
+  console.error(`[check-bundle-size] FAIL - ${MANIFEST} not found. Run 'npm run build' first.`);
   process.exit(1);
 }
 
+const files = new Set();
+const add = (arr) => {
+  for (const f of arr ?? []) if (f.endsWith(".js")) files.add(f);
+};
+add(manifest.rootMainFiles);
+add(manifest.polyfillFiles);
+for (const route of Object.keys(manifest.pages ?? {})) add(manifest.pages[route]);
+
 let total = 0;
-for (const file of files) total += gzipSync(readFileSync(file)).length;
+for (const f of files) {
+  total += gzipSync(readFileSync(join(".next", f))).length;
+}
 const kb = total / 1024;
 console.log(
-  `[check-bundle-size] client JS (gzip): ${kb.toFixed(1)} KB across ${files.length} chunk(s); budget ${BUDGET_KB} KB.`,
+  `[check-bundle-size] first-load client JS (gzip): ${kb.toFixed(1)} KB across ${files.size} chunk(s); budget ${BUDGET_KB} KB.`,
 );
 if (kb > BUDGET_KB) {
   console.error(`[check-bundle-size] FAIL - over budget by ${(kb - BUDGET_KB).toFixed(1)} KB.`);
