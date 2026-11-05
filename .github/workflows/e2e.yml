@@ -1,0 +1,38 @@
+# Browser end-to-end tests (TP1-02). Runs the credential-free sign-in UI suite (e2e/sign-in.spec.ts) with
+# Playwright against `next dev` - no Supabase, no secrets - so it is reliable on every PR. The full-stack
+# lockout scenario (E2E-02) is gated on E2E_FULL_STACK and is added to this workflow as a separate job once
+# the local-Supabase + seed + Turnstile-test-key wiring is finalised (it needs CI iteration, like
+# database.yml did). E2E-01 (2FA/dashboard) and E2E-16 (Google) await later tickets / the production domain.
+name: e2e
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: e2e (sign-in UI)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Run sign-in UI e2e
+        run: npx playwright test e2e/sign-in.spec.ts
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
