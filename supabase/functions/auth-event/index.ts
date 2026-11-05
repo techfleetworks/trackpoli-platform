@@ -16,6 +16,9 @@ const Body = z
   })
   .strict();
 
+// The pause threshold, kept in step with migration 010 (record_sign_in_failure locks at 5 failures).
+const LOCK_THRESHOLD = 5;
+
 serve("auth-event", async ({ req, admin, ip, requestId }) => {
   assertInternalCall(req);
 
@@ -28,6 +31,19 @@ serve("auth-event", async ({ req, admin, ip, requestId }) => {
   const { data, error } = await admin.rpc("record_sign_in_failure", { p_hash: hash });
   if (error) throw error; // unknown DB failure -> serve() maps to `internal`
   const lockedUntil = (data as string | null) ?? null;
+
+  // How many attempts remain before a pause (null once paused). Computed identically for any email from
+  // the hash counter, so surfacing it does not reveal whether the email has an account (ADR-0005).
+  let attemptsRemaining: number | null = null;
+  if (lockedUntil === null) {
+    const { data: row } = await admin
+      .from("sign_in_lockouts")
+      .select("failures")
+      .eq("email_hash", hash)
+      .maybeSingle();
+    const failures = typeof row?.failures === "number" ? row.failures : 0;
+    attemptsRemaining = Math.max(0, LOCK_THRESHOLD - failures);
+  }
 
   // If writing the event fails we return `internal` (serve); the failure counter stays incremented, which
   // fails safe toward MORE protection, and record_sign_in_failure has no inverse to roll back.
@@ -51,5 +67,5 @@ serve("auth-event", async ({ req, admin, ip, requestId }) => {
     });
   }
 
-  return { locked: lockedUntil !== null, lockedUntil };
+  return { locked: lockedUntil !== null, lockedUntil, attemptsRemaining };
 });

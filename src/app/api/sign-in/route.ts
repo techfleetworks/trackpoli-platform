@@ -1,17 +1,20 @@
 // POST /admin/api/sign-in — the one server endpoint the sign-in screen calls. It stays thin: validate the
 // body, resolve the caller IP from the trusted Cloudflare header, delegate to performSignIn (which owns
-// the bot-check/lockout/attempt order and the enumeration-resistant timing), and map the result to HTTP.
-// All three account-related failures return the identical generic 401, per ADR-0005.
+// the bot-check/lockout/attempt order and the enumeration-resistant timing), and return the typed outcome.
+// The outcome is returned as a 200 body (success | failed | locked | blocked) so the client can render the
+// right state (generic error, remaining-attempts count, the locked screen) from one structured response;
+// the failure is a business outcome, not an HTTP transport error, and nothing in it reveals which
+// credential was wrong or whether the email exists (ADR-0005).
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { buildSignInPorts, GENERIC_SIGN_IN_ERROR, performSignIn } from "@/features/auth/signIn";
+import { buildSignInPorts, performSignIn, type SignInResult } from "@/features/auth/signIn";
 
 const Body = z
   .object({
     email: z.string().email(),
     password: z.string().min(1),
-    turnstileToken: z.string().min(1),
+    turnstileToken: z.string(),
   })
   .strict();
 
@@ -28,32 +31,12 @@ function callerIp(request: NextRequest): string | null {
 export async function POST(request: NextRequest) {
   const parsed = Body.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ ok: false, message: GENERIC_SIGN_IN_ERROR }, { status: 422 });
+    // Treat a malformed body as a generic failure rather than leaking validation detail.
+    const result: SignInResult = { outcome: "failed", attemptsRemaining: null };
+    return NextResponse.json(result);
   }
 
   const ip = callerIp(request);
   const result = await performSignIn({ ...parsed.data, ip }, buildSignInPorts());
-
-  switch (result.outcome) {
-    case "success":
-      return NextResponse.json({ ok: true });
-    case "blocked": {
-      if (result.reason === "rate_limited") {
-        const headers = result.retryAfterSeconds
-          ? { "Retry-After": String(result.retryAfterSeconds) }
-          : undefined;
-        return NextResponse.json(
-          { ok: false, message: "Too many attempts. Please wait and try again." },
-          { status: 429, headers },
-        );
-      }
-      return NextResponse.json(
-        { ok: false, message: "Please complete the verification and try again." },
-        { status: 422 },
-      );
-    }
-    default:
-      // Paused, unknown email, and wrong password are deliberately indistinguishable here.
-      return NextResponse.json({ ok: false, message: GENERIC_SIGN_IN_ERROR }, { status: 401 });
-  }
+  return NextResponse.json(result);
 }

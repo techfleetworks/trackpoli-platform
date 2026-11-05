@@ -1,26 +1,27 @@
 // Sign-in orchestration (ADR-0005). One fixed order per attempt: bot-check + lockout (sign-in-check) →
 // password attempt → record a failure (auth-event). Every account-related failure — a paused account, an
-// unknown email, a wrong password — returns the SAME generic "failed" outcome and is padded to a fixed
-// minimum duration, so the three are indistinguishable in content and (within jitter) in time. A bot-check
-// or rate-limit block is NOT account-related, so it is its own outcome and is not padded.
+// unknown email, a wrong password — is answered without revealing which credential was wrong or whether
+// the email exists, and is padded to a fixed minimum duration so the cases are indistinguishable in time.
 //
-// The pure performSignIn() takes its effects as ports, so the enumeration/timing behaviour is unit-tested
-// with fakes; buildSignInPorts() wires the real Edge Functions and the cookie-bound Supabase client.
+// The lockout STATE it surfaces (attempts remaining, or a pause with its end time) is computed identically
+// for any email from the email-hash counter, so showing it does not leak account existence (ADR-0005). A
+// bot-check or rate-limit block is not account-related, so it is its own outcome and is not padded.
+//
+// performSignIn() takes its effects as ports, so the enumeration/timing behaviour is unit-tested with
+// fakes; buildSignInPorts() wires the real Edge Functions and the cookie-bound Supabase client.
 
 import { createServerSupabase } from "@/lib/supabase/server";
 import { report } from "@/lib/report";
 import { EdgeFunctionError, invokeInternalFunction } from "./edgeClient";
 
-/** The one generic message every account-related failure shows. Never says which part was wrong. */
-export const GENERIC_SIGN_IN_ERROR = "Incorrect email or password. Please try again.";
-
-// Minimum duration for any account-related failure response, so a paused/unknown/wrong-password outcome
+// Minimum duration for any account-related failure response, so paused/unknown/wrong-password outcomes
 // cannot be told apart by timing. Best-effort: a cold start can still exceed it (see ADR-0005).
 export const SIGN_IN_TIMING_FLOOR_MS = 750;
 
 export type SignInResult =
   | { outcome: "success" }
-  | { outcome: "failed" }
+  | { outcome: "failed"; attemptsRemaining: number | null }
+  | { outcome: "locked"; lockedUntil: string | null }
   | { outcome: "blocked"; reason: "turnstile" | "rate_limited"; retryAfterSeconds?: number };
 
 export interface SignInInput {
@@ -43,9 +44,16 @@ export class SignInBlocked extends Error {
 }
 
 export interface SignInPorts {
-  checkSignIn(input: { email: string; turnstileToken: string; ip: string | null }): Promise<{ allowed: boolean }>;
+  checkSignIn(input: {
+    email: string;
+    turnstileToken: string;
+    ip: string | null;
+  }): Promise<{ allowed: boolean; lockedUntil: string | null }>;
   attemptPassword(email: string, password: string): Promise<boolean>;
-  recordFailure(input: { email: string; ip: string | null }): Promise<void>;
+  recordFailure(input: {
+    email: string;
+    ip: string | null;
+  }): Promise<{ locked: boolean; lockedUntil: string | null; attemptsRemaining: number | null }>;
   now(): number;
   sleep(ms: number): Promise<void>;
 }
@@ -53,13 +61,13 @@ export interface SignInPorts {
 export async function performSignIn(input: SignInInput, ports: SignInPorts): Promise<SignInResult> {
   const start = ports.now();
 
-  let allowed: boolean;
+  let check: { allowed: boolean; lockedUntil: string | null };
   try {
-    ({ allowed } = await ports.checkSignIn({
+    check = await ports.checkSignIn({
       email: input.email,
       turnstileToken: input.turnstileToken,
       ip: input.ip,
-    }));
+    });
   } catch (error) {
     if (error instanceof SignInBlocked) {
       return { outcome: "blocked", reason: error.reason, retryAfterSeconds: error.retryAfterSeconds };
@@ -67,25 +75,28 @@ export async function performSignIn(input: SignInInput, ports: SignInPorts): Pro
     throw error;
   }
 
-  if (!allowed) {
-    return failed(ports, start); // account is paused
+  if (!check.allowed) {
+    await pad(ports, start); // account is already paused
+    return { outcome: "locked", lockedUntil: check.lockedUntil };
   }
 
   const ok = await ports.attemptPassword(input.email, input.password);
-  if (!ok) {
-    await ports.recordFailure({ email: input.email, ip: input.ip });
-    return failed(ports, start); // wrong password or unknown email — same outcome as a pause
+  if (ok) {
+    return { outcome: "success" };
   }
 
-  return { outcome: "success" };
+  const failure = await ports.recordFailure({ email: input.email, ip: input.ip });
+  await pad(ports, start);
+  return failure.locked
+    ? { outcome: "locked", lockedUntil: failure.lockedUntil }
+    : { outcome: "failed", attemptsRemaining: failure.attemptsRemaining };
 }
 
-async function failed(ports: SignInPorts, start: number): Promise<SignInResult> {
+async function pad(ports: SignInPorts, start: number): Promise<void> {
   const elapsed = ports.now() - start;
   if (elapsed < SIGN_IN_TIMING_FLOOR_MS) {
     await ports.sleep(SIGN_IN_TIMING_FLOOR_MS - elapsed);
   }
-  return { outcome: "failed" };
 }
 
 /** The production ports: the real Edge Functions and the cookie-bound Supabase client. */
@@ -98,7 +109,7 @@ export function buildSignInPorts(): SignInPorts {
           { email, turnstileToken },
           ip,
         );
-        return { allowed: data.allowed };
+        return { allowed: data.allowed, lockedUntil: data.lockedUntil };
       } catch (error) {
         if (error instanceof EdgeFunctionError) {
           if (error.code === "validation_failed") throw new SignInBlocked("turnstile");
@@ -113,13 +124,20 @@ export function buildSignInPorts(): SignInPorts {
       return !error && Boolean(data.user);
     },
     async recordFailure({ email, ip }) {
-      // Best-effort: the failure is already recorded by the Edge Function; if the call itself fails we
-      // report it but keep the generic outcome, so a reporting hiccup cannot leak which path was taken.
-      await invokeInternalFunction("auth-event", { email }, ip).catch((error: unknown) => {
+      try {
+        return await invokeInternalFunction<{
+          locked: boolean;
+          lockedUntil: string | null;
+          attemptsRemaining: number | null;
+        }>("auth-event", { email }, ip);
+      } catch (error) {
+        // The failure is recorded server-side regardless; if the call itself fails we report it and fall
+        // back to the generic outcome with no count, so a hiccup cannot leak which path was taken.
         report("warning", "auth-event call failed", {
           reason: error instanceof Error ? error.message : String(error),
         });
-      });
+        return { locked: false, lockedUntil: null, attemptsRemaining: null };
+      }
     },
     now: () => Date.now(),
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
