@@ -6,21 +6,12 @@
 
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { formatTimeUntil } from "@/lib/relativeTime";
 import card from "./authCard.module.css";
 import styles from "./AccountLockedCard.module.css";
 import markIcon from "./assets/mark.svg";
 import lockIcon from "./assets/lock.svg";
 import clockIcon from "./assets/clock.svg";
-
-function formatRetry(lockedUntil: string | null): string {
-  if (!lockedUntil) return "shortly";
-  const ms = new Date(lockedUntil).getTime() - Date.now();
-  if (Number.isNaN(ms) || ms <= 0) return "shortly";
-  const minutes = Math.ceil(ms / 60000);
-  if (minutes < 60) return `in ${minutes} minute${minutes === 1 ? "" : "s"}`;
-  const hours = Math.ceil(minutes / 60);
-  return `in ${hours} hour${hours === 1 ? "" : "s"}`;
-}
 
 export function AccountLockedCard({ lockedUntil, onBack }: { lockedUntil: string | null; onBack: () => void }) {
   return (
@@ -50,7 +41,7 @@ export function AccountLockedCard({ lockedUntil, onBack }: { lockedUntil: string
 
         <div className={styles.infoRow}>
           <Icon src={clockIcon} size={22} />
-          <p className={styles.infoText}>You can try signing in again {formatRetry(lockedUntil)}.</p>
+          <p className={styles.infoText}>You can try signing in again {formatTimeUntil(lockedUntil)}.</p>
         </div>
 
         <Button variant="filled" onClick={onBack}>

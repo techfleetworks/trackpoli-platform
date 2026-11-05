@@ -16,9 +16,6 @@ const Body = z
   })
   .strict();
 
-// The pause threshold, kept in step with migration 010 (record_sign_in_failure locks at 5 failures).
-const LOCK_THRESHOLD = 5;
-
 serve("auth-event", async ({ req, admin, ip, requestId }) => {
   assertInternalCall(req);
 
@@ -32,17 +29,17 @@ serve("auth-event", async ({ req, admin, ip, requestId }) => {
   if (error) throw error; // unknown DB failure -> serve() maps to `internal`
   const lockedUntil = (data as string | null) ?? null;
 
-  // How many attempts remain before a pause (null once paused). Computed identically for any email from
-  // the hash counter, so surfacing it does not reveal whether the email has an account (ADR-0005).
+  // How many attempts remain before a pause (null once paused). The DB owns the threshold and computes
+  // the count (sign_in_attempts_remaining, migration 011), so the server keeps no copy of it. Computed
+  // identically for any email from the hash counter, so surfacing it does not reveal whether the email has
+  // an account (ADR-0005).
   let attemptsRemaining: number | null = null;
   if (lockedUntil === null) {
-    const { data: row } = await admin
-      .from("sign_in_lockouts")
-      .select("failures")
-      .eq("email_hash", hash)
-      .maybeSingle();
-    const failures = typeof row?.failures === "number" ? row.failures : 0;
-    attemptsRemaining = Math.max(0, LOCK_THRESHOLD - failures);
+    const { data: remaining, error: remainingError } = await admin.rpc("sign_in_attempts_remaining", {
+      p_hash: hash,
+    });
+    if (remainingError) throw remainingError; // unknown DB failure -> serve() maps to `internal`
+    attemptsRemaining = typeof remaining === "number" ? remaining : null;
   }
 
   // If writing the event fails we return `internal` (serve); the failure counter stays incremented, which

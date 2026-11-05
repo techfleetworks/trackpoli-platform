@@ -9,10 +9,13 @@ import { readFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 
-const MANIFEST = ".next/build-manifest.json";
+// Path + budget are overridable via env so the gate is testable against fixtures (it must provably detect
+// an over-budget bundle, per verifiable-quality-gates); defaults are the real build output and budget.
+const MANIFEST = process.env.BUNDLE_MANIFEST ?? ".next/build-manifest.json";
+const MANIFEST_DIR = process.env.BUNDLE_DIR ?? ".next";
 // Gzipped first-load client JS budget. Baseline ~168 KB (React 19 + Next runtime + the sign-in screen);
 // headroom left for Phase-1 growth. Lower it (and split per-route) when the app shell lands in P1-12.
-const BUDGET_KB = 260;
+const BUDGET_KB = Number(process.env.BUNDLE_BUDGET_KB ?? 260);
 
 let manifest;
 try {
@@ -32,7 +35,7 @@ for (const route of Object.keys(manifest.pages ?? {})) add(manifest.pages[route]
 
 let total = 0;
 for (const f of files) {
-  total += gzipSync(readFileSync(join(".next", f))).length;
+  total += gzipSync(readFileSync(join(MANIFEST_DIR, f))).length;
 }
 const kb = total / 1024;
 console.log(
