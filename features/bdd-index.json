@@ -67,6 +67,17 @@
   },
   {
     "feature": "auth/password-recovery.feature",
+    "scenario": "The one-time token is exchanged only on an explicit continue, not on a page fetch",
+    "domain": "auth",
+    "audience": "anonymous",
+    "usecase": "scanner-safe-link",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/password-recovery.feature",
     "scenario": "The reset-request endpoint rejects a non-server caller",
     "domain": "auth",
     "audience": "anonymous",

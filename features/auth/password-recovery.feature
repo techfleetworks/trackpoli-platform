@@ -58,3 +58,10 @@ Feature: Password recovery (forgot password, enumeration resistance, single-use 
     And the lockout counter for that account is cleared
     And an "auth.password_reset_completed" event is written
     And all existing sessions are ended and the user is sent to sign in
+
+  @audience:anonymous @usecase:scanner-safe-link @category:adverse @security @severity:high
+  Scenario: The one-time token is exchanged only on an explicit continue, not on a page fetch
+    Given a recovery link that lands on the shared /auth/confirm Continue page
+    When the page is merely fetched, as an email security scanner would, without selecting Continue
+    Then the single-use token is not exchanged and no session is created
+    And the token is exchanged only when the recipient explicitly selects Continue
