@@ -110,7 +110,9 @@ export function ResetPasswordPage({ email }: { email: string }) {
           setNotice(PASSWORD_RESET_MESSAGES.weakPassword);
       }
     } catch {
-      setNotice(PASSWORD_RESET_MESSAGES.weakPassword);
+      // A transport/infra failure is not necessarily a weak password — show a generic message, not the
+      // "choose a 12-character password" copy, which would misdescribe the problem.
+      setNotice(PASSWORD_RESET_MESSAGES.genericError);
     } finally {
       setSubmitting(false);
     }

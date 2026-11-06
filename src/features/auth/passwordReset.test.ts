@@ -113,13 +113,18 @@ function makeCompletePorts(over: Partial<CompleteResetPorts> = {}): CompleteRese
 const COMPLETE_INPUT = { password: "a-strong-passphrase", ip: "1.2.3.4", requestId: "req-1" };
 
 describe("completePasswordReset", () => {
-  it("updates the password, clears lockout + writes the event, then ends all sessions", async () => {
+  it("updates the password, ends all sessions, then does the lockout/event bookkeeping", async () => {
     const ports = makeCompletePorts();
     const result = await completePasswordReset(COMPLETE_INPUT, ports);
     expect(result).toEqual({ outcome: "done" });
     expect(ports.updateMock).toHaveBeenCalledWith(COMPLETE_INPUT.password);
     expect(ports.onResetMock).toHaveBeenCalledWith(USER, COMPLETE_INPUT.ip, COMPLETE_INPUT.requestId);
     expect(ports.signOutMock).toHaveBeenCalled();
+    // Sessions are revoked BEFORE the audit bookkeeping, so an onReset failure cannot drop the revocation
+    // guarantee (judge-arch finding, ADR-0008).
+    expect(ports.signOutMock.mock.invocationCallOrder[0]).toBeLessThan(
+      ports.onResetMock.mock.invocationCallOrder[0],
+    );
   });
 
   it("returns no_session and changes nothing when there is no recovery session", async () => {

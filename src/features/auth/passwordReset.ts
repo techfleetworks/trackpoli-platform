@@ -14,6 +14,7 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createAdminSupabase } from "@/lib/supabase/admin";
 import { emailHashHex } from "@/lib/emailHash";
+import { report } from "@/lib/report";
 import { EdgeFunctionError, invokeInternalFunction } from "./edgeClient";
 
 // Minimum duration for the reset-request response, so "account exists" and "no account" cannot be told
@@ -126,9 +127,11 @@ export async function completePasswordReset(
   const updated = await ports.updatePassword(input.password);
   if (!updated.ok) return { outcome: "weak_password" };
 
-  // Only after the password is actually changed: clear the lockout, record the event, end all sessions.
-  await ports.onReset(user, input.ip, input.requestId);
+  // Revoke every session FIRST — that is the security guarantee of a recovery — so a later audit/bookkeeping
+  // hiccup can never leave an old session alive after a reset. Only then do the best-effort bookkeeping
+  // (clear the lockout, record the completion event), which does not undo the already-safe outcome.
   await ports.signOutEverywhere();
+  await ports.onReset(user, input.ip, input.requestId);
   return { outcome: "done" };
 }
 
@@ -150,22 +153,33 @@ export function buildCompleteResetPorts(): CompleteResetPorts {
       return { ok: !error };
     },
     async onReset(user, ip, requestId) {
-      // Audited privileged operation on the server, via the service-role client (sanctioned by ADR-0005).
-      const admin = createAdminSupabase();
-      const hash = await emailHashHex(user.email);
-      const { error: clearError } = await admin.rpc("clear_sign_in_failures", { p_hash: hash });
-      if (clearError) throw clearError;
-      const { error: eventError } = await admin.rpc("log_event", {
-        p_actor: user.id,
-        p_action: "auth.password_reset_completed",
-        p_subject_type: "profile", // the account whose password was reset is the subject
-        p_subject_id: user.id,
-        p_summary: "Password reset completed",
-        p_details: {},
-        p_ip: ip,
-        p_request: requestId,
-      });
-      if (eventError) throw eventError;
+      // Audited privileged bookkeeping on the server, via the service-role client (sanctioned by ADR-0005),
+      // run AFTER the password change + global sign-out already succeeded. It is best-effort: a failure here
+      // does not undo the safe outcome, and a successful sign-in also clears the lockout via the
+      // migration-007 trigger, so we REPORT a failure rather than throw it (which would turn a completed,
+      // safe reset into a user-facing 500). The DB additionally records a separate auth.password_changed
+      // event via that trigger; this event adds the reset-flow context (actor, ip, request id).
+      try {
+        const admin = createAdminSupabase();
+        const hash = await emailHashHex(user.email);
+        const { error: clearError } = await admin.rpc("clear_sign_in_failures", { p_hash: hash });
+        if (clearError) throw clearError;
+        const { error: eventError } = await admin.rpc("log_event", {
+          p_actor: user.id,
+          p_action: "auth.password_reset_completed",
+          p_subject_type: "admin", // matches the audit taxonomy + the self-events RLS filter (migration 005)
+          p_subject_id: user.id,
+          p_summary: "Password reset completed",
+          p_details: {},
+          p_ip: ip,
+          p_request: requestId,
+        });
+        if (eventError) throw eventError;
+      } catch (error) {
+        report("error", "password-reset bookkeeping failed after completion", {
+          reason: error instanceof Error ? error.message : String(error),
+        });
+      }
     },
     async signOutEverywhere() {
       const supabase = await createServerSupabase();

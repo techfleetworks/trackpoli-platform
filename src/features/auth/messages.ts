@@ -20,5 +20,6 @@ export const PASSWORD_RESET_MESSAGES = {
   rateLimited: "Too many requests. Please wait and try again.",
   linkExpired: "This password reset link is invalid or has expired. Please request a new one.",
   weakPassword: "Please choose a password with at least 12 characters.",
+  genericError: "Something went wrong. Please try again.",
   resetComplete: "Your password has been reset. Please sign in with your new password.",
 } as const;
