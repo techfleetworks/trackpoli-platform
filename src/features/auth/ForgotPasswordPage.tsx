@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { TextField } from "@/components/ui/TextField";
 import { apiFetch } from "@/lib/apiFetch";
+import { ForgotPasswordSentPage } from "./ForgotPasswordSentPage";
 import { TurnstileSlot } from "./TurnstileSlot";
 import { PASSWORD_RESET_MESSAGES } from "./messages";
 import card from "./authCard.module.css";
@@ -53,27 +54,9 @@ export function ForgotPasswordPage() {
   const handleToken = useCallback((token: string) => setTurnstileToken(token), []);
 
   if (sent) {
-    // Enumeration-safe acknowledgement: identical whether or not the email has an account (ADR-0008).
-    return (
-      <main className={card.page}>
-        <section className={card.card} aria-labelledby="forgot-sent-title">
-          <div className={card.brand}>
-            <span className={card.brandMark}>
-              <Icon src={markIcon} size={22} />
-            </span>
-            <span className={card.brandName}>TrackPoli Admin</span>
-          </div>
-          <div className={styles.headingBlock}>
-            <h1 id="forgot-sent-title" className={styles.title}>
-              Check your email
-            </h1>
-            <p className={styles.subtext}>{PASSWORD_RESET_MESSAGES.requestAcknowledged}</p>
-          </div>
-          <BackToSignIn />
-          <p className={card.footer}>Reset links expire after 24 hours and can be used only once.</p>
-        </section>
-      </main>
-    );
+    // Enumeration-safe "check your email" screen, shown identically whether or not the email has an
+    // account (ADR-0008). The submitted email is echoed back (the user typed it; not a leak).
+    return <ForgotPasswordSentPage email={email.trim()} />;
   }
 
   const canSubmit = !submitting && email.trim() !== "" && (!NEEDS_TURNSTILE || turnstileToken !== "");
