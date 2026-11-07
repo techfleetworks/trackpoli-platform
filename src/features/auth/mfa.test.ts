@@ -181,4 +181,18 @@ describe("completeReplacement", () => {
     expect(result).toEqual({ outcome: "invalid_new_code" });
     expect(unenroll).toHaveBeenCalledWith("factor-new");
   });
+
+  it("still returns replaced when the old factor can't be removed — the new device already works (F1)", async () => {
+    // Removing the stale factor is best-effort once the new one is verified; a failure must not masquerade
+    // as "nothing changed" while the user's new device is already active (judge-arch F1).
+    const ports = makeMfaPorts({
+      verifyFactor: async () => "ok" as const,
+      listVerifiedFactorIds: async () => ["factor-old", "factor-new"],
+      unenroll: async () => {
+        throw new Error("supabase unavailable");
+      },
+    });
+    const result = await completeReplacement({ newFactorId: "factor-new", newCode: "123456" }, ports);
+    expect(result).toEqual({ outcome: "replaced" });
+  });
 });

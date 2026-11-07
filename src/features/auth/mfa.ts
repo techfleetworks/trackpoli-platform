@@ -152,9 +152,19 @@ export async function completeReplacement(
     return outcome === "rate_limited" ? { outcome: "too_many_attempts" } : { outcome: "invalid_new_code" };
   }
 
-  const stale = (await ports.listVerifiedFactorIds()).filter((id) => id !== input.newFactorId);
-  for (const id of stale) {
-    await ports.unenroll(id);
+  // The new factor is now verified and active, so the replacement has SUCCEEDED. Removing the old factor(s)
+  // is best-effort cleanup: on failure we report it and still return "replaced", because throwing here would
+  // wrongly tell the user nothing changed while their new device already works (judge-arch F1). It can
+  // briefly leave more than one verified factor until a retry or an operator clears the stale one.
+  try {
+    const stale = (await ports.listVerifiedFactorIds()).filter((id) => id !== input.newFactorId);
+    for (const id of stale) {
+      await ports.unenroll(id);
+    }
+  } catch (error) {
+    report("warning", "mfa replacement: stale factor not removed", {
+      reason: error instanceof Error ? error.message : String(error),
+    });
   }
   return { outcome: "replaced" };
 }
