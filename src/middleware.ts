@@ -14,9 +14,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { hasSupabaseEnv, internalCallSecret } from "@/lib/supabase/config";
 import { updateSession } from "@/lib/supabase/server";
-import { decideMfaGate, normalisePath } from "@/features/auth/requireMfa";
+import { decideMfaGate, matchesAny, normalisePath } from "@/features/auth/requireMfa";
+import { decideTermsGate, TERMS_EXEMPT_PATHS, TERMS_PASSTHROUGH_PATHS } from "@/features/auth/termsGate";
 import { decideSessionGate } from "@/features/auth/session/sessionGate";
 import { decideRoleGate } from "@/features/auth/guards/routeGate";
+import { readTermsAccepted } from "@/lib/supabase/server";
 import { ACTIVITY_COOKIE, evaluateActivity, readActivity } from "@/lib/sessionActivity";
 import { sessionLimits } from "@/lib/config";
 import { report } from "@/lib/report";
@@ -71,7 +73,7 @@ export async function middleware(request: NextRequest) {
     return redirect;
   }
 
-  // Stage 2 + 3: sign-in guard, then RequireMfa.
+  // Stage 2 + 3 + 4: sign-in guard, then RequireTerms, then RequireMfa.
   const decision = decideMfaGate({
     path,
     authenticated: Boolean(user),
@@ -79,12 +81,31 @@ export async function middleware(request: NextRequest) {
     nextLevel: aal?.nextLevel ?? null,
   });
 
-  switch (decision.action) {
-    case "sign-in": {
-      const signInUrl = new URL("/admin/sign-in", request.url);
-      signInUrl.searchParams.set("next", request.nextUrl.pathname);
-      return NextResponse.redirect(signInUrl);
+  // Sign-in guard: an unauthenticated request to a protected path goes to sign-in.
+  if (decision.action === "sign-in") {
+    const signInUrl = new URL("/admin/sign-in", request.url);
+    signInUrl.searchParams.set("next", request.nextUrl.pathname);
+    return NextResponse.redirect(signInUrl);
+  }
+
+  // Stage 3: RequireTerms (TP1-08, Q-1-20). An authenticated session that has not accepted the current
+  // policies is sent to /terms BEFORE the two-factor funnel. The acceptance (has_accepted_current_policies())
+  // is read only for an authenticated request on a gated path — never on the terms funnel, the session-
+  // establishment passthrough, or a public path — so the per-request RPC cost is paid only where it can
+  // change routing. RLS (migration 009) remains the authorization boundary; a read gap fails open (ADR-0012).
+  if (user) {
+    const termsGated =
+      !matchesAny(path, TERMS_PASSTHROUGH_PATHS) && !matchesAny(path, TERMS_EXEMPT_PATHS);
+    if (termsGated) {
+      const termsAccepted = await readTermsAccepted(request);
+      if (decideTermsGate({ path, authenticated: true, termsAccepted }).action === "terms") {
+        return NextResponse.redirect(new URL("/admin/terms", request.url));
+      }
     }
+  }
+
+  // Stage 4: RequireMfa.
+  switch (decision.action) {
     case "enrol":
       return NextResponse.redirect(new URL("/admin/mfa/enrol", request.url));
     case "verify":

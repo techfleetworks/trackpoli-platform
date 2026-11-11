@@ -5,7 +5,6 @@ import {
   decideRequireActive,
   decideRequireRole,
   decideRequireSession,
-  decideRequireTerms,
 } from "./decisions";
 
 const ROLES: (AdminRole | null)[] = ["admin", "admin_manager", null];
@@ -67,13 +66,8 @@ describe("decideRequireRole — every role × the required role", () => {
   });
 });
 
-describe("decideRequireTerms — inert slot (option A)", () => {
-  it("allows when terms are accepted or unknown, routes only an explicit non-acceptance", () => {
-    expect(decideRequireTerms({ termsAccepted: true })).toBe("allow");
-    expect(decideRequireTerms({ termsAccepted: null })).toBe("allow");
-    expect(decideRequireTerms({ termsAccepted: false })).toBe("terms");
-  });
-});
+// decideRequireTerms retired in TP1-08: the live, path-aware terms gate is decideTermsGate in
+// src/features/auth/termsGate.ts (see termsGate.test.ts), wired into the middleware before RequireMfa.
 
 // A compact full matrix sanity check: a manager route decision for every status × role combination, proving
 // role (not status) governs RequireRole and that the two guards compose without surprises.

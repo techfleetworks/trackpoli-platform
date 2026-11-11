@@ -52,10 +52,8 @@ export function decideRequireRole(
   return auth.role === required ? "allow" : "forbidden";
 }
 
-// RequireTerms — must have accepted the current policies. INERT for now (ADR-0012, option A): the
-// terms-acceptance screen is a later ticket and the database (restrictive RLS, migration 009) already blocks
-// the data until acceptance. Only an explicit false routes to the (future) terms screen; null/true allow.
-export type TermsAction = "allow" | "terms";
-export function decideRequireTerms(auth: { termsAccepted: boolean | null }): TermsAction {
-  return auth.termsAccepted === false ? "terms" : "allow";
-}
+// RequireTerms is now LIVE and lives with the other middleware routing gates: see
+// src/features/auth/termsGate.ts (decideTermsGate), wired into src/middleware.ts between the sign-in guard
+// and RequireMfa (TP1-08, Q-1-20). It is path-aware (unlike the earlier inert slot), so it belongs next to
+// decideMfaGate rather than here among the client-wrapper decisions. The restrictive RLS (migration 009)
+// remains the authorization boundary (ADR-0012).

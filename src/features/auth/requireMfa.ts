@@ -26,6 +26,11 @@ export const MFA_EXEMPT_PATHS = [
   "/api/mfa/verify",
   "/api/sign-out",
   "/api/session/activity",
+  // Terms come BEFORE the two-factor code (Q-1-20, migration 009), so the terms screen and its API must be
+  // reachable at aal1 without RequireMfa bouncing the user to enrol/verify (TP1-08). The terms gate, which
+  // runs before RequireMfa in the middleware, is what funnels an un-accepted session here.
+  "/terms",
+  "/api/terms",
 ] as const;
 
 /** Normalise away the /admin basePath whether or not the runtime includes it in the pathname. */

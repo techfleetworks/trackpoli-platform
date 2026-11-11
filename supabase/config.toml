@@ -81,3 +81,10 @@ verify_jwt = false
 # gateway JWT check is off and the call is gated by INTERNAL_CALL_SECRET (assertInternalCall) instead.
 [functions.request-password-reset]
 verify_jwt = false
+
+# record-terms (TP1-08): a POST-authentication function — the signed-in administrator accepts the current
+# terms/privacy at aal1 (before the two-factor code, migration 009). The gateway JWT check is ON, and the
+# handler additionally gates with verifyCaller (allowInvited), deciding access from the profile, not a token
+# claim (AGENTS.md).
+[functions.record-terms]
+verify_jwt = true

@@ -167,3 +167,36 @@ finished in this ticket's code.
 - [x] **Add dedicated keyboard-event unit tests for the remaining interactive primitives.** Done:
       `otp-field.test.tsx` and `NavItem.test.tsx` now assert each is a native, focusable control kept in the
       tab order (reachable and operable by keyboard), for parity with the dialog/form/snackbar tests.
+
+## From TP1-08 (branch `feat/tp1-08-accept-terms`)
+
+The terms & privacy acceptance screen, the `record-terms` edge function and the live middleware terms gate
+shipped (ADR-0019). These are **content / verification / infra** items that cannot be finished in this
+ticket's code.
+
+- [ ] **Move the policy prose to a versioned content store and ship the approved version-1 text (Q-1-22).**
+      The document *bodies* are version-`0` placeholders in a TS module (`src/features/terms/policies.ts`);
+      the *fact* (current version) is correctly owned by Supabase `policy_versions`. Prose-in-code is an
+      explicit, labelled placeholder, NOT the pattern (judge-arch LOW-1): before go-live, move the terms and
+      privacy text to the versioned content store (Sanity, per the stack) and publish the approved text as
+      **version `1`**, which forces re-acceptance with no code change. Consent recorded against placeholder
+      text is a build/test artifact, not production-defensible consent. **Needs:** the approved legal text +
+      the content store.
+- [ ] **Make E2E-15 pass and promote it off the gate.** `features/terms/accept-terms.feature` carries the
+      scenarios (invited → /terms, re-consent on a new version, the data gate, the stale-version conflict,
+      the immutable record, idempotent re-submit, keyboard a11y, decline). Stand up the full-stack harness
+      (Supabase stack with the terms gate + the 7-person seed), drive the accept flow end-to-end, and enable
+      the job on every PR. **Needs:** the full-stack harness.
+- [ ] **Live-verify the authenticated terms flow (visual + keyboard + axe).** The screen was built from the
+      Figma frames but cannot render without a session; once the stack is up, check it against the design,
+      run an axe scan and a human keyboard + screen-reader pass (part of the P1-16 a11y audit). **Needs:**
+      the full-stack stack.
+- [ ] **Consider promoting terms acceptance to a token claim (middleware cost).** The gate reads
+      `has_accepted_current_policies()` per authenticated gated request (ADR-0019). If this is a latency
+      concern at scale, recompute acceptance as an access-token claim (invalidated the instant a new version
+      publishes) or a short-lived signed cookie; the RLS boundary does not change. **Needs:** its own ticket
+      if the cost proves material.
+- [ ] **Honour the acceptance-record erasure exemption in the DSAR ticket.** `policy_acceptances` (incl. the
+      email snapshot) is kept as consent evidence beyond account life (NFR-S12, legitimate interest / legal
+      obligation). The future data-subject-request / erasure flow must exempt it rather than delete it.
+      **Needs:** the DSAR ticket.

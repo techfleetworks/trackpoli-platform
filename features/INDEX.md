@@ -68,3 +68,11 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | shell/admin-shell.feature | The navigation is a rail on desktop and a drawer on small screens | shell | end-user | responsive-nav | happy | functional | medium | covered |
 | shell/admin-shell.feature | The password field keeps paste and the correct autocomplete, never exposing the value | shell | end-user | password-field-paste | happy | security | medium | covered |
 | shell/admin-shell.feature | The shell renders at the 320px minimum width without horizontal scrolling | shell | end-user | responsive-min-width | boundary | functional | medium | covered |
+| terms/accept-terms.feature | A new version forces an existing administrator to accept again | terms | administrator | E2E-15 | happy | security | high | covered |
+| terms/accept-terms.feature | A newly invited administrator is sent to terms first and acceptance is recorded | terms | administrator | E2E-15 | happy | security | critical | covered |
+| terms/accept-terms.feature | A recorded acceptance cannot be changed or deleted | terms | maintainer | immutable-consent-record | adverse | compliance | high | covered |
+| terms/accept-terms.feature | Accepting a version that is no longer current is rejected as a conflict | terms | administrator | stale-version-rejected | adverse | security | high | covered |
+| terms/accept-terms.feature | Declining signs the administrator out | terms | end-user | decline-signs-out | happy | functional | medium | covered |
+| terms/accept-terms.feature | Submitting the same acceptance twice records it once | terms | administrator | idempotent-accept | edge | reliability | medium | covered |
+| terms/accept-terms.feature | The acceptance is reachable and operable by keyboard with an explicit affirmative act | terms | assistive-tech | terms-a11y | happy | accessibility | high | covered |
+| terms/accept-terms.feature | Until acceptance a signed-in administrator can read only their own profile row | terms | administrator | terms-data-gate | permission | security | critical | covered |
