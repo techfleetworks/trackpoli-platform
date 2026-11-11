@@ -15,9 +15,10 @@ import { PageHeader } from "@/features/shell/PageHeader";
 const MANAGER: AuthUser = { id: "demo", email: "manager@example.test", role: "admin_manager", status: "active" };
 
 export default function ShellDemoPage() {
-  // Development/test surface only: never served in a production build (resolves the judge-arch LOW finding
-  // about a prod-reachable demo route). E2E runs against `next dev`, so it still renders there.
-  if (process.env.NODE_ENV === "production") notFound();
+  // Development/test surface only: never served in a normal production build (resolves the judge-arch LOW
+  // finding about a prod-reachable demo route). E2E runs against `next dev`, so it renders there; a dedicated
+  // perf build can opt in with NEXT_PUBLIC_ENABLE_GALLERY=1 so Lighthouse can measure the shell's LCP (NFR-P1).
+  if (process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_ENABLE_GALLERY !== "1") notFound();
 
   return (
     <AuthProvider user={MANAGER}>

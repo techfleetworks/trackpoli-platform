@@ -135,9 +135,10 @@ function Interactive() {
 }
 
 export default function GalleryPage() {
-  // Development/test surface only: never served in a production build (removes the prod-reachable demo route
-  // the judge-arch review flagged LOW). E2E runs against `next dev`, so it still renders there.
-  if (process.env.NODE_ENV === "production") notFound();
+  // Development/test surface only: never served in a normal production build (removes the prod-reachable demo
+  // route the judge-arch review flagged LOW). E2E runs against `next dev`, so it renders there; a dedicated
+  // perf/axe build can opt in with NEXT_PUBLIC_ENABLE_GALLERY=1 to let Lighthouse/axe measure the shell.
+  if (process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_ENABLE_GALLERY !== "1") notFound();
 
   return (
     <SnackbarProvider>
