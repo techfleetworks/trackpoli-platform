@@ -20,14 +20,18 @@ describe("PageHeader", () => {
       <PageHeader
         title="Billing"
         breadcrumbs={[
-          { label: "Admin management", href: "/admin/admins" },
+          // Crumb hrefs are app-relative and passed straight to next/link: Next adds the /admin basePath,
+          // so a literal /admin here would double-prefix to /admin/admin/admins (404, ADR-0014).
+          { label: "Admin management", href: "/admins" },
           { label: "Billing" },
         ]}
       />,
     );
     const nav = screen.getByRole("navigation", { name: "Breadcrumb" });
     expect(nav).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Admin management" })).toHaveAttribute("href", "/admin/admins");
+    const crumbLink = screen.getByRole("link", { name: "Admin management" });
+    expect(crumbLink).toHaveAttribute("href", "/admins");
+    expect(crumbLink.getAttribute("href") ?? "").not.toContain("/admin/admin");
     // The last crumb has no link and is marked as the current page.
     expect(screen.getByText("Billing", { selector: "[aria-current='page']" })).toBeInTheDocument();
   });

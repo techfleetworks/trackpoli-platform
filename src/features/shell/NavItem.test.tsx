@@ -4,10 +4,13 @@ import { describe, it, expect } from "vitest";
 import { NavItem } from "@/features/shell/NavItem";
 
 describe("NavItem", () => {
-  it("renders a link to the /admin-prefixed href with the label", () => {
+  it("passes the app-relative href straight to next/link (basePath adds /admin at runtime, ADR-0014)", () => {
     render(<NavItem href="/politicians" label="Politicians" />);
     const link = screen.getByRole("link", { name: "Politicians" });
-    expect(link).toHaveAttribute("href", "/admin/politicians");
+    // App-relative, never a literal /admin here: Next adds the basePath, so a prefix would double to
+    // /admin/admin/politicians (404). In jsdom there is no basePath, so the raw href renders as-is.
+    expect(link).toHaveAttribute("href", "/politicians");
+    expect(link.getAttribute("href") ?? "").not.toContain("/admin/admin");
   });
 
   it("marks the active item with aria-current=page", () => {
@@ -40,7 +43,7 @@ describe("NavItem", () => {
     // A native anchor with an href is operated by Enter from the keyboard; it must stay in the tab order
     // (no tabindex="-1") and be able to receive focus.
     expect(link.tagName).toBe("A");
-    expect(link).toHaveAttribute("href", "/admin/politicians");
+    expect(link).toHaveAttribute("href", "/politicians");
     expect(link).not.toHaveAttribute("tabindex", "-1");
     link.focus();
     expect(link).toHaveFocus();

@@ -12,6 +12,7 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | auth/password-recovery.feature | Repeated reset requests never lock the targeted account | auth | anonymous | no-lockout-on-request | adverse | security | medium | covered |
 | auth/password-recovery.feature | The one-time token is exchanged only on an explicit continue, not on a page fetch | auth | anonymous | scanner-safe-link | adverse | security | high | covered |
 | auth/password-recovery.feature | The reset-request endpoint rejects a non-server caller | auth | anonymous | internal-only-endpoint | permission | security | high | covered |
+| auth/role-based-access.feature | A guard redirect for a visitor without a session resolves to a single-basePath sign-in URL | auth | anonymous | guard-redirect-basepath | permission | functional | critical | covered |
 | auth/role-based-access.feature | A missing route shows the not-found screen inside the shell | auth | administrator | not-found | negative | security | low | covered |
 | auth/role-based-access.feature | A session whose role cannot be confirmed is treated as not a manager | auth | administrator | unreadable-role-fail-closed | adverse | security | high | covered |
 | auth/role-based-access.feature | A signed-in administrator is bounced off the public-only sign-in screen | auth | anonymous | public-only | happy | security | medium | covered |
@@ -53,9 +54,13 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | design-system/component-accessibility.feature | The alert announces errors to screen readers | design-system | assistive-tech | alert-a11y | happy | accessibility | high | covered |
 | design-system/component-accessibility.feature | The button is keyboard operable with a visible focus state | design-system | assistive-tech | button-a11y | happy | accessibility | high | covered |
 | design-system/component-accessibility.feature | The input exposes its label and invalid state to assistive tech | design-system | assistive-tech | input-a11y | happy | accessibility | high | covered |
+| design-system/migration.feature | The app shell (side nav + error screens) uses design-system components with behaviour parity | design-system | administrator | shell-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The forgot-password screen uses design-system components with behaviour parity | design-system | end-user | forgot-password-migrated | happy | functional | high | covered |
+| design-system/migration.feature | The session-timeout warning dialog uses design-system components with behaviour parity | design-system | end-user | session-warning-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The set-new-password screen uses design-system components with behaviour parity | design-system | end-user | reset-password-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The sign-in screen uses design-system components with behaviour parity | design-system | end-user | signin-migrated | happy | functional | high | covered |
+| design-system/migration.feature | The two-factor card and device-replacement modal use design-system components with behaviour parity | design-system | end-user | settings-2fa-migrated | happy | functional | high | covered |
+| design-system/migration.feature | The two-factor enrolment wizard uses design-system components with behaviour parity | design-system | end-user | mfa-enrol-migrated | happy | functional | high | covered |
 | shell/admin-shell.feature | A keyboard user can skip the navigation and reach the main content | shell | assistive-tech | E2E-13 | happy | accessibility | high | covered |
 | shell/admin-shell.feature | An automated accessibility scan finds no serious or critical violations | shell | assistive-tech | E2E-14 | happy | accessibility | high | covered |
 | shell/admin-shell.feature | The manager navigation entry is hidden for an Administrator | shell | administrator | manager-nav-hidden-shell | permission | accessibility | medium | covered |

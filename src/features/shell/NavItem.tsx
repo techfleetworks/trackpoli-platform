@@ -9,7 +9,9 @@ import { cn } from "@/lib/utils";
 // (universal-accessibility-wcag). Colour comes only from the semantic MD3 token utilities — no literal.
 //
 // `variant` switches between a top-level item and an indented sub-item; `collapsed` hides the label/badge
-// for the icon-only rail. Hrefs are app-relative (no /admin base); NavItem prefixes the base once.
+// for the icon-only rail. Hrefs are app-relative (e.g. "/politicians") and passed straight to next/link:
+// Next adds the /admin basePath automatically, so prefixing it here would double-prefix to /admin/admin/...
+// (404, ADR-0014). The arch-gate forbids a literal /admin in a Next-aware <Link href>.
 
 export interface NavItemProps {
   /** App-relative href (without the /admin base), e.g. "/politicians". */
@@ -38,7 +40,7 @@ export function NavItem({
 }: NavItemProps) {
   return (
     <Link
-      href={`/admin${href}`}
+      href={href}
       aria-current={active ? "page" : undefined}
       // When collapsed there is no visible text, so the label must still be the link's accessible name.
       aria-label={collapsed ? label : undefined}
