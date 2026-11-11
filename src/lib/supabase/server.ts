@@ -157,6 +157,43 @@ export async function updateSession(
 }
 
 /**
+ * Read whether the current session has accepted the current policy versions, for the middleware terms gate
+ * (TP1-08, Q-1-20). Calls the security-definer has_accepted_current_policies() (migration 009) on a
+ * request-cookie-bound client. ROUTING only — the restrictive RLS terms gate is the authorization boundary
+ * (ADR-0012), so this is best-effort: a read failure returns null and the gate allows (fail open), since
+ * RLS still blocks every table from an un-accepted session. The middleware calls this only for an
+ * authenticated request on a gated path, so the per-request RPC cost is not paid on the terms funnel or the
+ * public paths. A later optimisation can promote the signal to a token claim; the boundary stays RLS.
+ */
+export async function readTermsAccepted(request: NextRequest): Promise<boolean | null> {
+  const supabase = createServerClient<Database>(supabaseUrl(), supabaseAnonKey(), {
+    cookieOptions: COOKIE_OPTIONS,
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll() {
+        // Read-only pass: this call never refreshes the session (updateSession already did), so there are
+        // no cookies to write back.
+      },
+    },
+  });
+  try {
+    const { data, error } = await supabase.rpc("has_accepted_current_policies");
+    if (error) {
+      report("warning", "terms acceptance read failed (terms routing degraded)", { reason: error.message });
+      return null;
+    }
+    return data === true;
+  } catch (error) {
+    report("debug", "terms acceptance read skipped", {
+      reason: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
+/**
  * Exchange a Google re-authentication code to read ONLY the returning identity, without persisting the new
  * session (ADR-0009, device replacement). The cookie writes from the exchange are discarded, so the
  * administrator's live aal2 session is left untouched — we learn who came back from Google and compare, but

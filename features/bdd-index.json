@@ -702,5 +702,93 @@
     "quality": "functional",
     "severity": "medium",
     "status": "covered"
+  },
+  {
+    "feature": "terms/accept-terms.feature",
+    "scenario": "A new version forces an existing administrator to accept again",
+    "domain": "terms",
+    "audience": "administrator",
+    "usecase": "E2E-15",
+    "category": "happy",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "terms/accept-terms.feature",
+    "scenario": "A newly invited administrator is sent to terms first and acceptance is recorded",
+    "domain": "terms",
+    "audience": "administrator",
+    "usecase": "E2E-15",
+    "category": "happy",
+    "quality": "security",
+    "severity": "critical",
+    "status": "covered"
+  },
+  {
+    "feature": "terms/accept-terms.feature",
+    "scenario": "A recorded acceptance cannot be changed or deleted",
+    "domain": "terms",
+    "audience": "maintainer",
+    "usecase": "immutable-consent-record",
+    "category": "adverse",
+    "quality": "compliance",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "terms/accept-terms.feature",
+    "scenario": "Accepting a version that is no longer current is rejected as a conflict",
+    "domain": "terms",
+    "audience": "administrator",
+    "usecase": "stale-version-rejected",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "terms/accept-terms.feature",
+    "scenario": "Declining signs the administrator out",
+    "domain": "terms",
+    "audience": "end-user",
+    "usecase": "decline-signs-out",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "terms/accept-terms.feature",
+    "scenario": "Submitting the same acceptance twice records it once",
+    "domain": "terms",
+    "audience": "administrator",
+    "usecase": "idempotent-accept",
+    "category": "edge",
+    "quality": "reliability",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "terms/accept-terms.feature",
+    "scenario": "The acceptance is reachable and operable by keyboard with an explicit affirmative act",
+    "domain": "terms",
+    "audience": "assistive-tech",
+    "usecase": "terms-a11y",
+    "category": "happy",
+    "quality": "accessibility",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "terms/accept-terms.feature",
+    "scenario": "Until acceptance a signed-in administrator can read only their own profile row",
+    "domain": "terms",
+    "audience": "administrator",
+    "usecase": "terms-data-gate",
+    "category": "permission",
+    "quality": "security",
+    "severity": "critical",
+    "status": "covered"
   }
 ]
