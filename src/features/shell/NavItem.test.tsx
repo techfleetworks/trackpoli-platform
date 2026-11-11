@@ -1,0 +1,36 @@
+import { render, screen } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+
+import { NavItem } from "@/features/shell/NavItem";
+
+describe("NavItem", () => {
+  it("renders a link to the /admin-prefixed href with the label", () => {
+    render(<NavItem href="/politicians" label="Politicians" />);
+    const link = screen.getByRole("link", { name: "Politicians" });
+    expect(link).toHaveAttribute("href", "/admin/politicians");
+  });
+
+  it("marks the active item with aria-current=page", () => {
+    render(<NavItem href="/politicians" label="Politicians" active />);
+    expect(screen.getByRole("link", { name: "Politicians" })).toHaveAttribute("aria-current", "page");
+  });
+
+  it("does not set aria-current when inactive", () => {
+    render(<NavItem href="/politicians" label="Politicians" />);
+    expect(screen.getByRole("link", { name: "Politicians" })).not.toHaveAttribute("aria-current");
+  });
+
+  it("shows a badge count when provided", () => {
+    render(<NavItem href="/review" label="Review" badge={12} />);
+    expect(screen.getByText("12")).toBeInTheDocument();
+  });
+
+  it("hides the visible label (icon-only) but keeps it as the accessible name when collapsed", () => {
+    render(<NavItem href="/" label="Dashboard" collapsed icon={<svg data-testid="i" />} />);
+    // No visible text label, but the link still has an accessible name via aria-label (not just title).
+    expect(screen.queryByText("Dashboard")).not.toBeInTheDocument();
+    const link = screen.getByRole("link", { name: "Dashboard" });
+    expect(link).toHaveAttribute("aria-label", "Dashboard");
+    expect(screen.getByTestId("i")).toBeInTheDocument();
+  });
+});
