@@ -159,7 +159,6 @@ finished in this ticket's code.
       agent static reviews plus the automated axe scan; the full human assistive-tech audit of the rendered
       shell is scheduled for P1-16. **Needs:** the P1-16 audit.
 
-- [ ] **Add dedicated keyboard-event unit tests for the remaining interactive primitives.** `OtpField` and
-      `NavItem` rely on native input/link keyboard operability (asserted indirectly) plus the E2E-13 keyboard
-      pass; add explicit Tab/Enter unit tests for parity with the dialog/form/snackbar tests. **Needs:** a
-      small test-only change.
+- [x] **Add dedicated keyboard-event unit tests for the remaining interactive primitives.** Done:
+      `otp-field.test.tsx` and `NavItem.test.tsx` now assert each is a native, focusable control kept in the
+      tab order (reachable and operable by keyboard), for parity with the dialog/form/snackbar tests.

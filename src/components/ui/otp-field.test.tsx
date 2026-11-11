@@ -37,4 +37,18 @@ describe("OtpField", () => {
     expect(screen.getByLabelText("Code")).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByText("That code is not valid")).toBeInTheDocument();
   });
+
+  it("is reachable and operable by keyboard (native focusable input, kept in the tab order)", () => {
+    const onValueChange = vi.fn();
+    render(<OtpField label="Code" value="" onValueChange={onValueChange} />);
+    const input = screen.getByLabelText("Code");
+    // A native input is inherently keyboard-operable; it must not be removed from the natural tab order.
+    expect(input.tagName).toBe("INPUT");
+    expect(input).not.toHaveAttribute("tabindex", "-1");
+    input.focus();
+    expect(input).toHaveFocus();
+    // Typing (keyboard input) flows through the digit filter.
+    fireEvent.change(input, { target: { value: "42" } });
+    expect(onValueChange).toHaveBeenLastCalledWith("42");
+  });
 });
