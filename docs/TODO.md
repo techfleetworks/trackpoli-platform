@@ -3,6 +3,11 @@
 Tracked follow-ups that are **not blockers** for merged work. Each is deferred on purpose, with the
 reason it is not done yet and what it needs to be done.
 
+> **Domain (Q-1-21): the production domain is `trackpoli.com`** (decided 2026-11-11). The items below that
+> say "needs a domain (Q-1-21)" now have their host — see `docs/setup/tp1-02-credentials.md`. Each still
+> needs its service account (Supabase / Vercel / Cloudflare / Google OAuth / Porkbun SMTP / Sentry)
+> provisioned too; the domain alone does not close them.
+
 ## From TP1-02 (merged 2026-11-06, PR #10)
 
 - [ ] **Apply the branch-protection ruleset.** Run `scripts/apply-ruleset.sh` so the committed ruleset

@@ -8,6 +8,14 @@ Work top to bottom. Anything marked **🟢 needed now** unblocks the build; anyt
 **🟡 defer** is tied to a real domain and can wait until Q-1-21 is settled (we build and test against a
 temporary Vercel URL in the meantime).
 
+> **Production domain (Q-1-21): `trackpoli.com`** — decided 2026-11-11. The 🟡 defer / "domain-blocked
+> (Q-1-21)" steps below (Cloudflare DNS cutover, the Vercel custom domain, the live Google OAuth redirect,
+> the SPF/DKIM/DMARC sending domain, the Cloudflare → Vercel never-cache `/admin/*` edge) now have their
+> host. Each still needs its **service account** provisioned before it can be completed; the domain alone
+> does not unblock them. The app runs under `basePath: "/admin"`, so `trackpoli.com/` redirects to
+> `/admin` (ADR-0016). The domain is config, not a secret — but secrets still go only into each provider's
+> own settings, never into git or chat.
+
 Legend for "where it goes":
 - **Supabase** = the project's dashboard (Authentication / API settings).
 - **Vercel env** = Vercel → Project → Settings → Environment Variables.
