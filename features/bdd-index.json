@@ -1,5 +1,104 @@
 [
   {
+    "feature": "admins/invite-admins.feature",
+    "scenario": "A failed profile insert rolls back the created auth user",
+    "domain": "admins",
+    "audience": "maintainer",
+    "usecase": "invite-rollback",
+    "category": "adverse",
+    "quality": "reliability",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "admins/invite-admins.feature",
+    "scenario": "A manager invites an administrator who accepts, sets a password and enrols two-factor",
+    "domain": "admins",
+    "audience": "administrator",
+    "usecase": "E2E-03",
+    "category": "happy",
+    "quality": "security",
+    "severity": "critical",
+    "status": "covered"
+  },
+  {
+    "feature": "admins/invite-admins.feature",
+    "scenario": "An expired or already-used invite link creates no session",
+    "domain": "admins",
+    "audience": "administrator",
+    "usecase": "E2E-04",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "admins/invite-admins.feature",
+    "scenario": "An invited session is funnelled to accept-invite and its data stays blocked",
+    "domain": "admins",
+    "audience": "administrator",
+    "usecase": "invite-gate",
+    "category": "permission",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "admins/invite-admins.feature",
+    "scenario": "Inviting an email already in use is rejected",
+    "domain": "admins",
+    "audience": "administrator-manager",
+    "usecase": "invite-duplicate-email",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "admins/invite-admins.feature",
+    "scenario": "Only an Administrator Manager can invite, resend or revoke",
+    "domain": "admins",
+    "audience": "administrator",
+    "usecase": "invite-manager-only",
+    "category": "permission",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "admins/invite-admins.feature",
+    "scenario": "Resending an invitation is throttled per invited administrator",
+    "domain": "admins",
+    "audience": "administrator-manager",
+    "usecase": "resend-rate-limited",
+    "category": "boundary",
+    "quality": "security",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "admins/invite-admins.feature",
+    "scenario": "Revoking a pending invitation deletes the account and kills the link",
+    "domain": "admins",
+    "audience": "administrator-manager",
+    "usecase": "invite-revoked",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "admins/invite-admins.feature",
+    "scenario": "Submitting the activation twice activates the account exactly once",
+    "domain": "admins",
+    "audience": "administrator",
+    "usecase": "activate-idempotent",
+    "category": "edge",
+    "quality": "reliability",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
     "feature": "auth/password-recovery.feature",
     "scenario": "A Google-only account gets the same screen and no recovery email",
     "domain": "auth",

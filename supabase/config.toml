@@ -95,3 +95,18 @@ verify_jwt = false
 # claim (AGENTS.md).
 [functions.record-terms]
 verify_jwt = true
+
+# Invite functions (TP1-09, P1-08). All POST-authentication, so the gateway JWT check is ON and each handler
+# gates further with verifyCaller: invite-admin / resend-invite / revoke-invite are Administrator-Manager +
+# aal2; complete-invite runs at aal1 with allowInvited (the caller is still 'invited' as they activate).
+[functions.invite-admin]
+verify_jwt = true
+
+[functions.resend-invite]
+verify_jwt = true
+
+[functions.revoke-invite]
+verify_jwt = true
+
+[functions.complete-invite]
+verify_jwt = true

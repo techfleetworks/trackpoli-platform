@@ -31,6 +31,10 @@ export const MFA_EXEMPT_PATHS = [
   // runs before RequireMfa in the middleware, is what funnels an un-accepted session here.
   "/terms",
   "/api/terms",
+  // Accept-invite comes BEFORE two-factor too (TP1-09): an invited administrator sets a password / continues
+  // with Google and activates at aal1, then enrols. The invite gate (before RequireMfa) funnels them here.
+  "/accept-invite",
+  "/api/accept-invite",
 ] as const;
 
 /** Normalise away the /admin basePath whether or not the runtime includes it in the pathname. */

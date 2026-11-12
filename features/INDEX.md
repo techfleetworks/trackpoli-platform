@@ -4,6 +4,15 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 
 | Feature | Scenario | Domain | Audience | Use case | Category | Quality | Severity | Status |
 |---|---|---|---|---|---|---|---|---|
+| admins/invite-admins.feature | A failed profile insert rolls back the created auth user | admins | maintainer | invite-rollback | adverse | reliability | high | covered |
+| admins/invite-admins.feature | A manager invites an administrator who accepts, sets a password and enrols two-factor | admins | administrator | E2E-03 | happy | security | critical | covered |
+| admins/invite-admins.feature | An expired or already-used invite link creates no session | admins | administrator | E2E-04 | adverse | security | high | covered |
+| admins/invite-admins.feature | An invited session is funnelled to accept-invite and its data stays blocked | admins | administrator | invite-gate | permission | security | high | covered |
+| admins/invite-admins.feature | Inviting an email already in use is rejected | admins | administrator-manager | invite-duplicate-email | adverse | security | medium | covered |
+| admins/invite-admins.feature | Only an Administrator Manager can invite, resend or revoke | admins | administrator | invite-manager-only | permission | security | high | covered |
+| admins/invite-admins.feature | Resending an invitation is throttled per invited administrator | admins | administrator-manager | resend-rate-limited | boundary | security | medium | covered |
+| admins/invite-admins.feature | Revoking a pending invitation deletes the account and kills the link | admins | administrator-manager | invite-revoked | happy | functional | medium | covered |
+| admins/invite-admins.feature | Submitting the activation twice activates the account exactly once | admins | administrator | activate-idempotent | edge | reliability | medium | covered |
 | auth/password-recovery.feature | A Google-only account gets the same screen and no recovery email | auth | administrator | google-only-no-password | negative | security | medium | covered |
 | auth/password-recovery.feature | A reset request reveals nothing about whether an account exists | auth | anonymous | account-enumeration | negative | security | critical | covered |
 | auth/password-recovery.feature | A reused or expired reset link is refused and creates no session | auth | administrator | reset-link-single-use | adverse | security | high | covered |
