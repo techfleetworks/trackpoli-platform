@@ -149,19 +149,21 @@ The shell + shared component library shipped and is verified headlessly LOCALLY 
 with 0 serious/critical, Lighthouse LCP 912ms). These are **verification / CI-wiring items**: the acceptance
 criteria pass locally but are not all enforced on every PR yet.
 
-- [ ] **Enforce E2E-13 (keyboard) and E2E-14 (axe) in CI.** `e2e/admin-shell.spec.ts` (+ `e2e/global-setup.ts`
-      warming the gallery) is written and passes locally, but the `e2e.yml` job only runs
-      `e2e/sign-in.spec.ts` + `e2e/forgot-password.spec.ts`, so the shell keyboard + axe acceptance criteria
-      are NOT checked on every PR. These specs are **credential-free** (they run against the component gallery
-      and the shell demo, no Supabase), so they do NOT need the full-stack harness — add `admin-shell.spec.ts`
-      to the `e2e.yml` job and build/start it with `NEXT_PUBLIC_ENABLE_GALLERY=1` so the gallery routes are
-      reachable. **Needs:** a one-line addition to the e2e workflow (the job is already browser-capable).
+- [x] **Enforce E2E-13 (keyboard) and E2E-14 (axe) in CI.** Done: `e2e/admin-shell.spec.ts` was added to the
+      credential-free `e2e` job in `.github/workflows/e2e.yml` (run alongside `sign-in.spec.ts` +
+      `forgot-password.spec.ts`), with `NEXT_PUBLIC_ENABLE_GALLERY=1` set on the job. The specs run against
+      `next dev` (the gallery gate only hides the demo in a production build), so no full-stack harness is
+      needed; the shell keyboard + axe acceptance criteria are now checked on every PR. Note: the `e2e`
+      workflow is not yet a *required* status check — it becomes merge-blocking once the branch-protection
+      ruleset is applied (see the TP1-02 item above).
 
-- [ ] **Wire the NFR-P1 Lighthouse check into CI.** `scripts/check-lighthouse.mjs` + `lighthouse.config.json`
-      exist and pass locally (LCP 912ms, TBT 16ms, perf 0.98 against the shell demo, budget LCP <= 2500ms),
-      but it needs a running app + Chrome, so it is not in CI yet. Add a step to the browser-capable e2e job
-      (or a new job) that builds + starts with `NEXT_PUBLIC_ENABLE_GALLERY=1` and runs `npm run check:lighthouse`.
-      **Needs:** a browser-capable CI job (the e2e job qualifies). Re-point it at real admin screens as they land.
+- [x] **Wire the NFR-P1 Lighthouse check into CI.** Done: a `lighthouse` job in `.github/workflows/e2e.yml`
+      builds + starts a production server with `NEXT_PUBLIC_ENABLE_GALLERY=1` (the var is inlined at build
+      time, so it is set for both build and start), waits for `/admin/gallery/shell`, and runs
+      `npm run check:lighthouse` against the shell demo (budget LCP <= 2500ms, NFR-P1). ubuntu-latest ships
+      Google Chrome, which `chrome-launcher` auto-detects. Re-point `lighthouse.config.json` at real admin
+      screens as they land; first-run CI iteration (Chrome detection, budget headroom on a shared runner) is
+      expected, like the other browser jobs. Not yet a *required* check (same ruleset dependency as above).
 
 - [ ] **Live-verify the authenticated shell (real session).** E2E-13/E2E-14 run against the credential-free
       gallery + shell demo (mock `AuthProvider`); the real `(app)` shell behind a session has not been seen
@@ -190,15 +192,17 @@ ticket's code.
       **version `1`**, which forces re-acceptance with no code change. Consent recorded against placeholder
       text is a build/test artifact, not production-defensible consent. **Needs:** the approved legal text +
       the content store.
-- [ ] **Write the E2E-15 full-stack spec, then make it pass off the gate.** `features/terms/accept-terms.feature`
-      carries the Gherkin scenarios (invited → /terms, re-consent on a new version, the data gate, the
-      stale-version conflict, the immutable record, idempotent re-submit, keyboard a11y, decline), but — unlike
-      TP1-03/04/05/06, which each ship a skipped `e2e/*.full-stack.spec.ts` — the executable **Playwright spec
-      was NOT written** for TP1-08; it still needs creating as `e2e/accept-terms.full-stack.spec.ts`
-      (`E2E_FULL_STACK`-gated/skipped, like the others). Then stand up the full-stack harness (Supabase stack
-      with the terms gate + the 7-person seed), drive the accept flow end-to-end, and enable the job on every
-      PR. "E2E-15 passes" is the ticket's acceptance criterion, so TP1-08 cannot close until this is green.
-      **Needs:** write the spec (doable now, no harness) + the full-stack harness to run it.
+- [ ] **Make the E2E-15 full-stack spec pass and promote it off the gate.** Done part: the executable
+      Playwright spec is now written — `e2e/accept-terms.full-stack.spec.ts` (`E2E_FULL_STACK`-gated/skipped,
+      like TP1-03/04/05/06). It drives the real accept flow from `features/terms/accept-terms.feature`:
+      an unaccepted administrator (seed `tom`) is funnelled to `/terms` before two-factor, Accept is gated by
+      the agreement checkbox, acceptance routes on into the app; declining (`ivy`) signs out; re-submitting is
+      idempotent and a non-current version is rejected as a `stale_version` conflict (both via the
+      `/admin/api/terms` route). Remaining: stand up the full-stack harness (Supabase stack with the terms
+      gate + the 7-person seed + Turnstile TEST keys), get the spec green (likely first-run adjustment: the
+      sign-in → `/terms` redirect timing), and enable the job on every PR. "E2E-15 passes" is the ticket's
+      acceptance criterion, so TP1-08 cannot close until this is green. **Needs:** the full-stack harness to
+      run it (the data boundary itself is already proven by `supabase/tests/database/60_terms_gate.test.sql`).
 - [ ] **Live-verify the authenticated terms flow (visual + keyboard + axe).** The screen was built from the
       Figma frames but cannot render without a session; once the stack is up, check it against the design,
       run an axe scan and a human keyboard + screen-reader pass (part of the P1-16 a11y audit). **Needs:**
