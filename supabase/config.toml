@@ -51,6 +51,13 @@ max_frequency = "1m"
 subject = "Reset your TrackPoli Admin password"
 content_path = "./supabase/templates/recovery.html"
 
+# Invite email (TP1-09, P1-08). Sent by inviteUserByEmail when a manager invites an administrator. Like
+# recovery, it links to the /auth/confirm Continue page with the single-use token_hash (type=invite), which
+# exchanges the token on click and sends the person to /accept-invite. Copy is in supabase/templates/invite.html.
+[auth.email.template.invite]
+subject = "You've been invited to TrackPoli Admin"
+content_path = "./supabase/templates/invite.html"
+
 [auth.mfa]
 # Two-factor (TOTP) required for every administrator (NFR-S6, Q-1-01).
 max_enrolled_factors = 10
@@ -87,4 +94,19 @@ verify_jwt = false
 # handler additionally gates with verifyCaller (allowInvited), deciding access from the profile, not a token
 # claim (AGENTS.md).
 [functions.record-terms]
+verify_jwt = true
+
+# Invite functions (TP1-09, P1-08). All POST-authentication, so the gateway JWT check is ON and each handler
+# gates further with verifyCaller: invite-admin / resend-invite / revoke-invite are Administrator-Manager +
+# aal2; complete-invite runs at aal1 with allowInvited (the caller is still 'invited' as they activate).
+[functions.invite-admin]
+verify_jwt = true
+
+[functions.resend-invite]
+verify_jwt = true
+
+[functions.revoke-invite]
+verify_jwt = true
+
+[functions.complete-invite]
 verify_jwt = true

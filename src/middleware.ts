@@ -16,9 +16,10 @@ import { hasSupabaseEnv, internalCallSecret } from "@/lib/supabase/config";
 import { updateSession } from "@/lib/supabase/server";
 import { decideMfaGate, matchesAny, normalisePath } from "@/features/auth/requireMfa";
 import { decideTermsGate, TERMS_EXEMPT_PATHS, TERMS_PASSTHROUGH_PATHS } from "@/features/auth/termsGate";
+import { decideInviteGate, INVITE_EXEMPT_PATHS } from "@/features/auth/inviteGate";
 import { decideSessionGate } from "@/features/auth/session/sessionGate";
 import { decideRoleGate } from "@/features/auth/guards/routeGate";
-import { readTermsAccepted } from "@/lib/supabase/server";
+import { readTermsAccepted, readInviteStatus } from "@/lib/supabase/server";
 import { ACTIVITY_COOKIE, evaluateActivity, readActivity } from "@/lib/sessionActivity";
 import { sessionLimits } from "@/lib/config";
 import { report } from "@/lib/report";
@@ -39,7 +40,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const { response, user, aal, role } = await updateSession(request);
+  const { response, user, aal, role, status } = await updateSession(request);
   const path = normalisePath(request.nextUrl.pathname);
 
   // Stage 1: session-timeout enforcement (TP1-05). Best-effort: if the cookie or secret cannot be read, the
@@ -100,6 +101,22 @@ export async function middleware(request: NextRequest) {
       const termsAccepted = await readTermsAccepted(request);
       if (decideTermsGate({ path, authenticated: true, termsAccepted }).action === "terms") {
         return NextResponse.redirect(new URL("/admin/terms", request.url));
+      }
+    }
+  }
+
+  // Stage 3b: RequireActive — the invite gate (TP1-09, P1-08). An invited session is sent to /accept-invite
+  // to set a password / continue with Google and activate, AFTER terms and BEFORE the two-factor funnel. The
+  // live status (not the app_status token claim) is read only when the claim already says "invited", so an
+  // active session never pays the read and a just-activated user is not bounced back while their claim is
+  // stale. RLS limits an invited session to its own row regardless (migration 005); a read gap fails open.
+  if (user && status === "invited") {
+    const inviteGated =
+      !matchesAny(path, TERMS_PASSTHROUGH_PATHS) && !matchesAny(path, INVITE_EXEMPT_PATHS);
+    if (inviteGated) {
+      const liveStatus = await readInviteStatus(request);
+      if (decideInviteGate({ path, authenticated: true, status: liveStatus }).action === "accept-invite") {
+        return NextResponse.redirect(new URL("/admin/accept-invite", request.url));
       }
     }
   }

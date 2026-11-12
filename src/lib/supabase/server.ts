@@ -194,6 +194,52 @@ export async function readTermsAccepted(request: NextRequest): Promise<boolean |
 }
 
 /**
+ * Read the current session's LIVE profile status for the middleware invite gate (TP1-09, P1-08). The own
+ * profile row is readable at aal1 (profiles_select_own, migration 005), so an invited administrator can read
+ * their own status. ROUTING only — RLS is the authorization boundary (ADR-0012), so this is best-effort: a
+ * read failure returns null and the gate allows (fail open), since RLS limits an invited session to its own
+ * row regardless. Reading LIVE (not the app_status token claim) means a just-activated user is not bounced
+ * back to /accept-invite while their claim is still stale. The middleware calls this only when the token
+ * claim already says "invited", so an active session never pays the read.
+ */
+export async function readInviteStatus(
+  request: NextRequest,
+): Promise<"invited" | "active" | "deactivated" | null> {
+  const supabase = createServerClient<Database>(supabaseUrl(), supabaseAnonKey(), {
+    cookieOptions: COOKIE_OPTIONS,
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll() {
+        // Read-only pass: updateSession already refreshed the session, so there is nothing to write back.
+      },
+    },
+  });
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("status")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (error) {
+      report("warning", "invite status read failed (invite routing degraded)", { reason: error.message });
+      return null;
+    }
+    return normaliseStatus(data?.status);
+  } catch (error) {
+    report("debug", "invite status read skipped", {
+      reason: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
+/**
  * Exchange a Google re-authentication code to read ONLY the returning identity, without persisting the new
  * session (ADR-0009, device replacement). The cookie writes from the exchange are discarded, so the
  * administrator's live aal2 session is left untouched — we learn who came back from Google and compare, but

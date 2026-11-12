@@ -63,9 +63,12 @@ export async function invokeInternalFunction<T>(
  * which runs at aal1 with allowInvited). The internal-call secret is sent too, but ONLY so the function's
  * serve() trusts the forwarded client IP (the real end-user IP, which the TrackPoli server knows) — the
  * authorization is the user's token, never the secret.
+ *
+ * record-terms (TP1-08) and complete-invite (TP1-09) are the post-auth functions the Next server calls on the
+ * caller's own behalf; both run at aal1 (complete-invite with allowInvited, as the caller is still invited).
  */
 export async function invokeUserFunction<T>(
-  name: "record-terms",
+  name: "record-terms" | "complete-invite",
   body: Record<string, unknown>,
   accessToken: string,
   ip: string | null,
