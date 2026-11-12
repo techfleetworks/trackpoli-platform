@@ -216,3 +216,39 @@ ticket's code.
       email snapshot) is kept as consent evidence beyond account life (NFR-S12, legitimate interest / legal
       obligation). The future data-subject-request / erasure flow must exempt it rather than delete it.
       **Needs:** the DSAR ticket.
+
+## From TP1-09 (merged 2026-11-12, PR #35)
+
+The invite flow shipped (ADR-0020): the four edge functions (`invite-admin`, `resend-invite`, `revoke-invite`,
+`complete-invite`), the token-hash `/auth/confirm` invite routing, the accept-invite screen/route/service, the
+invite email, and the live-status middleware invite gate — all verified by unit tests and two fresh-context
+judge-arch reviews. These are **acceptance / verification / infra items** that cannot be finished in code alone;
+all are harness- or domain-blocked (Q-1-21). TP1-09 cannot be marked closed until E2E-03/04 are green.
+
+- [ ] **Make E2E-03 and E2E-04 pass and promote them off the gate.** The full-stack spec
+      (`e2e/accept-invite.full-stack.spec.ts`) is written but skipped — gated on `E2E_FULL_STACK`. It needs the
+      full-stack harness (local Supabase stack + the 7-person seed + the Inbucket/Mailpit mail-catcher + Turnstile
+      TEST keys), the `latestInviteLink` mail-catcher helper wired (the likely first-run adjustment, per CLI
+      version), and a way to call `invite-admin` in setup (a harness helper, or the TP1-13 manager invite UI).
+      "E2E-03/04 pass" is the ticket's acceptance criterion. **Needs:** the full-stack harness.
+- [ ] **Write the stack-dependent edge-function tests (duplicate email, rollback, rate limit, stale terms).**
+      The ticket calls for Deno function tests against the local stack. The repo has **no Deno test harness** yet
+      (the functions are proven via BDD + the harness-gated e2e); these specific cases need the local Supabase
+      stack + the edge runtime served. The behaviour is enumerated in `features/admins/invite-admins.feature`.
+      **Needs:** a Deno-test harness + the local stack (part of the same deferred full-stack work).
+- [ ] **Set up the sending domain + SMTP and test real invite delivery (Q-1-03).** Send a real invite through
+      Porkbun custom SMTP and confirm it lands in a real Gmail **and** Outlook inbox (not spam). Shares the SMTP
+      provisioning with the TP1-03 recovery-email item. **Needs:** a domain + the Supabase/Porkbun accounts (Q-1-21).
+- [ ] **Verify the Google-to-invited link end-to-end (Q-1-23).** An invited administrator continuing with Google
+      must use the invited address; after the first sign-in the profile matches on the Google account id. Built
+      and unit-reasoned, but the live OAuth round-trip is blocked until Google OAuth is provisioned (same deferral
+      as the Google sign-in path, E2E-16). **Needs:** Google OAuth provisioning + a domain (Q-1-21).
+- [ ] **Confirm the resend mechanism against the live stack (spike, ADR-0020).** The chosen approach is
+      `inviteUserByEmail` again for the unconfirmed user; if the live stack rejects it, fall back (in order) to
+      `generateLink` of type `invite`/`magiclink`, then delete-and-recreate — and record the final choice. The
+      contract stays unchanged whichever wins. **Needs:** the local full-stack + SMTP (Q-1-21).
+- [ ] **Live-verify the accept-invite flow (visual + keyboard + axe).** The screen was built from the sign-in
+      frame (shadcn/greyscale) and screenshotted standalone, but the real activation flow behind an invited
+      session has not been exercised. Once the stack is up, run the keyboard + axe passes against the live flow
+      (part of the P1-16 a11y audit). The approved **version-1 terms text (Q-1-22)** — already tracked in the
+      TP1-08 section — is a shared go-live blocker for this flow too. **Needs:** the full-stack stack.
