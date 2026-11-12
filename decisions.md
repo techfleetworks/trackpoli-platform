@@ -142,3 +142,16 @@ Bigger or reversible decisions (which ingestion pipeline is canonical, who owns 
 Supabase vs Sanity for a new entity) go in `docs/adr/` as sequenced records - use the
 `architectural-decision-records` skill. This file holds the *standing rules*; the ADRs hold the
 *dated why*.
+
+### TP1-09 invite spikes (P1-08)
+The three P1-08 spikes are recorded in full in
+[ADR-0020](docs/adr/0020-invite-and-onboard-administrators-token-hash-confirm-and-the-live-status-invite-gate.md).
+Outcomes in one line each:
+- **Token-hash confirmation links** — DECIDED and implemented: invite links go through the token-hash
+  `/auth/confirm` Continue page (`type=invite`), like recovery, so an email scanner cannot consume the
+  one-time link.
+- **Resend mechanism** — chosen: `inviteUserByEmail` again for the unconfirmed user; documented fallbacks
+  (`generateLink` of type `invite`/`magiclink`, then delete-and-recreate) if the live stack rejects it.
+- **Porkbun SMTP (Q-1-03)** and **Google-to-invited linking (Q-1-23)** — designs accepted; live verification
+  is domain-blocked (Q-1-21) and confirmed when the domain + accounts exist, like the other deferred items in
+  `docs/TODO.md`.
