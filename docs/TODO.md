@@ -145,15 +145,23 @@ finished in this ticket's code.
 
 ## From TP1-07 (branch `feat/tp1-07-admin-workspace-shell`)
 
-The shell + shared component library shipped and is verified headlessly (E2E-13 keyboard, E2E-14 axe with
-0 serious/critical, Lighthouse LCP 912ms). These are **verification / CI-wiring items** that cannot be
-finished in this ticket's code.
+The shell + shared component library shipped and is verified headlessly LOCALLY (E2E-13 keyboard, E2E-14 axe
+with 0 serious/critical, Lighthouse LCP 912ms). These are **verification / CI-wiring items**: the acceptance
+criteria pass locally but are not all enforced on every PR yet.
+
+- [ ] **Enforce E2E-13 (keyboard) and E2E-14 (axe) in CI.** `e2e/admin-shell.spec.ts` (+ `e2e/global-setup.ts`
+      warming the gallery) is written and passes locally, but the `e2e.yml` job only runs
+      `e2e/sign-in.spec.ts` + `e2e/forgot-password.spec.ts`, so the shell keyboard + axe acceptance criteria
+      are NOT checked on every PR. These specs are **credential-free** (they run against the component gallery
+      and the shell demo, no Supabase), so they do NOT need the full-stack harness — add `admin-shell.spec.ts`
+      to the `e2e.yml` job and build/start it with `NEXT_PUBLIC_ENABLE_GALLERY=1` so the gallery routes are
+      reachable. **Needs:** a one-line addition to the e2e workflow (the job is already browser-capable).
 
 - [ ] **Wire the NFR-P1 Lighthouse check into CI.** `scripts/check-lighthouse.mjs` + `lighthouse.config.json`
       exist and pass locally (LCP 912ms, TBT 16ms, perf 0.98 against the shell demo, budget LCP <= 2500ms),
-      but like the axe scaffold it needs a running app + Chrome, so it is not in the dependency-free CI yet.
-      Add a CI job that builds + starts with `NEXT_PUBLIC_ENABLE_GALLERY=1` and runs `npm run check:lighthouse`.
-      **Needs:** a browser-capable CI job. Re-point it at real admin screens as they land.
+      but it needs a running app + Chrome, so it is not in CI yet. Add a step to the browser-capable e2e job
+      (or a new job) that builds + starts with `NEXT_PUBLIC_ENABLE_GALLERY=1` and runs `npm run check:lighthouse`.
+      **Needs:** a browser-capable CI job (the e2e job qualifies). Re-point it at real admin screens as they land.
 
 - [ ] **Live-verify the authenticated shell (real session).** E2E-13/E2E-14 run against the credential-free
       gallery + shell demo (mock `AuthProvider`); the real `(app)` shell behind a session has not been seen
@@ -182,11 +190,15 @@ ticket's code.
       **version `1`**, which forces re-acceptance with no code change. Consent recorded against placeholder
       text is a build/test artifact, not production-defensible consent. **Needs:** the approved legal text +
       the content store.
-- [ ] **Make E2E-15 pass and promote it off the gate.** `features/terms/accept-terms.feature` carries the
-      scenarios (invited → /terms, re-consent on a new version, the data gate, the stale-version conflict,
-      the immutable record, idempotent re-submit, keyboard a11y, decline). Stand up the full-stack harness
-      (Supabase stack with the terms gate + the 7-person seed), drive the accept flow end-to-end, and enable
-      the job on every PR. **Needs:** the full-stack harness.
+- [ ] **Write the E2E-15 full-stack spec, then make it pass off the gate.** `features/terms/accept-terms.feature`
+      carries the Gherkin scenarios (invited → /terms, re-consent on a new version, the data gate, the
+      stale-version conflict, the immutable record, idempotent re-submit, keyboard a11y, decline), but — unlike
+      TP1-03/04/05/06, which each ship a skipped `e2e/*.full-stack.spec.ts` — the executable **Playwright spec
+      was NOT written** for TP1-08; it still needs creating as `e2e/accept-terms.full-stack.spec.ts`
+      (`E2E_FULL_STACK`-gated/skipped, like the others). Then stand up the full-stack harness (Supabase stack
+      with the terms gate + the 7-person seed), drive the accept flow end-to-end, and enable the job on every
+      PR. "E2E-15 passes" is the ticket's acceptance criterion, so TP1-08 cannot close until this is green.
+      **Needs:** write the spec (doable now, no harness) + the full-stack harness to run it.
 - [ ] **Live-verify the authenticated terms flow (visual + keyboard + axe).** The screen was built from the
       Figma frames but cannot render without a session; once the stack is up, check it against the design,
       run an axe scan and a human keyboard + screen-reader pass (part of the P1-16 a11y audit). **Needs:**
