@@ -14,6 +14,7 @@ import { z } from "npm:zod@4";
 import { serve } from "../_shared/serve.ts";
 import { verifyCaller } from "../_shared/auth.ts";
 import { writeEvent } from "../_shared/events.ts";
+import { provisionInvitedAdmin } from "../_shared/invite.ts";
 import { AppError } from "../_shared/errors.ts";
 
 const Body = z
@@ -48,34 +49,14 @@ serve("invite-admin", async ({ req, admin, ip, requestId }) => {
     throw new AppError("email_in_use", "An administrator already has that email", "email");
   }
 
-  // Create the auth user and send the invite email. The redirect target is validated against the project's
-  // allow-list; the actual link the recipient clicks is the token-hash /auth/confirm link in the email
-  // template (supabase/templates/invite.html), so an email scanner cannot consume the one-time link.
-  const appUrl = Deno.env.get("APP_URL") ?? "";
-  const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-    data: { display_name },
-    redirectTo: `${appUrl}/accept-invite`,
-  });
-  if (inviteError || !invited?.user) {
-    throw new AppError("internal", "Could not send the invite");
-  }
-  const newId = invited.user.id;
-
-  // Insert the profile. On any failure, delete the just-created auth user so no orphaned account remains
-  // (the contract's rollback). Status is 'invited' until the person activates via complete-invite.
-  const { error: profileError } = await admin.from("profiles").insert({
-    id: newId,
+  // Create the auth user, send the invite email and insert the invited profile. These provisioning steps
+  // and their rollback live in _shared/invite.ts, shared with recreate-admin so the two never drift.
+  const { id: newId } = await provisionInvitedAdmin(admin, {
     email,
-    display_name,
+    displayName: display_name,
     role,
-    status: "invited",
-    invited_by: caller.userId,
-    invited_at: new Date().toISOString(),
+    invitedBy: caller.userId,
   });
-  if (profileError) {
-    await admin.auth.admin.deleteUser(newId).catch(() => undefined);
-    throw new AppError("internal", "Could not create the administrator profile");
-  }
 
   // The change and its event are atomic: if the audit write fails, undo the profile + auth user and fail.
   try {

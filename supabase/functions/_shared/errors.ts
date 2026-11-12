@@ -42,6 +42,16 @@ export function isExpected(code: ErrorCode): boolean {
   return code !== "internal";
 }
 
+// The last-manager database guard (guard_last_manager, migration 002) raises 'last_admin_manager' when a
+// demote, deactivate or delete would remove the final active Administrator Manager. Map that one Postgres
+// error to the last_manager AppError so the caller returns a clean 409 instead of an opaque internal error.
+// The DB trigger is the real safety net; this only translates its signal for the API envelope.
+export function isLastManagerGuard(
+  error: { message?: string | null } | null | undefined,
+): boolean {
+  return !!error && typeof error.message === "string" && error.message.includes("last_admin_manager");
+}
+
 export class AppError extends Error {
   constructor(
     public readonly code: ErrorCode,

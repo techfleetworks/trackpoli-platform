@@ -155,3 +155,14 @@ Outcomes in one line each:
 - **Porkbun SMTP (Q-1-03)** and **Google-to-invited linking (Q-1-23)** — designs accepted; live verification
   is domain-blocked (Q-1-21) and confirmed when the domain + accounts exist, like the other deferred items in
   `docs/TODO.md`.
+
+### TP1-10 manage administrators (P1-13)
+The five management functions (`change-role`, `deactivate-admin`, `reactivate-admin`, `change-email`,
+`recreate-admin`) and their key decisions are recorded in
+[ADR-0021](docs/adr/0021-manage-administrators-authoritative-status-best-effort-side-effects-and-delete-then-reinvite.md):
+the profile status is the one authoritative lockout (auth ban, session revoke and Google unlink are
+best-effort and reported, never silent); the invite steps are shared via `_shared/invite.ts`
+`provisionInvitedAdmin`; recreation is delete-then-reinvite with the deleted person's snapshot carried in the
+`account_deleted` event details (because `log_event` snapshots only the actor); the last active manager is
+protected by the migration-002 guard, mapped to a clean `last_manager` by `isLastManagerGuard`; the
+email-changed notice is parked for TP1-12 (P1-18) behind a documented port.
