@@ -24,6 +24,33 @@ export const PASSWORD_RESET_MESSAGES = {
   resetComplete: "Your password has been reset. Please sign in with your new password.",
 } as const;
 
+// Accept-invite copy (TP1-09, P1-08; Figma sign-in frame 1216:2431 adapted). The invited administrator sets
+// a password (or continues with Google using the invited address) to activate their account; terms are
+// accepted first on the shared /terms screen, and forced two-factor follows activation. The password policy
+// is LENGTH-ONLY (NFR-S2: "minimum 12 characters, no weakening composition rules"), matching the reset
+// screen. Final visual copy is reconciled with the design; these strings keep the flow coherent meanwhile.
+export const ACCEPT_INVITE_MESSAGES = {
+  title: "Accept your invitation",
+  subtext:
+    "You've been invited to TrackPoli Admin. Set a password to activate your account, or continue with Google.",
+  emailLabel: "Email",
+  passwordLabel: "Create a password",
+  confirmLabel: "Confirm password",
+  requirementsTitle: "Password must include:",
+  minLength: "At least 12 characters",
+  passwordsMustMatch: "Both passwords must match.",
+  orDivider: "or",
+  continueWithGoogle: "Continue with Google",
+  activate: "Activate account",
+  activating: "Activating…",
+  footnote: (email: string) => `This invitation is for ${email}. Your account activation is logged for audit.`,
+  // The invite link is single-use and expires in 24 hours (NFR-S8); a used/expired link lands here.
+  linkExpired:
+    "This invitation link is invalid or has expired. Ask an Administrator Manager to send a new one.",
+  weakPassword: "Please choose a password with at least 12 characters.",
+  genericError: "Something went wrong. Please try again.",
+} as const;
+
 // Two-factor copy (ADR-0009). Code errors never say whether the code was wrong vs expired — just that it
 // did not match — and never reveal anything about the account. Final visual copy is reconciled with the
 // enrolment and code-entry designs; these keep the flow usable in the meantime.
