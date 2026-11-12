@@ -69,3 +69,24 @@ export async function writeOperationalError(admin: SupabaseClient, e: Operationa
 export function isExpectedCode(code: ErrorCode): boolean {
   return code !== "internal";
 }
+
+// Report a non-fatal anomaly — a best-effort side-effect that failed while the request's authoritative
+// change already succeeded — to the operational log as a warning, without failing the request. Use for
+// effects that self-heal and never widen access (a session revoke or an auth ban that failed while the
+// profile status change stuck). Swallows its own failure so reporting can never mask the success.
+export async function reportNonFatal(
+  admin: SupabaseClient,
+  e: { component: string; requestId: string; errorCode: string; message: string; actor?: string | null },
+): Promise<void> {
+  await writeOperationalError(admin, {
+    severity: "warning",
+    source: "edge_function",
+    component: e.component,
+    errorCode: e.errorCode,
+    message: e.message,
+    requestId: e.requestId,
+    release: Deno.env.get("RELEASE") ?? null,
+    environment: Deno.env.get("ENVIRONMENT") ?? null,
+    actor: e.actor ?? null,
+  }).catch(() => undefined);
+}

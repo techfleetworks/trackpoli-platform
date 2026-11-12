@@ -7,14 +7,9 @@
 import { createServerSupabase, readAdminClaims } from "@/lib/supabase/server";
 import { MANAGER_ROLE } from "@/lib/roles";
 import { report } from "@/lib/report";
+import type { AdminRow } from "./adminTypes";
 
-export interface AdminRow {
-  readonly id: string;
-  readonly email: string;
-  readonly displayName: string;
-  readonly role: string;
-  readonly status: string;
-}
+export type { AdminRow };
 
 export type ListAdminsResult =
   | { readonly outcome: "ok"; readonly admins: AdminRow[] }
@@ -34,7 +29,7 @@ export async function listAdmins(): Promise<ListAdminsResult> {
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, email, display_name, role, status")
+    .select("id, email, display_name, role, status, last_sign_in_at, created_at")
     .order("email");
   if (error) {
     report("warning", "list admins failed", { reason: error.message });
@@ -48,6 +43,8 @@ export async function listAdmins(): Promise<ListAdminsResult> {
       displayName: row.display_name,
       role: row.role,
       status: row.status,
+      lastSignInAt: row.last_sign_in_at,
+      createdAt: row.created_at,
     })),
   };
 }

@@ -64,11 +64,24 @@ export async function invokeInternalFunction<T>(
  * serve() trusts the forwarded client IP (the real end-user IP, which the TrackPoli server knows) — the
  * authorization is the user's token, never the secret.
  *
- * record-terms (TP1-08) and complete-invite (TP1-09) are the post-auth functions the Next server calls on the
- * caller's own behalf; both run at aal1 (complete-invite with allowInvited, as the caller is still invited).
+ * record-terms (TP1-08) and complete-invite (TP1-09) run at aal1 on the caller's own behalf. The TP1-10
+ * admin-management functions (invite-admin, resend-invite, revoke-invite, change-role, change-email,
+ * deactivate-admin, reactivate-admin, recreate-admin) are also post-auth, but the caller is an Administrator
+ * Manager acting on another administrator, so they require an aal2 token — carried here the same way; the
+ * function's verifyCaller({ requireAal2: true }) + manager-role check is the authorization.
  */
 export async function invokeUserFunction<T>(
-  name: "record-terms" | "complete-invite",
+  name:
+    | "record-terms"
+    | "complete-invite"
+    | "invite-admin"
+    | "resend-invite"
+    | "revoke-invite"
+    | "change-role"
+    | "change-email"
+    | "deactivate-admin"
+    | "reactivate-admin"
+    | "recreate-admin",
   body: Record<string, unknown>,
   accessToken: string,
   ip: string | null,

@@ -110,3 +110,22 @@ verify_jwt = true
 
 [functions.complete-invite]
 verify_jwt = true
+
+# Admin-management functions (TP1-10, P1-13). All POST-authentication and Administrator-Manager + aal2, so
+# the gateway JWT check is ON and each handler gates further with verifyCaller({ requireAal2: true }) plus a
+# manager-role check. change-role / deactivate-admin / recreate-admin rely on the last-manager database guard
+# (migration 002); deactivate and change-email revoke the target's sessions via revoke_user_sessions.
+[functions.change-role]
+verify_jwt = true
+
+[functions.deactivate-admin]
+verify_jwt = true
+
+[functions.reactivate-admin]
+verify_jwt = true
+
+[functions.change-email]
+verify_jwt = true
+
+[functions.recreate-admin]
+verify_jwt = true

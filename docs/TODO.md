@@ -252,3 +252,33 @@ all are harness- or domain-blocked (Q-1-21). TP1-09 cannot be marked closed unti
       session has not been exercised. Once the stack is up, run the keyboard + axe passes against the live flow
       (part of the P1-16 a11y audit). The approved **version-1 terms text (Q-1-22)** — already tracked in the
       TP1-08 section — is a shared go-live blocker for this flow too. **Needs:** the full-stack stack.
+
+## From TP1-10 (branch `feat/tp1-10-manage-administrators`)
+
+The five admin-management edge functions shipped (ADR-0021): `change-role`, `deactivate-admin`,
+`reactivate-admin`, `change-email`, `recreate-admin`, with the shared `provisionInvitedAdmin` routine, the
+best-effort-reported side-effect model, and the last-manager guard mapping. These are **acceptance /
+verification / forward-dependency items** that cannot be finished in code alone here.
+
+- [ ] **Wire the email-changed security notice (parked → TP1-12 / P1-18).** `change-email` carries a marked
+      port but sends no notification. TP1-12 builds `functions/_shared/notices.ts` + the templates and wires the
+      notice to the **old and new** address. Until then, an email change gives the old address no signal — a
+      known defence-in-depth gap for a compromised-manager scenario. **Needs:** TP1-12.
+- [ ] **Make E2E-09, E2E-10 and E2E-17 pass and promote them off the gate.** The behaviour is enumerated in
+      `features/admins/manage-admins.feature`; the full-stack specs need the same harness as TP1-09 (local
+      Supabase + seed + edge runtime + mail-catcher), plus a way to drive the manager actions (a harness helper
+      or the TP1-10 dialogs). "E2E-09/10/17 pass" is the ticket's acceptance criterion. **Needs:** the full-stack
+      harness.
+- [ ] **Write the stack-dependent function tests (last-manager race, deactivate session-kill, recreate
+      snapshot, change-email rollback/unlink).** These need the local Supabase stack + edge runtime; the repo
+      still has no Deno test harness. **Needs:** the Deno-test harness + the local stack.
+- [ ] **Verify the Google-identity unlink on change-email against a live linked account (Q-1-24).** The unlink
+      goes through the GoTrue admin REST (`_shared/identities.ts`) and is unverified because Google OAuth is
+      domain-blocked (Q-1-21) and no live stack runs in CI — including the exact identity-id field used by the
+      endpoint. It is best-effort and reported today. **Needs:** Google OAuth provisioning + a live stack.
+- [ ] **Confirm the last-manager guard end-to-end under concurrency.** The DB guard (migration 002) is the
+      race-free boundary and has a pgTAP + race test; confirm `recreate-admin`'s narrow "spurious
+      account_deleted" window (ADR-0021) behaves as documented against the live stack. **Needs:** the local stack.
+- [ ] **Live a11y + visual verification of the admin-management list and dialogs.** Pending the Admin-management
+      Figma frames and the UI build; run the keyboard + axe passes against the real flow (part of the P1-16
+      a11y audit). **Needs:** the Figma frames, the UI, and the full-stack stack.
