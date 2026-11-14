@@ -89,6 +89,7 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | settings/profile-and-security.feature | An empty or over-long display name is rejected without a write | settings | administrator | edit-display-name-invalid | boundary | functional | low | covered |
 | settings/profile-and-security.feature | Changing your own password re-verifies the current one and keeps you signed in | settings | administrator | change-own-password | happy | security | high | covered |
 | settings/profile-and-security.feature | Editing your display name updates only your own profile | settings | administrator | edit-own-display-name | happy | functional | medium | covered |
+| settings/profile-and-security.feature | Signing out other sessions asks for confirmation first | settings | administrator | settings-sign-out-confirm | happy | security | medium | covered |
 | settings/profile-and-security.feature | The old Security URL and the Google re-auth return both land on the Security tab | settings | administrator | settings-security-redirect | edge | functional | low | covered |
 | settings/profile-and-security.feature | The Settings tabs and the not-yet-active controls are operable and honest | settings | assistive-tech | settings-tabs-a11y | happy | accessibility | medium | covered |
 | settings/profile-and-security.feature | The settings writes only ever touch your own account | settings | administrator | settings-self-only | permission | security | high | covered |

@@ -58,7 +58,7 @@ export function SettingsTabs({
           </TabsList>
 
           <TabsContent value="profile">
-            <ProfileTab email={email} initial={profile} acceptances={acceptances} />
+            <ProfileTab email={email} role={role} initial={profile} acceptances={acceptances} />
           </TabsContent>
           <TabsContent value="security">
             <SecurityTab status={twoFactor} />

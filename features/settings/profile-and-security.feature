@@ -85,3 +85,11 @@ Feature: My profile and security settings (P1-14)
     When the page loads
     Then it redirects to the Security tab of the unified Settings page
     And any reauth parameter is preserved so the Google device-replacement wizard resumes where it left off
+
+  @audience:administrator @usecase:settings-sign-out-confirm @category:happy @security @owasp:session-management @severity:medium
+  Scenario: Signing out other sessions asks for confirmation first
+    Given an administrator on the Security tab
+    When they choose to sign out their other sessions
+    Then a confirmation dialog explains that every session except this one will end
+    And nothing is revoked until they confirm, so one accidental click cannot sign them out
+    And on confirm the other sessions are revoked server-side and the result is announced in a snackbar

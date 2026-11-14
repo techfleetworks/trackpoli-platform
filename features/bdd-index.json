@@ -936,6 +936,17 @@
   },
   {
     "feature": "settings/profile-and-security.feature",
+    "scenario": "Signing out other sessions asks for confirmation first",
+    "domain": "settings",
+    "audience": "administrator",
+    "usecase": "settings-sign-out-confirm",
+    "category": "happy",
+    "quality": "security",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "settings/profile-and-security.feature",
     "scenario": "The old Security URL and the Google re-auth return both land on the Security tab",
     "domain": "settings",
     "audience": "administrator",

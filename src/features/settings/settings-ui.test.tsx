@@ -56,23 +56,24 @@ describe("YourRoleCard", () => {
 });
 
 describe("ProfileTab", () => {
-  it("shows the administrator's details and the accepted-policies list", () => {
-    withSnackbar(<ProfileTab email="amara@example.com" initial={PROFILE} acceptances={ACCEPTANCES} />);
+  it("shows the administrator's details (incl. read-only role) and the accepted-policies list", () => {
+    withSnackbar(<ProfileTab email="amara@example.com" role="admin" initial={PROFILE} acceptances={ACCEPTANCES} />);
     expect(screen.getByText("Amara Nwosu")).toBeInTheDocument();
     expect(screen.getByText("amara@example.com")).toBeInTheDocument();
+    expect(screen.getByText("Administrator")).toBeInTheDocument();
     expect(screen.getByText("Policies you've accepted")).toBeInTheDocument();
     expect(screen.getByText(/Terms of use/)).toBeInTheDocument();
   });
 
   it("renders an error state rather than an edit form when the profile is unreadable", () => {
-    withSnackbar(<ProfileTab email="amara@example.com" initial={null} acceptances={[]} />);
+    withSnackbar(<ProfileTab email="amara@example.com" role="admin" initial={null} acceptances={[]} />);
     expect(screen.getByText("Profile unavailable")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
   });
 
   it("saves a new display name through the display-name endpoint and returns to view mode", async () => {
     mockApiFetch.mockResolvedValue({ outcome: "done", displayName: "Amara O. Nwosu" });
-    withSnackbar(<ProfileTab email="amara@example.com" initial={PROFILE} acceptances={ACCEPTANCES} />);
+    withSnackbar(<ProfileTab email="amara@example.com" role="admin" initial={PROFILE} acceptances={ACCEPTANCES} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.change(screen.getByLabelText("Display name"), { target: { value: "Amara O. Nwosu" } });
@@ -90,7 +91,7 @@ describe("ProfileTab", () => {
 
   it("surfaces a server-rejected name as a field error and stays in edit mode", async () => {
     mockApiFetch.mockResolvedValue({ outcome: "invalid" });
-    withSnackbar(<ProfileTab email="amara@example.com" initial={PROFILE} acceptances={ACCEPTANCES} />);
+    withSnackbar(<ProfileTab email="amara@example.com" role="admin" initial={PROFILE} acceptances={ACCEPTANCES} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.change(screen.getByLabelText("Display name"), { target: { value: "Robert" } });
