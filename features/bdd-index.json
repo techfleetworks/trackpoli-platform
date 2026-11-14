@@ -528,6 +528,61 @@
     "status": "covered"
   },
   {
+    "feature": "auth/security-alert-emails.feature",
+    "scenario": "A security notice never carries a sign-in link or a secret",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "notice-no-links-or-secrets",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/security-alert-emails.feature",
+    "scenario": "A skipped or failed send logs one operational event and never undoes the change",
+    "domain": "auth",
+    "audience": "maintainer",
+    "usecase": "notice-failed-send-reported",
+    "category": "edge",
+    "quality": "reliability",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/security-alert-emails.feature",
+    "scenario": "A slow or failing notice never blocks or reverses the user's change",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "notice-best-effort-nonblocking",
+    "category": "edge",
+    "quality": "reliability",
+    "severity": "low",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/security-alert-emails.feature",
+    "scenario": "Each account-security change sends one out-of-band notice to the right address",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "E2E-18",
+    "category": "happy",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/security-alert-emails.feature",
+    "scenario": "Only the TrackPoli server can trigger the password or two-factor notice",
+    "domain": "auth",
+    "audience": "administrator-manager",
+    "usecase": "notice-internal-only",
+    "category": "permission",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
     "feature": "auth/sign-in-protection.feature",
     "scenario": "A fifth wrong attempt pauses the account",
     "domain": "auth",

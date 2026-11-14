@@ -8,9 +8,9 @@
 // again with the new address; their two-factor enrolment is untouched (Q-1-24). The change and its event are
 // atomic: a failed audit write rolls both emails back.
 //
-// PARKED (TP1-12 / P1-18): the email-changed security notice to the OLD and the NEW address is built with the
-// shared notices helper in TP1-12 (see the port marked below, ADR-0021 and docs/TODO.md). Until then an email
-// change sends no notification — a known, tracked gap.
+// The email-changed security notice to the OLD and the NEW address is sent at the end via the shared notices
+// helper (TP1-12 / P1-18, ADR-0023). Best-effort: a missing or failed transport is reported and never undoes
+// the change above; during the domain-blocked period (Q-1-21, no SMTP yet) the send is skipped and logged.
 
 import { z } from "npm:zod@4";
 import { serve } from "../_shared/serve.ts";
@@ -18,6 +18,8 @@ import { verifyCaller } from "../_shared/auth.ts";
 import { writeEvent, reportNonFatal } from "../_shared/events.ts";
 import { revokeSessions } from "../_shared/sessions.ts";
 import { unlinkProviderIdentity } from "../_shared/identities.ts";
+import { sendSecurityNotice } from "../_shared/noticeTemplates.ts";
+import { buildSmtpTransport } from "../_shared/notices.ts";
 import { AppError } from "../_shared/errors.ts";
 
 const Body = z
@@ -140,8 +142,31 @@ serve("change-email", async ({ req, admin, ip, requestId }) => {
     });
   }
 
-  // PARKED (TP1-12 / P1-18): send the email-changed notice to oldEmail and new_email via the shared notices
-  // helper. No notification is sent until TP1-12 wires it (ADR-0021, docs/TODO.md).
+  // Send the email-changed notice to the OLD and the NEW address (TP1-12, P1-18). Best-effort: a missing or
+  // failed transport is reported once and never undoes the authoritative change above. The notice carries no
+  // link or secret (NFR-P4). This send is separate from the GoTrue admin updateUserById above, which notifies
+  // no one — so without this the person would get no out-of-band signal that their email moved.
+  const transport = await buildSmtpTransport();
+  if (!transport) {
+    await reportNonFatal(admin, {
+      component: "change-email",
+      requestId,
+      errorCode: "security_notice_skipped_unconfigured",
+      message: "email-changed notice not sent, SMTP not configured",
+      actor: admin_id,
+    });
+  } else {
+    const { failed } = await sendSecurityNotice(transport, [oldEmail, new_email], "email_changed", new Date());
+    if (failed > 0) {
+      await reportNonFatal(admin, {
+        component: "change-email",
+        requestId,
+        errorCode: "security_notice_send_failed",
+        message: "email-changed notice send failed",
+        actor: admin_id,
+      });
+    }
+  }
 
   return { id: admin_id, from: oldEmail, to: new_email };
 });

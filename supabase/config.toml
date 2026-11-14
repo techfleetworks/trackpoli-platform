@@ -89,6 +89,11 @@ verify_jwt = false
 [functions.request-password-reset]
 verify_jwt = false
 
+# send-security-notice is internal-only (assertInternalCall): the TrackPoli server fires it after a password
+# change or a two-factor device replacement to email the account-holder a security alert (TP1-12, P1-18).
+[functions.send-security-notice]
+verify_jwt = false
+
 # record-terms (TP1-08): a POST-authentication function — the signed-in administrator accepts the current
 # terms/privacy at aal1 (before the two-factor code, migration 009). The gateway JWT check is ON, and the
 # handler additionally gates with verifyCaller (allowInvited), deciding access from the profile, not a token
