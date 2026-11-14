@@ -52,6 +52,11 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | auth/safe-sessions.feature | Signing out in one tab signs out the other within two seconds | auth | administrator | E2E-07 | happy | security | high | covered |
 | auth/safe-sessions.feature | Signing out other sessions leaves this session signed in | auth | administrator | sign-out-others | happy | security | high | covered |
 | auth/safe-sessions.feature | The session ends at the 4-hour absolute limit even while active | auth | administrator | absolute-limit | adverse | security | high | covered |
+| auth/security-alert-emails.feature | A security notice never carries a sign-in link or a secret | auth | administrator | notice-no-links-or-secrets | adverse | security | high | covered |
+| auth/security-alert-emails.feature | A skipped or failed send logs one operational event and never undoes the change | auth | maintainer | notice-failed-send-reported | edge | reliability | medium | covered |
+| auth/security-alert-emails.feature | A slow or failing notice never blocks or reverses the user's change | auth | administrator | notice-best-effort-nonblocking | edge | reliability | low | covered |
+| auth/security-alert-emails.feature | Each account-security change sends one out-of-band notice to the right address | auth | administrator | E2E-18 | happy | security | high | covered |
+| auth/security-alert-emails.feature | Only the TrackPoli server can trigger the password or two-factor notice | auth | administrator-manager | notice-internal-only | permission | security | high | covered |
 | auth/sign-in-protection.feature | A fifth wrong attempt pauses the account | auth | anonymous | repeated-failures | adverse | security | critical | covered |
 | auth/sign-in-protection.feature | A successful sign-in clears the failure counter | auth | administrator-manager | success-clears-failures | happy | functional | medium | covered |
 | auth/sign-in-protection.feature | An unknown email and a wrong password are indistinguishable | auth | anonymous | account-enumeration | negative | security | critical | covered |

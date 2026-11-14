@@ -20,6 +20,7 @@ import {
 } from "@/features/auth/mfa";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { REAUTH_MARKER_COOKIE, verifyReauthMarker } from "@/lib/reauthMarker";
+import { notifySecurityChange } from "@/features/auth/securityNotice";
 
 const SixDigits = z.string().regex(/^\d{6}$/);
 
@@ -43,6 +44,19 @@ export async function POST(request: NextRequest) {
       { newFactorId: body.newFactorId, newCode: body.newCode },
       ports,
     );
+    // On a successful replacement, send the out-of-band security alert (TP1-12, P1-18). Best-effort: the whole
+    // block is wrapped so nothing here can change the outcome already decided — the device is already replaced.
+    if (result.outcome === "replaced") {
+      try {
+        const supabase = await createServerSupabase();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) await notifySecurityChange("two_factor_replaced", user.id);
+      } catch {
+        // swallow: the alert is best-effort and must never turn a successful replacement into an error.
+      }
+    }
     return NextResponse.json(result);
   }
 

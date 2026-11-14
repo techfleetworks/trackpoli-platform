@@ -42,7 +42,7 @@ async function postFunction<T>(name: string, body: Record<string, unknown>, head
 
 /** Call a PRE-authentication function: anon key + the shared internal-call secret + the real caller IP. */
 export async function invokeInternalFunction<T>(
-  name: "sign-in-check" | "auth-event" | "request-password-reset",
+  name: "sign-in-check" | "auth-event" | "request-password-reset" | "send-security-notice",
   body: Record<string, unknown>,
   ip: string | null,
 ): Promise<T> {

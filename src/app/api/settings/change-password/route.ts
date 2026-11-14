@@ -8,6 +8,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { changePassword, buildChangePasswordPorts } from "@/features/settings/security/changePassword";
+import { createServerSupabase } from "@/lib/supabase/server";
+import { notifySecurityChange } from "@/features/auth/securityNotice";
 
 // The new password meets the section-5 policy (>= 12, NFR-S2); the current password only needs to be present.
 // Both are capped so an oversized value cannot be used to make a hash/verify expensive.
@@ -31,5 +33,21 @@ export async function POST(request: NextRequest) {
     { currentPassword: parsed.data.currentPassword, newPassword: parsed.data.newPassword },
     buildChangePasswordPorts(),
   );
+
+  // On a successful change, send the out-of-band security alert (TP1-12, P1-18). Best-effort: the whole block
+  // is wrapped so nothing here — not even resolving the caller — can change the outcome already returned to
+  // the client; the password is already changed.
+  if (result.outcome === "done") {
+    try {
+      const supabase = await createServerSupabase();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) await notifySecurityChange("password_changed", user.id);
+    } catch {
+      // swallow: the alert is best-effort and must never turn a successful change into an error response.
+    }
+  }
+
   return NextResponse.json(result);
 }
