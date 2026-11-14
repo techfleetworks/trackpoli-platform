@@ -1,0 +1,73 @@
+# TrackPoli admin — alerting rules (TP1-13, P1-15; sre-operational-readiness).
+#
+# Prometheus-style alerting rules, the format check:alerts (check-alert-hygiene) validates. Every rule carries
+# a severity, a summary + description, and a runbook_url, and every PAGING alert fires on a user-facing SYMPTOM
+# (availability, error rate), never a bare cause — the two security signals that are not symptoms are routed as
+# tickets, not pages. The metric names are the intended SLIs; the exporters that emit them are wired when the
+# app is deployed (the rules ship now so they are reviewed and ready — the live firing is demonstrated on
+# staging, Q-1-21). Runbook anchors resolve in docs/runbook.md.
+groups:
+  - name: trackpoli-admin-availability
+    rules:
+      - alert: AdminAppDown
+        # Symptom: the external uptime probe cannot reach the admin app (availability).
+        expr: avg_over_time(probe_success{job="trackpoli-admin-uptime"}[5m]) < 0.5
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: "TrackPoli admin app is unreachable"
+          description: "The uptime probe for the admin app has been failing for 5 minutes (NFR-O1 uptime)."
+          runbook_url: "https://github.com/techfleetworks/trackpoli-platform/blob/main/docs/runbook.md#app-down"
+
+      - alert: SignInErrorRateHigh
+        # Symptom: users cannot sign in — the 5xx error rate on the sign-in path is elevated.
+        expr: |
+          sum(rate(http_requests_total{route="/admin/api/sign-in",status=~"5.."}[5m]))
+            / sum(rate(http_requests_total{route="/admin/api/sign-in"}[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: "Sign-in error rate is above 5%"
+          description: "More than 5% of sign-in requests have returned a 5xx for 5 minutes — users are being locked out."
+          runbook_url: "https://github.com/techfleetworks/trackpoli-platform/blob/main/docs/runbook.md#sign-in-errors"
+
+      - alert: EdgeFunctionErrorRateHigh
+        # Symptom: the Edge Functions (sign-in-check, admin management, notices) are failing — error rate > 2%.
+        expr: |
+          sum(rate(edge_function_requests_total{status="error"}[5m]))
+            / sum(rate(edge_function_requests_total[5m])) > 0.02
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: "Edge Function error rate is above 2%"
+          description: "More than 2% of Edge Function invocations have errored for 5 minutes (NFR-O2)."
+          runbook_url: "https://github.com/techfleetworks/trackpoli-platform/blob/main/docs/runbook.md#edge-function-errors"
+
+  - name: trackpoli-admin-security
+    rules:
+      - alert: FailedSignInsSpike
+        # A security signal (possible credential-stuffing), routed as a TICKET + a Sentry issue, not a page:
+        # it is a cause to investigate, not a user-facing outage. The use case: 10 failed sign-ins in 5 minutes.
+        expr: sum(increase(auth_failed_sign_ins_total[5m])) >= 10
+        for: 0m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "10 or more failed sign-ins in 5 minutes"
+          description: "A burst of failed sign-ins may indicate credential stuffing; review the operational log and the source IPs."
+          runbook_url: "https://github.com/techfleetworks/trackpoli-platform/blob/main/docs/runbook.md#failed-sign-ins"
+
+      - alert: AuthEmailSendFailures
+        # A delivery signal (invite / recovery / security-notice sends failing), routed as a TICKET: the account
+        # change still succeeds (best-effort sends), but repeated failures mean the SMTP/domain is misconfigured.
+        expr: sum(increase(auth_email_send_failures_total[15m])) > 0
+        for: 0m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "Auth emails are failing to send"
+          description: "One or more invite/recovery/security-notice emails failed to send in the last 15 minutes; check the SMTP/domain configuration."
+          runbook_url: "https://github.com/techfleetworks/trackpoli-platform/blob/main/docs/runbook.md#email-failure"

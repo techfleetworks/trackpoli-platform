@@ -4,6 +4,7 @@
 
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import type { ErrorCode } from "./errors.ts";
+import { captureServerError } from "./sentry.ts";
 
 export type AuditEvent = {
   actor: string | null; // null for anonymous events (e.g. a failed sign-in)
@@ -48,6 +49,9 @@ export type OperationalError = {
 };
 
 // Writes one row to operational_events via log_error. Call ONLY for unexpected (`internal`) failures.
+// Server failures go to BOTH stores (TP1-13, P1-15): the operational log (the durable, queryable record) and
+// Sentry (the alertable sink). The Sentry forward is inert until SENTRY_DSN is set, fire-and-forget, and
+// carries only this function's PII-free fields — so it can never mask or fail the operational write.
 export async function writeOperationalError(admin: SupabaseClient, e: OperationalError): Promise<void> {
   await admin.rpc("log_error", {
     p_severity: e.severity,
@@ -63,6 +67,16 @@ export async function writeOperationalError(admin: SupabaseClient, e: Operationa
     p_actor: e.actor ?? null,
     p_context: e.context ?? {},
   });
+  await captureServerError({
+    level: e.severity,
+    message: e.message,
+    component: e.component,
+    errorCode: e.errorCode ?? null,
+    requestId: e.requestId,
+    actor: e.actor ?? null,
+    release: e.release ?? null,
+    environment: e.environment ?? null,
+  }).catch(() => undefined);
 }
 
 // True for the error codes that are NOT written to the operational log (expected failures).

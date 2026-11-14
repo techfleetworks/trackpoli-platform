@@ -4,19 +4,20 @@
 // server-side request/render errors to Sentry automatically.
 
 import type { Instrumentation } from "next";
+import { sentryBaseOptions } from "@/lib/sentry";
 
 function dsn(): string | undefined {
   return process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN;
 }
 
 export async function register(): Promise<void> {
-  if (!dsn()) return;
+  const configured = dsn();
+  if (!configured) return;
   const Sentry = await import("@sentry/nextjs");
-  Sentry.init({
-    dsn: dsn(),
-    tracesSampleRate: 0,
-    environment: process.env.ENVIRONMENT ?? process.env.NODE_ENV,
-  });
+  // Shared options (TP1-13): no tracing, no default PII, release + environment tags, and the scrubber as
+  // beforeSend so no email/token/password reaches Sentry. The scrubber is deliberately typed against our own
+  // loose ScrubbableEvent (not the SDK's exact Event), so the options are cast to init's parameter type.
+  Sentry.init(sentryBaseOptions(configured) as unknown as Parameters<typeof Sentry.init>[0]);
 }
 
 export const onRequestError: Instrumentation.onRequestError = async (err, request, context) => {
