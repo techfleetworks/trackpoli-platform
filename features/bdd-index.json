@@ -924,6 +924,50 @@
     "status": "covered"
   },
   {
+    "feature": "ops/observability.feature",
+    "scenario": "A server failure is recorded in both the operational log and Sentry",
+    "domain": "ops",
+    "audience": "maintainer",
+    "usecase": "observability-dual-sink",
+    "category": "happy",
+    "quality": "reliability",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "ops/observability.feature",
+    "scenario": "Errors reach Sentry scrubbed, with a request id and user id but never an email",
+    "domain": "ops",
+    "audience": "maintainer",
+    "usecase": "observability-scrubbed-reports",
+    "category": "happy",
+    "quality": "compliance",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "ops/observability.feature",
+    "scenario": "Ten failed sign-ins in five minutes raise an alert",
+    "domain": "ops",
+    "audience": "administrator-manager",
+    "usecase": "observability-failed-sign-ins-alert",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "ops/observability.feature",
+    "scenario": "With no DSN configured nothing is sent and the app is unaffected",
+    "domain": "ops",
+    "audience": "maintainer",
+    "usecase": "observability-inert-until-configured",
+    "category": "edge",
+    "quality": "reliability",
+    "severity": "low",
+    "status": "covered"
+  },
+  {
     "feature": "settings/profile-and-security.feature",
     "scenario": "A Google-only account has no password to change",
     "domain": "settings",

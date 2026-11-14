@@ -88,6 +88,10 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | design-system/migration.feature | The sign-in screen uses design-system components with behaviour parity | design-system | end-user | signin-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The two-factor card and device-replacement modal use design-system components with behaviour parity | design-system | end-user | settings-2fa-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The two-factor enrolment wizard uses design-system components with behaviour parity | design-system | end-user | mfa-enrol-migrated | happy | functional | high | covered |
+| ops/observability.feature | A server failure is recorded in both the operational log and Sentry | ops | maintainer | observability-dual-sink | happy | reliability | medium | covered |
+| ops/observability.feature | Errors reach Sentry scrubbed, with a request id and user id but never an email | ops | maintainer | observability-scrubbed-reports | happy | compliance | high | covered |
+| ops/observability.feature | Ten failed sign-ins in five minutes raise an alert | ops | administrator-manager | observability-failed-sign-ins-alert | adverse | security | high | covered |
+| ops/observability.feature | With no DSN configured nothing is sent and the app is unaffected | ops | maintainer | observability-inert-until-configured | edge | reliability | low | covered |
 | settings/profile-and-security.feature | A Google-only account has no password to change | settings | administrator | change-password-google-only | negative | security | medium | covered |
 | settings/profile-and-security.feature | A new password shorter than the minimum is refused after the current one is proven | settings | administrator | change-password-weak-new | boundary | security | medium | covered |
 | settings/profile-and-security.feature | A wrong current password is rejected and throttled, changing nothing | settings | administrator | change-password-wrong-current | adverse | security | high | covered |
