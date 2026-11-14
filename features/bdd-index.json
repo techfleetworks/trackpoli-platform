@@ -968,6 +968,50 @@
     "status": "covered"
   },
   {
+    "feature": "ops/security-headers.feature",
+    "scenario": "Every response carries the browser security headers",
+    "domain": "ops",
+    "audience": "anonymous",
+    "usecase": "security-headers-present",
+    "category": "happy",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "ops/security-headers.feature",
+    "scenario": "Only the origins the app actually calls are allowed",
+    "domain": "ops",
+    "audience": "anonymous",
+    "usecase": "csp-allowlist",
+    "category": "boundary",
+    "quality": "security",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "ops/security-headers.feature",
+    "scenario": "Scripts are governed by a per-request nonce, not an inline escape hatch",
+    "domain": "ops",
+    "audience": "anonymous",
+    "usecase": "csp-nonce",
+    "category": "happy",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "ops/security-headers.feature",
+    "scenario": "The CSP ships report-only until staging is confirmed, then enforces by toggle",
+    "domain": "ops",
+    "audience": "maintainer",
+    "usecase": "csp-report-only-default",
+    "category": "happy",
+    "quality": "release-safety",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
     "feature": "settings/profile-and-security.feature",
     "scenario": "A Google-only account has no password to change",
     "domain": "settings",

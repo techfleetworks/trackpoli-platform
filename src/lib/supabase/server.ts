@@ -97,6 +97,11 @@ export async function readAdminClaims(
  */
 export async function updateSession(
   request: NextRequest,
+  // Optional forwarded request headers (TP1-13 PR B): middleware passes a Headers carrying the per-request
+  // CSP nonce (x-nonce + the Content-Security-Policy request header Next reads to nonce its own scripts). When
+  // present, the forwarded request uses these headers; the cookie refresh is kept in sync by re-serialising
+  // request.cookies into this Headers' Cookie on every setAll, so the session-refresh behaviour is unchanged.
+  requestHeaders?: Headers,
 ): Promise<{
   response: NextResponse;
   user: User | null;
@@ -104,7 +109,9 @@ export async function updateSession(
   role: AdminRole | null;
   status: AdminStatus | null;
 }> {
-  let response = NextResponse.next({ request });
+  const nextInit = () =>
+    requestHeaders ? NextResponse.next({ request: { headers: requestHeaders } }) : NextResponse.next({ request });
+  let response = nextInit();
   const supabase = createServerClient<Database>(supabaseUrl(), supabaseAnonKey(), {
     cookieOptions: COOKIE_OPTIONS,
     cookies: {
@@ -115,7 +122,15 @@ export async function updateSession(
         for (const { name, value } of cookiesToSet) {
           request.cookies.set(name, value); // owasp-lint:ignore request-side mirror for this pass only, not a browser Set-Cookie; security attributes apply to the response set below, not to request cookies
         }
-        response = NextResponse.next({ request });
+        // Keep the forwarded Cookie header in step with the refreshed request cookies so the nonce-carrying
+        // headers do not drop the session refresh for the current render.
+        if (requestHeaders) {
+          requestHeaders.set(
+            "cookie",
+            request.cookies.getAll().map((c) => `${c.name}=${c.value}`).join("; "),
+          );
+        }
+        response = nextInit();
         for (const { name, value, options } of cookiesToSet) {
           response.cookies.set(name, value, {
             ...options,
