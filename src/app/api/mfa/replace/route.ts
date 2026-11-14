@@ -21,6 +21,7 @@ import {
 import { createServerSupabase } from "@/lib/supabase/server";
 import { REAUTH_MARKER_COOKIE, verifyReauthMarker } from "@/lib/reauthMarker";
 import { notifySecurityChange } from "@/features/auth/securityNotice";
+import { report } from "@/lib/report";
 
 const SixDigits = z.string().regex(/^\d{6}$/);
 
@@ -53,8 +54,13 @@ export async function POST(request: NextRequest) {
           data: { user },
         } = await supabase.auth.getUser();
         if (user) await notifySecurityChange("two_factor_replaced", user.id);
-      } catch {
-        // swallow: the alert is best-effort and must never turn a successful replacement into an error.
+      } catch (error) {
+        // Best-effort: report (never re-throw) so resolving the caller can't turn a successful replacement
+        // into an error. notifySecurityChange already reports its own dispatch failures; this covers a rare
+        // getUser throw.
+        report("warning", "security notice skipped after device replacement", {
+          reason: error instanceof Error ? error.message : "unknown",
+        });
       }
     }
     return NextResponse.json(result);

@@ -10,6 +10,7 @@ import { z } from "zod";
 import { changePassword, buildChangePasswordPorts } from "@/features/settings/security/changePassword";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { notifySecurityChange } from "@/features/auth/securityNotice";
+import { report } from "@/lib/report";
 
 // The new password meets the section-5 policy (>= 12, NFR-S2); the current password only needs to be present.
 // Both are capped so an oversized value cannot be used to make a hash/verify expensive.
@@ -44,8 +45,13 @@ export async function POST(request: NextRequest) {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) await notifySecurityChange("password_changed", user.id);
-    } catch {
-      // swallow: the alert is best-effort and must never turn a successful change into an error response.
+    } catch (error) {
+      // Best-effort: report (never re-throw) so resolving the caller can't turn a successful change into an
+      // error response. notifySecurityChange already reports its own dispatch failures; this covers a rare
+      // getUser throw.
+      report("warning", "security notice skipped after password change", {
+        reason: error instanceof Error ? error.message : "unknown",
+      });
     }
   }
 
