@@ -158,6 +158,8 @@ export const SESSION_MESSAGES = {
   signOutOthersBusy: "Signing out…",
   signedOutOthers: "Signed out of your other sessions.",
   signOutOthersError: "We couldn't sign out the other sessions. Please try again.",
+  signOutConfirmTitle: "Sign out your other sessions?",
+  signOutConfirmBody: "This ends every session except this one. You'll stay signed in on this device.",
 } as const;
 
 // Device-replacement copy (ADR-0009, Figma 1296:85823 / 1296:89239). The replacement runs in a Security-tab

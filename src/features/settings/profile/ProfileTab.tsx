@@ -10,6 +10,7 @@ import { ErrorState } from "@/components/ui/states";
 import { useSnackbar } from "@/components/ui/snackbar";
 import { apiFetch } from "@/lib/apiFetch";
 import { formatDate, formatDateTime } from "@/lib/formatDate";
+import { roleLabel, type AdminRole } from "@/lib/roles";
 import type { ProfileDetails } from "./profileData";
 
 // The Settings Profile tab (TP1-11, P1-14). View mode shows the administrator's own details; Edit mode lets
@@ -28,6 +29,7 @@ const COPY = {
   nameHint: "The name shown to other administrators (1–120 characters).",
   email: "Email",
   emailNote: "Managed by your workspace",
+  role: "Role",
   memberSince: "Member since",
   lastSignIn: "Last sign-in",
   never: "Never",
@@ -66,10 +68,12 @@ function Detail({ label, value }: { label: string; value: string }) {
 
 export function ProfileTab({
   email,
+  role,
   initial,
   acceptances,
 }: {
   email: string | null;
+  role: AdminRole | null;
   initial: ProfileDetails | null;
   acceptances: readonly AcceptedPolicy[];
 }) {
@@ -112,6 +116,7 @@ export function ProfileTab({
           <dl className="grid gap-5 sm:grid-cols-2">
             <Detail label={COPY.name} value={displayName} />
             <Detail label={COPY.email} value={email ?? COPY.dash} />
+            <Detail label={COPY.role} value={role ? roleLabel(role) : COPY.dash} />
             <Detail
               label={COPY.memberSince}
               value={formatDate(initial.createdAt) || COPY.dash}
