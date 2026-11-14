@@ -260,10 +260,10 @@ The five admin-management edge functions shipped (ADR-0021): `change-role`, `dea
 best-effort-reported side-effect model, and the last-manager guard mapping. These are **acceptance /
 verification / forward-dependency items** that cannot be finished in code alone here.
 
-- [ ] **Wire the email-changed security notice (parked → TP1-12 / P1-18).** `change-email` carries a marked
-      port but sends no notification. TP1-12 builds `functions/_shared/notices.ts` + the templates and wires the
-      notice to the **old and new** address. Until then, an email change gives the old address no signal — a
-      known defence-in-depth gap for a compromised-manager scenario. **Needs:** TP1-12.
+- [x] **Wire the email-changed security notice (parked → TP1-12 / P1-18).** Done in TP1-12 (merged PR #40):
+      `change-email` now sends the email-changed notice to the **old and new** address via
+      `functions/_shared/noticeTemplates.ts` + `notices.ts`, best-effort and reported. Live delivery is still
+      domain-blocked — see the TP1-12 section below.
 - [ ] **Make E2E-09, E2E-10 and E2E-17 pass and promote them off the gate.** The behaviour is enumerated in
       `features/admins/manage-admins.feature`; the full-stack specs need the same harness as TP1-09 (local
       Supabase + seed + edge runtime + mail-catcher), plus a way to drive the manager actions (a harness helper
@@ -282,3 +282,40 @@ verification / forward-dependency items** that cannot be finished in code alone 
 - [ ] **Live a11y + visual verification of the admin-management list and dialogs.** Pending the Admin-management
       Figma frames and the UI build; run the keyboard + axe passes against the real flow (part of the P1-16
       a11y audit). **Needs:** the Figma frames, the UI, and the full-stack stack.
+
+## From TP1-12 (merged 2026-11-14, PR #40)
+
+The security-alert emails shipped (ADR-0023): the three notices (email-changed to the **old and new** address,
+password-changed, two-factor-replaced), the pure `functions/_shared/noticeTemplates.ts` templates + fan-out, the
+inert-until-configured Porkbun SMTP transport (`functions/_shared/notices.ts`), the internal-only
+`send-security-notice` edge function, and the best-effort wiring into `change-email` and the Next
+change-password / mfa-replace routes. A skipped/failed send logs one operational event and never undoes the
+change. These are **acceptance / verification / design items** that cannot be finished in code alone; the live
+send is **domain-blocked (Q-1-21)**. TP1-12 cannot be marked closed until E2E-18 is green.
+
+- [ ] **Enable Porkbun Email Hosting + SMTP secrets + DNS, and test real delivery of the three notices.** The
+      transport returns `null` (inert) until `SMTP_HOST/PORT/USER/PASS/FROM` are set as Supabase function
+      secrets. Enable Porkbun **Email Hosting** (the free forwarding plan cannot send via SMTP) with a sender
+      mailbox (e.g. `security@trackpoli.com`), set the secrets, add **SPF/DKIM/DMARC** on `trackpoli.com`, then
+      change an email / password / two-factor device and confirm each notice lands in a real Gmail **and**
+      Outlook inbox (not spam), to the right address (email-changed to both). Shares the SMTP/domain
+      provisioning with the TP1-03 recovery and TP1-09 invite items; the same SMTP set as Supabase Auth's
+      custom SMTP also lights those up. **Needs:** a domain + the Porkbun/Supabase accounts (Q-1-21).
+- [ ] **Write the full-stack E2E-18 spec and make it pass.** The behaviour is enumerated in
+      `features/auth/security-alert-emails.feature`, but unlike TP1-03/04/05/06/08, **no executable Playwright
+      spec exists yet** (`e2e/security-alert-emails.full-stack.spec.ts` is still to be written). Write it
+      (`E2E_FULL_STACK`-gated, mail-catcher assertions: one notice per recipient, email-changed to old+new, no
+      link/secret in the body), stand up the full-stack harness (local Supabase + the 7-person seed + edge
+      runtime served + Inbucket/Mailpit + Turnstile TEST keys), get it green, and enable the job on every PR.
+      "E2E-18 passes" is the ticket's acceptance criterion, so TP1-12 cannot close until this is green.
+      **Needs:** the full-stack harness + the mail-catcher.
+- [ ] **Smoke-test the SMTP send path (nodemailer under the Supabase/Deno edge runtime).** `notices.ts`
+      dynamically imports `npm:nodemailer@6.9.16` only when configured; it is asserted from documented npm
+      support, **not observed running**. Once the secrets are set, confirm a notice actually sends from the
+      deployed edge function (and swap the client if the runtime rejects it — the adapter is isolated so no
+      caller changes). **Needs:** the edge runtime deployed + the SMTP secrets (Q-1-21).
+- [ ] **Decide plain-text vs designed HTML templates ("Design needed: three email templates").** TP1-12 ships
+      **plain-text** notices (NFR-P4-safe, inherently accessible). If branded HTML emails are wanted, they need
+      a design and an HTML body added alongside the text part in `noticeTemplates.ts` (keep the text part as the
+      fallback). Best done once the domain is live so they can be seen rendering. **Needs:** the email design
+      (product decision — plain-text is the Phase-1 default unless changed).
