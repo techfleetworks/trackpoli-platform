@@ -1,33 +1,19 @@
-import type { Metadata } from "next";
-import { Suspense } from "react";
-import { requireUser } from "@/features/auth/session";
-import { getTwoFactorStatus } from "@/features/settings/security/twoFactor";
-import { TwoFactorCard } from "@/features/settings/security/TwoFactorCard";
-import { ActiveSessionsCard } from "@/features/settings/security/ActiveSessionsCard";
-import styles from "./page.module.css";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Security · TrackPoli Admin",
-};
+// /settings/security is now the Security TAB of the unified Settings page (TP1-11, P1-14). This route is kept
+// as a redirect so two things keep working without touching the auth routes: existing deep links/bookmarks,
+// and — importantly — the Google device-replacement re-authentication round-trip, which returns to
+// /admin/settings/security?reauth=ok|mismatch|error from the OAuth callback (unchanged). We forward the
+// reauth param so the replacement wizard, now mounted inside the Security tab, resumes exactly as before.
+// redirect() in a Server Component takes an app-relative path (basePath is added by Next), matching
+// requireUser()'s redirect("/sign-in").
 
-// The Security settings page. Reaching it already requires aal2 (RequireMfa routes a sub-aal2 session to
-// enrol/verify, and RLS denies aal1 data regardless), so it is a plain protected page: ensure a signed-in
-// administrator, read the two-factor status through the feature function, and render the card (ADR-0009).
-// The card reads the ?reauth return param (useSearchParams), so it sits inside a Suspense boundary.
-export default async function Page() {
-  await requireUser();
-  const status = await getTwoFactorStatus();
-  return (
-    <main className={styles.page}>
-      <h1 className={styles.heading}>Security</h1>
-      <Suspense>
-        <TwoFactorCard
-          enrolled={status.enrolled}
-          accountType={status.accountType}
-          isManager={status.isManager}
-        />
-      </Suspense>
-      <ActiveSessionsCard />
-    </main>
-  );
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ reauth?: string | string[] }>;
+}) {
+  const { reauth } = await searchParams;
+  const value = Array.isArray(reauth) ? reauth[0] : reauth;
+  redirect(value ? `/settings?tab=security&reauth=${encodeURIComponent(value)}` : "/settings?tab=security");
 }
