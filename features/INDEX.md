@@ -13,6 +13,19 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | admins/invite-admins.feature | Resending an invitation is throttled per invited administrator | admins | administrator-manager | resend-rate-limited | boundary | security | medium | covered |
 | admins/invite-admins.feature | Revoking a pending invitation deletes the account and kills the link | admins | administrator-manager | invite-revoked | happy | functional | medium | covered |
 | admins/invite-admins.feature | Submitting the activation twice activates the account exactly once | admins | administrator | activate-idempotent | edge | reliability | medium | covered |
+| admins/manage-admins.feature | A failed profile write restores the auth email so the two stores never diverge | admins | maintainer | change-email-rollback | adverse | reliability | high | covered |
+| admins/manage-admins.feature | A management function without a verified two-factor session is refused | admins | administrator-manager | manage-requires-aal2 | permission | security | high | covered |
+| admins/manage-admins.feature | Best-effort side-effects are reported, never silently swallowed, and never widen access | admins | maintainer | manage-defence-in-depth | edge | reliability | medium | covered |
+| admins/manage-admins.feature | Changing an email ends sessions, unlinks Google and keeps two-factor | admins | administrator-manager | change-email | happy | security | high | covered |
+| admins/manage-admins.feature | Changing to an address already in use, or to your own account, is rejected | admins | administrator-manager | change-email-duplicate | adverse | security | medium | covered |
+| admins/manage-admins.feature | Deactivating a signed-in administrator ends their access at once | admins | administrator-manager | E2E-09 | happy | security | critical | covered |
+| admins/manage-admins.feature | Demoting the last active manager is blocked by the database guard | admins | administrator-manager | change-role-last-manager | adverse | security | high | covered |
+| admins/manage-admins.feature | Only a deactivated administrator can be reactivated | admins | administrator-manager | reactivate | happy | functional | medium | covered |
+| admins/manage-admins.feature | Only an Administrator Manager can run the management functions | admins | administrator-manager | manage-manager-only | permission | security | high | covered |
+| admins/manage-admins.feature | Recreating a lost-authenticator account keeps the audit trail and issues a new invite | admins | administrator-manager | E2E-17 | happy | functional | high | covered |
+| admins/manage-admins.feature | Recreating your own account or the last manager is refused | admins | administrator-manager | recreate-guard | permission | security | high | covered |
+| admins/manage-admins.feature | The account_deleted snapshot carries the identity, and the operational log never does | admins | administrator-manager | recreate-audit | edge | security | high | covered |
+| admins/manage-admins.feature | The last Administrator Manager cannot remove their own access | admins | administrator-manager | E2E-10 | permission | security | critical | covered |
 | auth/password-recovery.feature | A Google-only account gets the same screen and no recovery email | auth | administrator | google-only-no-password | negative | security | medium | covered |
 | auth/password-recovery.feature | A reset request reveals nothing about whether an account exists | auth | anonymous | account-enumeration | negative | security | critical | covered |
 | auth/password-recovery.feature | A reused or expired reset link is refused and creates no session | auth | administrator | reset-link-single-use | adverse | security | high | covered |
@@ -70,6 +83,16 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | design-system/migration.feature | The sign-in screen uses design-system components with behaviour parity | design-system | end-user | signin-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The two-factor card and device-replacement modal use design-system components with behaviour parity | design-system | end-user | settings-2fa-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The two-factor enrolment wizard uses design-system components with behaviour parity | design-system | end-user | mfa-enrol-migrated | happy | functional | high | covered |
+| settings/profile-and-security.feature | A Google-only account has no password to change | settings | administrator | change-password-google-only | negative | security | medium | covered |
+| settings/profile-and-security.feature | A new password shorter than the minimum is refused after the current one is proven | settings | administrator | change-password-weak-new | boundary | security | medium | covered |
+| settings/profile-and-security.feature | A wrong current password is rejected and throttled, changing nothing | settings | administrator | change-password-wrong-current | adverse | security | high | covered |
+| settings/profile-and-security.feature | An empty or over-long display name is rejected without a write | settings | administrator | edit-display-name-invalid | boundary | functional | low | covered |
+| settings/profile-and-security.feature | Changing your own password re-verifies the current one and keeps you signed in | settings | administrator | change-own-password | happy | security | high | covered |
+| settings/profile-and-security.feature | Editing your display name updates only your own profile | settings | administrator | edit-own-display-name | happy | functional | medium | covered |
+| settings/profile-and-security.feature | The old Security URL and the Google re-auth return both land on the Security tab | settings | administrator | settings-security-redirect | edge | functional | low | covered |
+| settings/profile-and-security.feature | The Settings tabs and the not-yet-active controls are operable and honest | settings | assistive-tech | settings-tabs-a11y | happy | accessibility | medium | covered |
+| settings/profile-and-security.feature | The settings writes only ever touch your own account | settings | administrator | settings-self-only | permission | security | high | covered |
+| settings/profile-and-security.feature | The Workspace rules tab is shown only to an Administrator Manager | settings | administrator-manager | settings-workspace-tab-role-aware | permission | functional | low | covered |
 | shell/admin-shell.feature | A keyboard user can skip the navigation and reach the main content | shell | assistive-tech | E2E-13 | happy | accessibility | high | covered |
 | shell/admin-shell.feature | An automated accessibility scan finds no serious or critical violations | shell | assistive-tech | E2E-14 | happy | accessibility | high | covered |
 | shell/admin-shell.feature | The manager navigation entry is hidden for an Administrator | shell | administrator | manager-nav-hidden-shell | permission | accessibility | medium | covered |
