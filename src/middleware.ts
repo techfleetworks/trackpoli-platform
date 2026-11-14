@@ -23,6 +23,7 @@ import { readTermsAccepted, readInviteStatus } from "@/lib/supabase/server";
 import { ACTIVITY_COOKIE, evaluateActivity, readActivity } from "@/lib/sessionActivity";
 import { sessionLimits } from "@/lib/config";
 import { report } from "@/lib/report";
+import { generateNonce, buildCsp, securityHeaderEntries } from "@/lib/securityHeaders";
 
 /** Expire the session's cookies on a response so the browser stops presenting a dead session. */
 function clearAuthCookies(request: NextRequest, response: NextResponse): void {
@@ -34,13 +35,26 @@ function clearAuthCookies(request: NextRequest, response: NextResponse): void {
 }
 
 export async function middleware(request: NextRequest) {
+  // Per-request CSP nonce (TP1-13 PR B, ADR-0025). The nonce + the CSP ride on the forwarded REQUEST headers
+  // (x-nonce + content-security-policy) so Next nonces its own scripts; `secure` then stamps every response
+  // with the full security header set (CSP is report-only by default — CSP_ENFORCE flips it). Applied to the
+  // pass-through response AND every redirect/early return below.
+  const nonce = generateNonce();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("content-security-policy", buildCsp(nonce));
+  const secure = <T extends NextResponse>(res: T): T => {
+    for (const [name, value] of securityHeaderEntries(nonce)) res.headers.set(name, value);
+    return res;
+  };
+
   // Without Supabase env (e.g. local dev before the secrets are set) there is no session to refresh or
   // guard, so pass through and keep the UI reachable. Production always has env, so the guard is active.
   if (!hasSupabaseEnv()) {
-    return NextResponse.next();
+    return secure(NextResponse.next({ request: { headers: requestHeaders } }));
   }
 
-  const { response, user, aal, role, status } = await updateSession(request);
+  const { response, user, aal, role, status } = await updateSession(request, requestHeaders);
   const path = normalisePath(request.nextUrl.pathname);
 
   // Stage 1: session-timeout enforcement (TP1-05). Best-effort: if the cookie or secret cannot be read, the
@@ -64,14 +78,14 @@ export async function middleware(request: NextRequest) {
     if (path.startsWith("/api/")) {
       const denied = NextResponse.json({ ok: false, reason: "expired" }, { status: 401 });
       clearAuthCookies(request, denied);
-      return denied;
+      return secure(denied);
     }
     const expiredUrl = new URL("/admin/session-expired", request.url);
     expiredUrl.searchParams.set("reason", sessionDecision.cause);
     expiredUrl.searchParams.set("next", request.nextUrl.pathname);
     const redirect = NextResponse.redirect(expiredUrl);
     clearAuthCookies(request, redirect);
-    return redirect;
+    return secure(redirect);
   }
 
   // Stage 2 + 3 + 4: sign-in guard, then RequireTerms, then RequireMfa.
@@ -86,7 +100,7 @@ export async function middleware(request: NextRequest) {
   if (decision.action === "sign-in") {
     const signInUrl = new URL("/admin/sign-in", request.url);
     signInUrl.searchParams.set("next", request.nextUrl.pathname);
-    return NextResponse.redirect(signInUrl);
+    return secure(NextResponse.redirect(signInUrl));
   }
 
   // Stage 3: RequireTerms (TP1-08, Q-1-20). An authenticated session that has not accepted the current
@@ -100,7 +114,7 @@ export async function middleware(request: NextRequest) {
     if (termsGated) {
       const termsAccepted = await readTermsAccepted(request);
       if (decideTermsGate({ path, authenticated: true, termsAccepted }).action === "terms") {
-        return NextResponse.redirect(new URL("/admin/terms", request.url));
+        return secure(NextResponse.redirect(new URL("/admin/terms", request.url)));
       }
     }
   }
@@ -116,7 +130,7 @@ export async function middleware(request: NextRequest) {
     if (inviteGated) {
       const liveStatus = await readInviteStatus(request);
       if (decideInviteGate({ path, authenticated: true, status: liveStatus }).action === "accept-invite") {
-        return NextResponse.redirect(new URL("/admin/accept-invite", request.url));
+        return secure(NextResponse.redirect(new URL("/admin/accept-invite", request.url)));
       }
     }
   }
@@ -124,9 +138,9 @@ export async function middleware(request: NextRequest) {
   // Stage 4: RequireMfa.
   switch (decision.action) {
     case "enrol":
-      return NextResponse.redirect(new URL("/admin/mfa/enrol", request.url));
+      return secure(NextResponse.redirect(new URL("/admin/mfa/enrol", request.url)));
     case "verify":
-      return NextResponse.redirect(new URL("/admin/sign-in/verify", request.url));
+      return secure(NextResponse.redirect(new URL("/admin/sign-in/verify", request.url)));
     default: {
       // Stage 4: role gate (TP1-06). An administrator who reaches a manager-only route is redirected to the
       // forbidden screen, keeping the attempted path for its breadcrumb + copy. UX routing only — the manager
@@ -135,9 +149,9 @@ export async function middleware(request: NextRequest) {
       if (roleDecision.action === "forbidden") {
         const forbiddenUrl = new URL("/admin/forbidden", request.url);
         forbiddenUrl.searchParams.set("from", request.nextUrl.pathname);
-        return NextResponse.redirect(forbiddenUrl);
+        return secure(NextResponse.redirect(forbiddenUrl));
       }
-      return response;
+      return secure(response);
     }
   }
 }

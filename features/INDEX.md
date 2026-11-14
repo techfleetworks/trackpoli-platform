@@ -92,6 +92,10 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | ops/observability.feature | Errors reach Sentry scrubbed, with a request id and user id but never an email | ops | maintainer | observability-scrubbed-reports | happy | compliance | high | covered |
 | ops/observability.feature | Ten failed sign-ins in five minutes raise an alert | ops | administrator-manager | observability-failed-sign-ins-alert | adverse | security | high | covered |
 | ops/observability.feature | With no DSN configured nothing is sent and the app is unaffected | ops | maintainer | observability-inert-until-configured | edge | reliability | low | covered |
+| ops/security-headers.feature | Every response carries the browser security headers | ops | anonymous | security-headers-present | happy | security | high | covered |
+| ops/security-headers.feature | Only the origins the app actually calls are allowed | ops | anonymous | csp-allowlist | boundary | security | medium | covered |
+| ops/security-headers.feature | Scripts are governed by a per-request nonce, not an inline escape hatch | ops | anonymous | csp-nonce | happy | security | high | covered |
+| ops/security-headers.feature | The CSP ships report-only until staging is confirmed, then enforces by toggle | ops | maintainer | csp-report-only-default | happy | release-safety | medium | covered |
 | settings/profile-and-security.feature | A Google-only account has no password to change | settings | administrator | change-password-google-only | negative | security | medium | covered |
 | settings/profile-and-security.feature | A new password shorter than the minimum is refused after the current one is proven | settings | administrator | change-password-weak-new | boundary | security | medium | covered |
 | settings/profile-and-security.feature | A wrong current password is rejected and throttled, changing nothing | settings | administrator | change-password-wrong-current | adverse | security | high | covered |
