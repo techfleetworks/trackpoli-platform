@@ -1,36 +1,99 @@
-/* Material Design 3 design tokens for the TrackPoli admin app (ADR-0006). Colour roles and the type
-   scale are defined here ONLY; no colour literal may appear outside this file (decisions.md / P1-12).
-   Values are GRAYSCALE for now — the brand colour theme is applied later by swapping these values, with
-   no component changes. Taken verbatim from the Figma MD3 tokens (file: Track Poli Phase 3 — Design). */
+/* TrackPoli design tokens — the ONE home for colour (decisions.md / P1-12). No colour literal lives
+   outside this file. Brand: "Bold Pines", ported verbatim from the Figma design system
+   (file 4ktuHgniF8G2HU4Ovzj6gi): palette primitives, the Light/Dark semantic mapping, radius, and the
+   font families. ADR-0026 applies this brand + Light/Dark + the Mulish/Figtree/Geist Mono type scale; it
+   supersedes the GRAYSCALE values of ADR-0006 while keeping ADR-0011's token-swap architecture (shadcn
+   semantic vars map onto these tokens, so a theme change is a value swap, never a component change). */
 :root {
-  /* --- Colour roles (M3 "schemes/*") --- */
-  --md-primary: #000000;
-  --md-on-primary: #ffffff;
-  --md-on-surface: #1b1b1b;
-  --md-on-surface-variant: #474747;
-  --md-outline: #777777;
-  --md-outline-variant: #c6c6c6;
-  --md-surface: #f9f9f9;
-  --md-surface-container-lowest: #ffffff;
-  --md-surface-container-high: #e8e8e8;
-  --md-surface-container-highest: #e2e2e2;
-  --md-secondary-container: #d4d4d4;
-  --md-on-secondary-container: #1b1b1b;
-  --md-error: #b3261e;
-  --md-on-error: #ffffff;
+  /* === Brand palette primitives — the ONLY hex literals in the app (Figma "Primitives") === */
+  --tp-pine: #135734;
+  --tp-dark-pine: #1c352a;
+  --tp-slate: #33403a;
+  --tp-sage: #b9cdbd;
+  --tp-mist: #eef2ee;
+  --tp-coral: #ff6246;
+  --tp-destructive-orange: #7c2d12;
+  --tp-dark-pine-translucent: rgba(28, 53, 42, 0.4); /* Dark Pine @ 40% — all component strokes */
+  --tp-coral-translucent: rgba(255, 98, 70, 0.4); /* Coral @ 40% */
 
-  /* --- Shape --- */
+  /* === Font families (next/font variables are set on <html> in layout.tsx) === */
+  --tp-font-heading: var(--font-mulish), system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+  --tp-font-body: var(--font-figtree), system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+  --tp-font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* === Responsive type scale (ADR-0026) — 20px base (1rem = 20px via the responsive root in
+     globals.css, chosen for accessibility). rem for size, unitless line-height, em for tracking. === */
+  --text-display: 3rem;    --leading-display: 1.05; --tracking-display: -0.02em;
+  --text-h1: 2.25rem;      --leading-h1: 1.1;       --tracking-h1: -0.02em;
+  --text-h2: 1.875rem;     --leading-h2: 1.15;      --tracking-h2: -0.015em;
+  --text-h3: 1.5rem;       --leading-h3: 1.2;       --tracking-h3: -0.01em;
+  --text-h4: 1.25rem;      --leading-h4: 1.25;      --tracking-h4: -0.01em;
+  --text-lead: 1.25rem;    --leading-lead: 1.5;     --tracking-lead: 0;
+  --text-body: 1rem;       --leading-body: 1.6;     --tracking-body: 0;
+  --text-small: 0.875rem;  --leading-small: 1.5;    --tracking-small: 0;
+  --text-detail: 0.75rem;  --leading-detail: 1.4;   --tracking-detail: 0.01em;
+
+  /* === shadcn/ui semantic roles — LIGHT (Figma "Semantic/Light"). shadcn primitives read these;
+     each maps onto a palette primitive above, so colour has exactly one home. === */
+  --background: var(--tp-mist);
+  --foreground: var(--tp-dark-pine);
+  --card: var(--tp-mist);
+  --card-foreground: var(--tp-dark-pine);
+  --popover: var(--tp-mist);
+  --popover-foreground: var(--tp-dark-pine);
+  --primary: var(--tp-pine);
+  --primary-foreground: var(--tp-mist);
+  --secondary: var(--tp-sage);
+  --secondary-foreground: var(--tp-dark-pine);
+  --muted: var(--tp-sage);
+  --muted-foreground: var(--tp-slate);
+  --accent: var(--tp-sage);
+  --accent-foreground: var(--tp-dark-pine);
+  --destructive: var(--tp-destructive-orange);
+  --destructive-foreground: var(--tp-mist);
+  /* Figma decision: ALL component strokes are Dark Pine Translucent (overrides the Sage/Slate border
+     role). Honest limit: on the Dark-Pine dark background this border is near-invisible; a light dark-mode
+     fallback is a tracked follow-up (ADR-0026 Consequences). */
+  --border: var(--tp-dark-pine-translucent);
+  --input: var(--tp-dark-pine-translucent);
+  --ring: var(--tp-pine);
+  --coral: var(--tp-coral);
+
+  --radius: 8px; /* base control radius; the flat 4/8/12/16 scale is mapped in globals.css @theme */
+
+  /* === MD3 compatibility roles ===
+     The hand-built auth/shell/settings screens still read --md-* directly. Re-pointed from the old
+     grayscale values to the brand so those screens adopt Bold Pines with NO rewrite (a screen-by-screen
+     migration is a later pass, ADR-0011 D5). Colour + font only; the MD3 type-scale sizes and shape below
+     are unchanged. */
+  --md-primary: var(--tp-pine);
+  --md-on-primary: var(--tp-mist);
+  --md-on-surface: var(--tp-dark-pine);
+  --md-on-surface-variant: var(--tp-slate);
+  --md-outline: var(--tp-slate);
+  --md-outline-variant: var(--tp-dark-pine-translucent);
+  --md-surface: var(--tp-mist);
+  --md-surface-container-lowest: var(--tp-mist);
+  --md-surface-container-high: var(--tp-sage);
+  --md-surface-container-highest: var(--tp-sage);
+  --md-secondary-container: var(--tp-sage);
+  --md-on-secondary-container: var(--tp-dark-pine);
+  --md-error: var(--tp-destructive-orange);
+  --md-on-error: var(--tp-mist);
+
+  /* --- Shape (unchanged) --- */
   --md-shape-card: 28px;
   --md-shape-field: 8px;
   --md-shape-button: 28px; /* pill on a 56px control */
   --md-shape-banner: 12px;
   --md-shape-chip: 32px;
 
-  /* --- Elevation --- */
+  /* --- Elevation (unchanged) --- */
   --md-elevation-card: 0px 8px 24px 0px rgba(0, 0, 0, 0.12);
 
-  /* --- Type scale (M3 "static/*"), Roboto. Family comes from next/font (--md-font-roboto). --- */
-  --md-font-family: var(--md-font-roboto), system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* --- Type scale (MD3 sizes, kept for the hand-built screens) — now rendered in Figtree via
+     --md-font-family below instead of Roboto (ADR-0026). --- */
+  --md-font-family: var(--tp-font-body);
 
   --md-title-medium-size: 16px;
   --md-title-medium-line: 24px;
@@ -56,59 +119,46 @@
   --md-label-large-line: 20px;
   --md-label-large-weight: 500;
   --md-label-large-tracking: 0.1px;
-
-  /* M3 label-small — used by StatusTag and other compact chips (TP1-07). */
-  --md-label-small-size: 11px;
-  --md-label-small-line: 16px;
-  --md-label-small-weight: 500;
-  --md-label-small-tracking: 0.5px;
-
-  /* --- shadcn/ui theme variables (ADR-0011) ---
-     shadcn components read semantic roles (--background, --foreground, --primary, --border, --ring,
-     ...). We map each onto the MD3 grayscale role above with var(), so there is still exactly ONE home
-     for colour (this file) and no hex literal lives in a component or a Tailwind class (decisions.md).
-     Adding the brand colour, or dark mode (see .dark below), stays a token-value swap — no component
-     change — exactly as ADR-0006 planned. */
-  --background: var(--md-surface-container-lowest);
-  --foreground: var(--md-on-surface);
-  --card: var(--md-surface-container-lowest);
-  --card-foreground: var(--md-on-surface);
-  --popover: var(--md-surface-container-lowest);
-  --popover-foreground: var(--md-on-surface);
-  --primary: var(--md-primary);
-  --primary-foreground: var(--md-on-primary);
-  --secondary: var(--md-secondary-container);
-  --secondary-foreground: var(--md-on-secondary-container);
-  --muted: var(--md-surface-container-high);
-  --muted-foreground: var(--md-on-surface-variant);
-  --accent: var(--md-surface-container-highest);
-  --accent-foreground: var(--md-on-surface);
-  --destructive: var(--md-error);
-  --destructive-foreground: var(--md-on-error);
-  --border: var(--md-outline-variant);
-  --input: var(--md-outline-variant);
-  --ring: var(--md-outline);
-  --radius: var(--md-shape-field); /* 8px — base control radius; Tailwind derives sm/md/lg/xl from it */
 }
 
-/* Dark theme (ADR-0006's stated later-dark-mode path, ADR-0011).
-   OPT-IN and class-based: inert until a `.dark` ancestor exists, so it changes nothing on the current
-   screens. It is NOT wired to `prefers-color-scheme`, which would flip colours for dark-OS users and so
-   break PR 0's no-visual-change guarantee. Dark mode works by redefining the MD3 token VALUES here (the
-   grayscale dark neutral roles); the shadcn variables above reference these tokens, so they follow
-   automatically. Colour literals belong in this file only. */
+/* Dark theme (Figma "Semantic/Dark"). OPT-IN and class-based (ADR-0011): inert until a `.dark` ancestor
+   exists, so it changes nothing on current screens and is NOT wired to prefers-color-scheme. Dark works
+   by redefining the semantic + MD3 role VALUES here; components follow automatically. */
 .dark {
-  --md-primary: #ffffff;
-  --md-on-primary: #000000;
-  --md-on-surface: #e2e2e2;
-  --md-on-surface-variant: #c6c6c6;
-  --md-outline: #919191;
-  --md-outline-variant: #474747;
-  --md-surface-container-lowest: #0e0e0e;
-  --md-surface-container-high: #2a2a2a;
-  --md-surface-container-highest: #353535;
-  --md-secondary-container: #474747;
-  --md-on-secondary-container: #e2e2e2;
-  --md-error: #f2b8b5;
-  --md-on-error: #601410;
+  --background: var(--tp-dark-pine);
+  --foreground: var(--tp-mist);
+  --card: var(--tp-dark-pine);
+  --card-foreground: var(--tp-mist);
+  --popover: var(--tp-dark-pine);
+  --popover-foreground: var(--tp-mist);
+  --primary: var(--tp-pine);
+  --primary-foreground: var(--tp-mist);
+  --secondary: var(--tp-slate);
+  --secondary-foreground: var(--tp-mist);
+  --muted: var(--tp-slate);
+  --muted-foreground: var(--tp-sage);
+  --accent: var(--tp-slate);
+  --accent-foreground: var(--tp-mist);
+  --destructive: var(--tp-destructive-orange);
+  --destructive-foreground: var(--tp-mist);
+  --border: var(--tp-dark-pine-translucent);
+  --input: var(--tp-dark-pine-translucent);
+  --ring: var(--tp-sage);
+  --coral: var(--tp-coral);
+
+  /* MD3 roles for the hand-built screens in dark */
+  --md-primary: var(--tp-pine);
+  --md-on-primary: var(--tp-mist);
+  --md-on-surface: var(--tp-mist);
+  --md-on-surface-variant: var(--tp-sage);
+  --md-outline: var(--tp-sage);
+  --md-outline-variant: var(--tp-dark-pine-translucent);
+  --md-surface: var(--tp-dark-pine);
+  --md-surface-container-lowest: var(--tp-dark-pine);
+  --md-surface-container-high: var(--tp-slate);
+  --md-surface-container-highest: var(--tp-slate);
+  --md-secondary-container: var(--tp-slate);
+  --md-on-secondary-container: var(--tp-mist);
+  --md-error: var(--tp-destructive-orange);
+  --md-on-error: var(--tp-mist);
 }

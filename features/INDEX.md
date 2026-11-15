@@ -81,6 +81,11 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | design-system/component-accessibility.feature | The alert announces errors to screen readers | design-system | assistive-tech | alert-a11y | happy | accessibility | high | covered |
 | design-system/component-accessibility.feature | The button is keyboard operable with a visible focus state | design-system | assistive-tech | button-a11y | happy | accessibility | high | covered |
 | design-system/component-accessibility.feature | The input exposes its label and invalid state to assistive tech | design-system | assistive-tech | input-a11y | happy | accessibility | high | covered |
+| design-system/components.feature | A Card renders in a brand colour with the correct text colour | design-system | administrator | card-colour-variant | happy | functional | medium | covered |
+| design-system/components.feature | A data table keeps semantic roles and offers a row-actions control | design-system | assistive-tech | table-actions | happy | accessibility | high | covered |
+| design-system/components.feature | A Hover Card exposes its content when open | design-system | assistive-tech | hover-card-content | happy | functional | medium | covered |
+| design-system/components.feature | A Toast announces itself and shows its icon before the header | design-system | assistive-tech | toast-a11y | happy | accessibility | high | covered |
+| design-system/components.feature | The button is disabled consistently at every size | design-system | assistive-tech | button-disabled-all-sizes | negative | accessibility | medium | covered |
 | design-system/migration.feature | The app shell (side nav + error screens) uses design-system components with behaviour parity | design-system | administrator | shell-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The forgot-password screen uses design-system components with behaviour parity | design-system | end-user | forgot-password-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The session-timeout warning dialog uses design-system components with behaviour parity | design-system | end-user | session-warning-migrated | happy | functional | high | covered |
@@ -88,6 +93,9 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | design-system/migration.feature | The sign-in screen uses design-system components with behaviour parity | design-system | end-user | signin-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The two-factor card and device-replacement modal use design-system components with behaviour parity | design-system | end-user | settings-2fa-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The two-factor enrolment wizard uses design-system components with behaviour parity | design-system | end-user | mfa-enrol-migrated | happy | functional | high | covered |
+| design-system/theme.feature | Brand colour text pairs meet WCAG AAA contrast | design-system | assistive-tech | brand-contrast | happy | accessibility | high | covered |
+| design-system/theme.feature | Dark mode flips the semantic roles without changing components | design-system | administrator | brand-theme-dark | happy | functional | low | covered |
+| design-system/theme.feature | The application uses the Bold Pines brand colours in light mode | design-system | administrator | brand-theme | happy | functional | medium | covered |
 | ops/observability.feature | A server failure is recorded in both the operational log and Sentry | ops | maintainer | observability-dual-sink | happy | reliability | medium | covered |
 | ops/observability.feature | Errors reach Sentry scrubbed, with a request id and user id but never an email | ops | maintainer | observability-scrubbed-reports | happy | compliance | high | covered |
 | ops/observability.feature | Ten failed sign-ins in five minutes raise an alert | ops | administrator-manager | observability-failed-sign-ins-alert | adverse | security | high | covered |
