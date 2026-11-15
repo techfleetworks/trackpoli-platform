@@ -51,17 +51,88 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-coral: var(--coral);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* Brand palette as colour utilities (bg-pine/text-mist/…), for the fixed-colour component variants the
+     design system defines (coloured toasts, the Card Type×Color matrix, hover-card colours — ADR-0019).
+     These are the palette primitives, NOT semantic roles: use a semantic role (bg-primary, text-foreground)
+     for normal UI; reach for a palette utility only when the design calls for that exact brand colour. */
+  --color-pine: var(--tp-pine);
+  --color-dark-pine: var(--tp-dark-pine);
+  --color-slate: var(--tp-slate);
+  --color-sage: var(--tp-sage);
+  --color-mist: var(--tp-mist);
+
+  /* Radius — flat scale from the Figma design system (ADR-0018): sm 4 / md 8 / lg 12 / xl 16. Replaces
+     the earlier calc()-from-base derivation so each step matches the design system exactly. */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Font families (values live in the token layer; next/font vars are set on <html>). `font-heading`,
+     `font-sans` (body/UI), and `font-mono` utilities emit these directly. */
+  --font-sans: var(--tp-font-body);
+  --font-heading: var(--tp-font-heading);
+  --font-mono: var(--tp-font-mono);
+
+}
+
+/* The design-system type ramp (ADR-0018) is applied as base element styles below and via the
+   token-layer type variables (text, leading, tracking); shadcn's default rem text utilities scale with
+   the responsive root. */
+
+/* Responsive root (ADR-0018): 1rem = 20px on mobile, growing to 24px on wide viewports, so every rem
+   size scales smoothly. em breakpoints and px in the hand-built screens are unaffected. Honours the
+   user's browser zoom (no fixed px on html). */
+html {
+  font-size: clamp(20px, 18px + 0.6vw, 24px);
 }
 
 /* App font and colour. Unlayered so it wins over Preflight's html/body defaults. Box-sizing and the
-   margin reset now come from Preflight. */
+   margin reset now come from Preflight. Body is Figtree (via --md-font-family → --tp-font-body). */
 body {
-  font-family: var(--md-font-family);
-  line-height: 1.5;
-  color: var(--md-on-surface);
+  font-family: var(--tp-font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--foreground);
+  background-color: var(--background);
+}
+
+/* Design-system type ramp as base element styles (ADR-0018). Headings use Mulish; body/UI use Figtree;
+   inline code uses Geist Mono. Sizes are the 20px-base rem ramp. */
+h1 {
+  font-family: var(--tp-font-heading);
+  font-weight: 800;
+  font-size: var(--text-h1);
+  line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-h1);
+}
+h2 {
+  font-family: var(--tp-font-heading);
+  font-weight: 600;
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-h2);
+}
+h3 {
+  font-family: var(--tp-font-heading);
+  font-weight: 600;
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  letter-spacing: var(--tracking-h3);
+}
+h4 {
+  font-family: var(--tp-font-heading);
+  font-weight: 600;
+  font-size: var(--text-h4);
+  line-height: var(--leading-h4);
+  letter-spacing: var(--tracking-h4);
+}
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--tp-font-mono);
+  font-size: 0.875em;
 }

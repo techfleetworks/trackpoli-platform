@@ -847,6 +847,61 @@
     "status": "covered"
   },
   {
+    "feature": "design-system/components.feature",
+    "scenario": "A Card renders in a brand colour with the correct text colour",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "card-colour-variant",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/components.feature",
+    "scenario": "A data table keeps semantic roles and offers a row-actions control",
+    "domain": "design-system",
+    "audience": "assistive-tech",
+    "usecase": "table-actions",
+    "category": "happy",
+    "quality": "accessibility",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/components.feature",
+    "scenario": "A Hover Card exposes its content when open",
+    "domain": "design-system",
+    "audience": "assistive-tech",
+    "usecase": "hover-card-content",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/components.feature",
+    "scenario": "A Toast announces itself and shows its icon before the header",
+    "domain": "design-system",
+    "audience": "assistive-tech",
+    "usecase": "toast-a11y",
+    "category": "happy",
+    "quality": "accessibility",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/components.feature",
+    "scenario": "The button is disabled consistently at every size",
+    "domain": "design-system",
+    "audience": "assistive-tech",
+    "usecase": "button-disabled-all-sizes",
+    "category": "negative",
+    "quality": "accessibility",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
     "feature": "design-system/migration.feature",
     "scenario": "The app shell (side nav + error screens) uses design-system components with behaviour parity",
     "domain": "design-system",
@@ -921,6 +976,39 @@
     "category": "happy",
     "quality": "functional",
     "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/theme.feature",
+    "scenario": "Brand colour text pairs meet WCAG AAA contrast",
+    "domain": "design-system",
+    "audience": "assistive-tech",
+    "usecase": "brand-contrast",
+    "category": "happy",
+    "quality": "accessibility",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/theme.feature",
+    "scenario": "Dark mode flips the semantic roles without changing components",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "brand-theme-dark",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "low",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/theme.feature",
+    "scenario": "The application uses the Bold Pines brand colours in light mode",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "brand-theme",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
     "status": "covered"
   },
   {
