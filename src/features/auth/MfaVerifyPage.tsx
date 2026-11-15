@@ -19,7 +19,6 @@ import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/apiFetch";
 import { MFA_MESSAGES } from "./messages";
 import { AuthCard, AuthCardFooter } from "./AuthCard";
-import styles from "./MfaVerifyPage.module.css";
 import warningIcon from "./assets/warning.svg";
 
 // Mirrors the server's VerifyResult (kept local so this client file never imports the server module).
@@ -79,11 +78,16 @@ export function MfaVerifyPage() {
   return (
     <AuthCard aria-labelledby="verify-title">
       <form className="flex w-full flex-col gap-[22px]" onSubmit={onSubmit} noValidate>
-        <div className={styles.headingBlock}>
-          <h1 id="verify-title" className={styles.title}>
+        <div className="flex w-full flex-col gap-2">
+          <h1
+            id="verify-title"
+            className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground"
+          >
             Two-step verification
           </h1>
-          <p className={styles.subtext}>{MFA_MESSAGES.verifyIntro}</p>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">
+            {MFA_MESSAGES.verifyIntro}
+          </p>
         </div>
 
         {notice ? (
@@ -93,7 +97,7 @@ export function MfaVerifyPage() {
           </Alert>
         ) : null}
 
-        <div className={styles.fields}>
+        <div className="flex w-full flex-col gap-4">
           <div className="flex w-full flex-col gap-1.5">
             <Label htmlFor={codeId}>Verification code</Label>
             <Input

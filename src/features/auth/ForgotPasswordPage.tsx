@@ -21,7 +21,6 @@ import { ForgotPasswordSentPage } from "./ForgotPasswordSentPage";
 import { TurnstileSlot } from "./TurnstileSlot";
 import { PASSWORD_RESET_MESSAGES } from "./messages";
 import { AuthCard, AuthCardFooter } from "./AuthCard";
-import styles from "./ForgotPasswordPage.module.css";
 import warningIcon from "./assets/warning.svg";
 import arrowBackIcon from "./assets/arrow-back.svg";
 
@@ -34,10 +33,15 @@ const NEEDS_TURNSTILE = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
 
 function BackToSignIn() {
   return (
-    <div className={styles.backRow}>
-      <a className={styles.back} href="/admin/sign-in">
+    <div className="flex w-full justify-center">
+      <a
+        href="/admin/sign-in"
+        className="inline-flex h-11 items-center gap-1.5 rounded-full px-3 no-underline hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+      >
         <Icon src={arrowBackIcon} size={20} />
-        <span className={styles.backLabel}>Back to sign in</span>
+        <span className="font-sans text-[length:var(--md-label-large-size)] font-medium leading-[var(--md-label-large-line)] tracking-[var(--md-label-large-tracking)] text-primary">
+          Back to sign in
+        </span>
       </a>
     </div>
   );
@@ -95,11 +99,14 @@ export function ForgotPasswordPage() {
   return (
     <AuthCard aria-labelledby="forgot-title">
       <form className="flex w-full flex-col gap-[22px]" onSubmit={onSubmit} noValidate>
-        <div className={styles.headingBlock}>
-          <h1 id="forgot-title" className={styles.title}>
+        <div className="flex w-full flex-col gap-2">
+          <h1
+            id="forgot-title"
+            className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground"
+          >
             Reset your password
           </h1>
-          <p className={styles.subtext}>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">
             Enter the email linked to your admin account and we&rsquo;ll send a secure reset link.
           </p>
         </div>
@@ -111,7 +118,7 @@ export function ForgotPasswordPage() {
           </Alert>
         ) : null}
 
-        <div className={styles.fields}>
+        <div className="flex w-full flex-col gap-4">
           <div className="flex w-full flex-col gap-1.5">
             <Label htmlFor={emailId}>Email</Label>
             <Input

@@ -97,3 +97,18 @@ Feature: Existing features migrate to the design system
     Given the check-your-email screen migrated its layout with no logic change
     When it renders after a password-reset request
     Then the enumeration-safe conditional "If an account exists" copy is unchanged
+
+  # Form-screen layout migration (ADR-0028 follow-up): the forgot-password and two-step verification screens
+  # drop their per-screen CSS Modules for design-system Tailwind utilities. Presentation-only.
+
+  @audience:administrator @usecase:form-layout-migrated @category:happy @quality:functional @severity:medium
+  Scenario: The forgot-password and verification screens render with design-system utilities after dropping the CSS Module
+    Given the forgot-password and two-step verification screens migrated their per-screen layout off the CSS Module
+    When each screen renders
+    Then the heading, the field, the submit action and any helper still display and behave as before
+
+  @security @audience:administrator @usecase:form-layout-security-parity @category:adverse @quality:security @severity:high
+  Scenario: The form-screen layout migration keeps the enumeration-safe and no-detail behaviour
+    Given the forgot-password screen migrated its layout with no logic change
+    When a password reset is requested
+    Then the same enumeration-safe "sent" acknowledgement shows whether or not the account exists
