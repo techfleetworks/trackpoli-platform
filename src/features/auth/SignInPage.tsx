@@ -15,11 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/apiFetch";
 import { AccountLockedCard } from "./AccountLockedCard";
+import { AuthCard, AuthCardFooter } from "./AuthCard";
 import { TurnstileSlot } from "./TurnstileSlot";
 import { SIGN_IN_MESSAGES } from "./messages";
-import card from "./authCard.module.css";
 import styles from "./SignInPage.module.css";
-import markIcon from "./assets/mark.svg";
 import visibilityIcon from "./assets/visibility.svg";
 import warningIcon from "./assets/warning.svg";
 import googleIcon from "./assets/google.svg";
@@ -113,15 +112,8 @@ export function SignInPage() {
     attemptsRemaining !== null ? SIGN_IN_MESSAGES.attemptsRemaining(attemptsRemaining) : undefined;
 
   return (
-    <main className={card.page}>
-      <form className={card.card} onSubmit={onSubmit} noValidate aria-labelledby="signin-title">
-        <div className={card.brand}>
-          <span className={card.brandMark}>
-            <Icon src={markIcon} size={22} />
-          </span>
-          <span className={card.brandName}>TrackPoli Admin</span>
-        </div>
-
+    <AuthCard aria-labelledby="signin-title">
+      <form className="flex w-full flex-col gap-[22px]" onSubmit={onSubmit} noValidate>
         <div className={styles.headingBlock}>
           <h1 id="signin-title" className={styles.title}>
             Sign in
@@ -220,10 +212,10 @@ export function SignInPage() {
           Sign in
         </Button>
 
-        <p className={card.footer}>
+        <AuthCardFooter>
           Access is restricted to approved administrators. All sign-in attempts are logged for audit.
-        </p>
+        </AuthCardFooter>
       </form>
-    </main>
+    </AuthCard>
   );
 }

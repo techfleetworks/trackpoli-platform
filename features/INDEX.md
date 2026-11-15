@@ -87,6 +87,8 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | design-system/components.feature | A Toast announces itself and shows its icon before the header | design-system | assistive-tech | toast-a11y | happy | accessibility | high | covered |
 | design-system/components.feature | The button is disabled consistently at every size | design-system | assistive-tech | button-disabled-all-sizes | negative | accessibility | medium | covered |
 | design-system/migration.feature | The app shell (side nav + error screens) uses design-system components with behaviour parity | design-system | administrator | shell-migrated | happy | functional | high | covered |
+| design-system/migration.feature | The auth screens share the design-system AuthCard shell with behaviour parity | design-system | administrator | auth-card-migrated | happy | functional | high | covered |
+| design-system/migration.feature | The auth-card migration preserves the screens' security properties | design-system | administrator | auth-card-security-parity | adverse | security | high | covered |
 | design-system/migration.feature | The forgot-password screen uses design-system components with behaviour parity | design-system | end-user | forgot-password-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The session-timeout warning dialog uses design-system components with behaviour parity | design-system | end-user | session-warning-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The set-new-password screen uses design-system components with behaviour parity | design-system | end-user | reset-password-migrated | happy | functional | high | covered |

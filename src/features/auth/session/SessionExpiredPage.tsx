@@ -17,9 +17,8 @@ import { Icon } from "@/components/ui/Icon";
 import { apiFetch } from "@/lib/apiFetch";
 import { report } from "@/lib/report";
 import { SESSION_MESSAGES as M } from "@/features/auth/messages";
-import card from "../authCard.module.css";
+import { AuthCard, AuthCardFooter } from "../AuthCard";
 import styles from "./SessionExpiredPage.module.css";
-import markIcon from "../assets/mark.svg";
 import clockIcon from "../assets/clock.svg";
 
 /** Keep only an in-app admin path, so a crafted ?next cannot redirect off-site (open redirect). */
@@ -48,15 +47,7 @@ export function SessionExpiredPage() {
   }, []);
 
   return (
-    <main className={card.page}>
-      <div className={card.card}>
-        <div className={`${card.brand} ${card.brandCentered}`}>
-          <span className={card.brandMark}>
-            <Icon src={markIcon} size={22} />
-          </span>
-          <span className={card.brandName}>TrackPoli Admin</span>
-        </div>
-
+    <AuthCard brandCentered>
         <div className={styles.iconRow}>
           <span className={styles.iconChip}>
             <Icon src={clockIcon} size={30} />
@@ -78,8 +69,7 @@ export function SessionExpiredPage() {
           {M.signInAgain}
         </Button>
 
-        <p className={card.footer}>{M.expiredFootnote}</p>
-      </div>
-    </main>
+        <AuthCardFooter>{M.expiredFootnote}</AuthCardFooter>
+    </AuthCard>
   );
 }

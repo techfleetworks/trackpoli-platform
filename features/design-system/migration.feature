@@ -63,3 +63,22 @@ Feature: Existing features migrate to the design system
     When an administrator collapses the nav, expands a section, or opens a forbidden/not-found screen
     Then the controls behave exactly as before the migration
     And they stay native buttons with their names and aria state, and the nav links stay basePath-relative
+
+  # Auth-card shell migration (ADR-0028): the 9 auth screens move their card shell to the shared AuthCard on
+  # the design-system Card primitive and the shared authCard.module.css is deleted. Behaviour parity is proven
+  # by the existing per-screen suites plus AuthCard.test.tsx; the security properties are unchanged because the
+  # migration is presentation-only (no auth/session/password logic touched).
+
+  @audience:administrator @usecase:auth-card-migrated @category:happy @quality:functional @severity:high
+  Scenario: The auth screens share the design-system AuthCard shell with behaviour parity
+    Given the auth screens migrated their card shell to the shared AuthCard component
+    When an administrator opens any auth screen
+    Then each screen behaves exactly as before the migration
+    And the brand lockup, the labelled card and the footer note are preserved
+
+  @security @audience:administrator @usecase:auth-card-security-parity @category:adverse @quality:security @severity:high
+  Scenario: The auth-card migration preserves the screens' security properties
+    Given the auth card shell moved to the shared AuthCard component with no auth, session or password logic changed
+    When the forgot-password and session-expired screens render after the migration
+    Then the enumeration-safe "check your email" acknowledgement copy is unchanged
+    And the session-expired screen still fires a best-effort server sign-out on mount

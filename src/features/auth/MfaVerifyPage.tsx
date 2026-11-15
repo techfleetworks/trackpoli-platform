@@ -18,9 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/apiFetch";
 import { MFA_MESSAGES } from "./messages";
-import card from "./authCard.module.css";
+import { AuthCard, AuthCardFooter } from "./AuthCard";
 import styles from "./MfaVerifyPage.module.css";
-import markIcon from "./assets/mark.svg";
 import warningIcon from "./assets/warning.svg";
 
 // Mirrors the server's VerifyResult (kept local so this client file never imports the server module).
@@ -78,15 +77,8 @@ export function MfaVerifyPage() {
   }
 
   return (
-    <main className={card.page}>
-      <form className={card.card} onSubmit={onSubmit} noValidate aria-labelledby="verify-title">
-        <div className={card.brand}>
-          <span className={card.brandMark}>
-            <Icon src={markIcon} size={22} />
-          </span>
-          <span className={card.brandName}>TrackPoli Admin</span>
-        </div>
-
+    <AuthCard aria-labelledby="verify-title">
+      <form className="flex w-full flex-col gap-[22px]" onSubmit={onSubmit} noValidate>
         <div className={styles.headingBlock}>
           <h1 id="verify-title" className={styles.title}>
             Two-step verification
@@ -123,8 +115,8 @@ export function MfaVerifyPage() {
           Verify
         </Button>
 
-        <p className={card.footer}>{MFA_MESSAGES.verifyRecoveryHelp}</p>
+        <AuthCardFooter>{MFA_MESSAGES.verifyRecoveryHelp}</AuthCardFooter>
       </form>
-    </main>
+    </AuthCard>
   );
 }

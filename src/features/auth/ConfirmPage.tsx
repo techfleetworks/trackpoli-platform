@@ -11,9 +11,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/LegacyButton";
 import { Icon } from "@/components/ui/Icon";
 import { apiFetch } from "@/lib/apiFetch";
-import card from "./authCard.module.css";
+import { AuthCard, AuthCardFooter } from "./AuthCard";
 import styles from "./ConfirmPage.module.css";
-import markIcon from "./assets/mark.svg";
 import clockIcon from "./assets/clock-lg.svg";
 import errorIcon from "./assets/error.svg";
 import arrowBackIcon from "./assets/arrow-back.svg";
@@ -21,17 +20,6 @@ import arrowBackIcon from "./assets/arrow-back.svg";
 type ConfirmResponse = { outcome: "ok" } | { outcome: "expired" } | { outcome: "error" };
 
 type Status = "idle" | "verifying" | "expired" | "error";
-
-function Brand() {
-  return (
-    <div className={`${card.brand} ${card.brandCentered}`}>
-      <span className={card.brandMark}>
-        <Icon src={markIcon} size={22} />
-      </span>
-      <span className={card.brandName}>TrackPoli Admin</span>
-    </div>
-  );
-}
 
 function BackToSignIn() {
   return (
@@ -62,9 +50,7 @@ function ResultCard({
   primaryHref: string;
 }) {
   return (
-    <main className={card.page}>
-      <section className={card.card} aria-labelledby="confirm-result-title">
-        <Brand />
+    <AuthCard aria-labelledby="confirm-result-title" brandCentered>
         <div className={styles.chipRow}>
           <span className={styles.chip}>
             <Icon src={icon} size={30} />
@@ -85,8 +71,7 @@ function ResultCard({
           {primaryLabel}
         </Button>
         <BackToSignIn />
-      </section>
-    </main>
+    </AuthCard>
   );
 }
 
@@ -165,9 +150,7 @@ export function ConfirmPage({ tokenHash, type }: { tokenHash: string | null; typ
 
   const verifying = status === "verifying";
   return (
-    <main className={card.page}>
-      <section className={card.card} aria-labelledby="confirm-title">
-        <Brand />
+    <AuthCard aria-labelledby="confirm-title" brandCentered>
         <div className={styles.headingBlock}>
           <h1 id="confirm-title" className={styles.title}>
             {copy.continueTitle}
@@ -182,8 +165,7 @@ export function ConfirmPage({ tokenHash, type }: { tokenHash: string | null; typ
             Cancel
           </a>
         </div>
-        <p className={card.footer}>This link can be used only once and expires 24 hours after it was sent.</p>
-      </section>
-    </main>
+        <AuthCardFooter>This link can be used only once and expires 24 hours after it was sent.</AuthCardFooter>
+    </AuthCard>
   );
 }

@@ -1,5 +1,5 @@
 /* /auth/confirm Continue page (Figma 1275:3830, 1276:3876, 1276:3914). Shares the auth shell
-   (authCard.module.css). Centred content for all states. */
+   (the shared AuthCard component). Centred content for all states. */
 
 .chipRow {
   display: flex;
