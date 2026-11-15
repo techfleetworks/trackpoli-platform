@@ -19,7 +19,6 @@ import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/apiFetch";
 import { PASSWORD_RESET_MESSAGES } from "./messages";
 import { AuthCard } from "./AuthCard";
-import styles from "./ResetPasswordPage.module.css";
 import warningIcon from "./assets/warning.svg";
 import visibilityIcon from "./assets/visibility.svg";
 import checkIcon from "./assets/check.svg";
@@ -32,10 +31,15 @@ type ResetResponse = { outcome: "done" } | { outcome: "no_session" } | { outcome
 
 function BackToSignIn() {
   return (
-    <div className={styles.backRow}>
-      <a className={styles.back} href="/admin/sign-in">
+    <div className="flex w-full justify-center">
+      <a
+        href="/admin/sign-in"
+        className="inline-flex h-11 items-center gap-1.5 rounded-full px-3 no-underline hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+      >
         <Icon src={arrowBackIcon} size={20} />
-        <span className={styles.backLabel}>Back to sign in</span>
+        <span className="font-sans text-[length:var(--md-label-large-size)] font-medium leading-[var(--md-label-large-line)] tracking-[var(--md-label-large-tracking)] text-primary">
+          Back to sign in
+        </span>
       </a>
     </div>
   );
@@ -46,11 +50,16 @@ function BackToSignIn() {
 export function ResetLinkInvalidCard() {
   return (
     <AuthCard aria-labelledby="reset-invalid-title">
-        <div className={styles.headingBlock}>
-          <h1 id="reset-invalid-title" className={styles.title}>
+        <div className="flex w-full flex-col gap-2">
+          <h1
+            id="reset-invalid-title"
+            className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground"
+          >
             This link has expired
           </h1>
-          <p className={styles.subtext}>{PASSWORD_RESET_MESSAGES.linkExpired}</p>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">
+            {PASSWORD_RESET_MESSAGES.linkExpired}
+          </p>
         </div>
         <Button
           variant="secondary"
@@ -117,11 +126,16 @@ export function ResetPasswordPage({ email }: { email: string }) {
   return (
     <AuthCard aria-labelledby="reset-title">
       <form className="flex w-full flex-col gap-[22px]" onSubmit={onSubmit} noValidate>
-        <div className={styles.headingBlock}>
-          <h1 id="reset-title" className={styles.title}>
+        <div className="flex w-full flex-col gap-2">
+          <h1
+            id="reset-title"
+            className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground"
+          >
             Set a new password
           </h1>
-          <p className={styles.subtext}>Create a new password for {email}.</p>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">
+            Create a new password for {email}.
+          </p>
         </div>
 
         {notice ? (
@@ -131,7 +145,7 @@ export function ResetPasswordPage({ email }: { email: string }) {
           </Alert>
         ) : null}
 
-        <div className={styles.fields}>
+        <div className="flex w-full flex-col gap-4">
           <div className="flex w-full flex-col gap-1.5">
             <Label htmlFor={newPasswordId}>New password</Label>
             <div className="relative">
@@ -196,11 +210,20 @@ export function ResetPasswordPage({ email }: { email: string }) {
           </div>
         </div>
 
-        <div className={styles.requirements}>
-          <p className={styles.reqTitle}>Password must include:</p>
-          <p className={styles.reqItem}>
+        <div className="flex w-full flex-col gap-2 rounded-lg bg-accent px-4 py-3.5">
+          <p className="m-0 font-sans text-[length:var(--md-body-small-size)] leading-[var(--md-body-small-line)] tracking-[var(--md-body-small-tracking)] text-muted-foreground">
+            Password must include:
+          </p>
+          <p className="m-0 flex items-center gap-2">
             <Icon src={meetsLength ? checkIcon : dotIcon} size={18} />
-            <span className={meetsLength ? styles.reqMet : styles.reqText}>At least 12 characters</span>
+            <span
+              className={
+                "font-sans text-[length:var(--md-body-small-size)] leading-[var(--md-body-small-line)] tracking-[var(--md-body-small-tracking)] " +
+                (meetsLength ? "text-foreground" : "text-muted-foreground")
+              }
+            >
+              At least 12 characters
+            </span>
           </p>
         </div>
 

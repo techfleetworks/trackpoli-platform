@@ -112,3 +112,18 @@ Feature: Existing features migrate to the design system
     Given the forgot-password screen migrated its layout with no logic change
     When a password reset is requested
     Then the same enumeration-safe "sent" acknowledgement shows whether or not the account exists
+
+  # Sign-in & set-new-password layout migration (ADR-0028 follow-up): drop the per-screen CSS Modules for
+  # design-system utilities (heading, fields, forgot/back links, the "or" divider, the requirements panel).
+
+  @audience:administrator @usecase:signin-reset-layout-migrated @category:happy @quality:functional @severity:medium
+  Scenario: The sign-in and set-new-password screens render with design-system utilities after dropping the CSS Module
+    Given the sign-in and set-new-password screens migrated their per-screen layout off the CSS Module
+    When each screen renders
+    Then the heading, fields, links, divider and password-requirements panel still display and behave as before
+
+  @security @audience:administrator @usecase:signin-reset-layout-security-parity @category:adverse @quality:security @severity:high
+  Scenario: The sign-in and reset layout migration preserves the credential-handling behaviour
+    Given the sign-in and set-new-password screens migrated their layout with no logic change
+    When a user signs in or sets a new password
+    Then the generic no-detail sign-in errors and the length-only password policy are unchanged

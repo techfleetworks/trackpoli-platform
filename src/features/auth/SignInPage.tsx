@@ -18,7 +18,6 @@ import { AccountLockedCard } from "./AccountLockedCard";
 import { AuthCard, AuthCardFooter } from "./AuthCard";
 import { TurnstileSlot } from "./TurnstileSlot";
 import { SIGN_IN_MESSAGES } from "./messages";
-import styles from "./SignInPage.module.css";
 import visibilityIcon from "./assets/visibility.svg";
 import warningIcon from "./assets/warning.svg";
 import googleIcon from "./assets/google.svg";
@@ -114,11 +113,14 @@ export function SignInPage() {
   return (
     <AuthCard aria-labelledby="signin-title">
       <form className="flex w-full flex-col gap-[22px]" onSubmit={onSubmit} noValidate>
-        <div className={styles.headingBlock}>
-          <h1 id="signin-title" className={styles.title}>
+        <div className="flex w-full flex-col gap-2">
+          <h1
+            id="signin-title"
+            className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground"
+          >
             Sign in
           </h1>
-          <p className={styles.subtext}>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">
             Use your TrackPoli administrator credentials to access the console.
           </p>
         </div>
@@ -130,7 +132,7 @@ export function SignInPage() {
           </Alert>
         ) : null}
 
-        <div className={styles.fields}>
+        <div className="flex w-full flex-col gap-4">
           <div className="flex w-full flex-col gap-1.5">
             <Label htmlFor={emailId}>Email</Label>
             <Input
@@ -182,16 +184,21 @@ export function SignInPage() {
           </div>
         </div>
 
-        <div className={styles.forgotRow}>
-          <a className={styles.forgot} href="/admin/forgot-password">
+        <div className="flex w-full justify-end">
+          <a
+            href="/admin/forgot-password"
+            className="font-sans text-[length:var(--md-label-large-size)] font-medium leading-[var(--md-label-large-line)] tracking-[var(--md-label-large-tracking)] text-primary no-underline hover:underline"
+          >
             Forgot password?
           </a>
         </div>
 
-        <div className={styles.divider}>
-          <span className={styles.rule} />
-          <span className={styles.or}>or</span>
-          <span className={styles.rule} />
+        <div className="flex w-full items-center gap-3">
+          <span className="h-px min-w-0 flex-1 bg-border" />
+          <span className="font-sans text-[length:var(--md-body-small-size)] leading-[var(--md-body-small-line)] tracking-[var(--md-body-small-tracking)] text-muted-foreground">
+            or
+          </span>
+          <span className="h-px min-w-0 flex-1 bg-border" />
         </div>
 
         <Button

@@ -1013,6 +1013,28 @@
   },
   {
     "feature": "design-system/migration.feature",
+    "scenario": "The sign-in and reset layout migration preserves the credential-handling behaviour",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "signin-reset-layout-security-parity",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
+    "scenario": "The sign-in and set-new-password screens render with design-system utilities after dropping the CSS Module",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "signin-reset-layout-migrated",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
     "scenario": "The sign-in screen uses design-system components with behaviour parity",
     "domain": "design-system",
     "audience": "end-user",
