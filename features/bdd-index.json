@@ -936,6 +936,28 @@
   },
   {
     "feature": "design-system/migration.feature",
+    "scenario": "The continue and session-expired layout migration preserves the token-on-click and safe-redirect behaviour",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "confirm-expired-layout-security-parity",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
+    "scenario": "The continue and session-expired screens render with design-system utilities after dropping the CSS Module",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "confirm-expired-layout-migrated",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
     "scenario": "The forgot-password and verification screens render with design-system utilities after dropping the CSS Module",
     "domain": "design-system",
     "audience": "administrator",

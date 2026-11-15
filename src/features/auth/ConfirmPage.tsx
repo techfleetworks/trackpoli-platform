@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/LegacyButton";
 import { Icon } from "@/components/ui/Icon";
 import { apiFetch } from "@/lib/apiFetch";
 import { AuthCard, AuthCardFooter } from "./AuthCard";
-import styles from "./ConfirmPage.module.css";
 import clockIcon from "./assets/clock-lg.svg";
 import errorIcon from "./assets/error.svg";
 import arrowBackIcon from "./assets/arrow-back.svg";
@@ -23,10 +22,15 @@ type Status = "idle" | "verifying" | "expired" | "error";
 
 function BackToSignIn() {
   return (
-    <div className={styles.backRow}>
-      <a className={styles.back} href="/admin/sign-in">
+    <div className="flex w-full justify-center">
+      <a
+        href="/admin/sign-in"
+        className="inline-flex h-11 items-center gap-1.5 rounded-full px-3 no-underline hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+      >
         <Icon src={arrowBackIcon} size={20} />
-        <span className={styles.backLabel}>Back to sign in</span>
+        <span className="font-sans text-[length:var(--md-label-large-size)] font-medium leading-[var(--md-label-large-line)] tracking-[var(--md-label-large-tracking)] text-primary">
+          Back to sign in
+        </span>
       </a>
     </div>
   );
@@ -51,16 +55,21 @@ function ResultCard({
 }) {
   return (
     <AuthCard aria-labelledby="confirm-result-title" brandCentered>
-        <div className={styles.chipRow}>
-          <span className={styles.chip}>
+        <div className="flex w-full justify-center">
+          <span className="flex size-16 items-center justify-center rounded-full bg-accent">
             <Icon src={icon} size={30} />
           </span>
         </div>
-        <div className={styles.headingBlock}>
-          <h1 id="confirm-result-title" className={styles.title}>
+        <div className="flex w-full flex-col gap-2 text-center">
+          <h1
+            id="confirm-result-title"
+            className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground"
+          >
             {title}
           </h1>
-          <p className={styles.body}>{body}</p>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">
+            {body}
+          </p>
         </div>
         <Button
           variant="filled"
@@ -151,17 +160,25 @@ export function ConfirmPage({ tokenHash, type }: { tokenHash: string | null; typ
   const verifying = status === "verifying";
   return (
     <AuthCard aria-labelledby="confirm-title" brandCentered>
-        <div className={styles.headingBlock}>
-          <h1 id="confirm-title" className={styles.title}>
+        <div className="flex w-full flex-col gap-2 text-center">
+          <h1
+            id="confirm-title"
+            className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground"
+          >
             {copy.continueTitle}
           </h1>
-          <p className={styles.body}>{copy.continueBody}</p>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">
+            {copy.continueBody}
+          </p>
         </div>
         <Button variant="filled" onClick={onContinue} disabled={verifying}>
           {verifying ? "Verifying…" : "Continue"}
         </Button>
-        <div className={styles.cancelRow}>
-          <a className={styles.cancel} href="/admin/sign-in">
+        <div className="flex w-full justify-center">
+          <a
+            href="/admin/sign-in"
+            className="inline-flex h-11 items-center rounded-full px-3 no-underline font-sans text-[length:var(--md-label-large-size)] font-medium leading-[var(--md-label-large-line)] tracking-[var(--md-label-large-tracking)] text-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+          >
             Cancel
           </a>
         </div>

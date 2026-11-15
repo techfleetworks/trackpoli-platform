@@ -18,7 +18,6 @@ import { apiFetch } from "@/lib/apiFetch";
 import { report } from "@/lib/report";
 import { SESSION_MESSAGES as M } from "@/features/auth/messages";
 import { AuthCard, AuthCardFooter } from "../AuthCard";
-import styles from "./SessionExpiredPage.module.css";
 import clockIcon from "../assets/clock.svg";
 
 /** Keep only an in-app admin path, so a crafted ?next cannot redirect off-site (open redirect). */
@@ -48,20 +47,24 @@ export function SessionExpiredPage() {
 
   return (
     <AuthCard brandCentered>
-        <div className={styles.iconRow}>
-          <span className={styles.iconChip}>
+        <div className="flex w-full justify-center">
+          <span className="flex size-16 items-center justify-center rounded-full bg-accent">
             <Icon src={clockIcon} size={30} />
           </span>
         </div>
 
-        <div className={styles.headingBlock}>
-          <h1 className={styles.title}>{isAbsolute ? M.expiredAbsoluteTitle : M.expiredIdleTitle}</h1>
-          <p className={styles.body}>{isAbsolute ? M.expiredAbsoluteBody : M.expiredIdleBody}</p>
+        <div className="flex w-full flex-col gap-2 text-center">
+          <h1 className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground">
+            {isAbsolute ? M.expiredAbsoluteTitle : M.expiredIdleTitle}
+          </h1>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">
+            {isAbsolute ? M.expiredAbsoluteBody : M.expiredIdleBody}
+          </p>
         </div>
 
         <Button
           variant="filled"
-          className={styles.fullButton}
+          className="w-full"
           onClick={() => {
             window.location.assign(signInHref);
           }}
