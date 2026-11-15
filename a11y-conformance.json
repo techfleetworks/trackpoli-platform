@@ -65,7 +65,7 @@
   },
   "1.4.3": {
     "status": "pass-manual",
-    "note": "Grayscale MD3 tokens; text/background pairings inspected against 4.5:1 (normal) / 3:1 (large). Re-verified when the brand colour replaces the grayscale token values (ADR-0006). TP1-05: the warning dialog, session-expired card and Active sessions card reuse the same grayscale text/surface token pairings already inspected against 4.5:1 / 3:1. TP1-06: the shell, nav, error screens and placeholders reuse the grayscale text/surface token pairings already inspected against 4.5:1 / 3:1; the active nav item uses a secondary-container background with on-secondary-container text, not colour alone. PR 3/4 (shadcn): the migrated primitives resolve their colours from the SAME MD3 grayscale tokens (bg-background/text-foreground/etc. map 1:1 to the inspected token pairings), so contrast is preserved BY CONSTRUCTION — but the RENDERED shadcn appearance was NOT re-measured headlessly (not-assessed); a human/Figma + axe pass is required before merge.",
+    "note": "Grayscale MD3 tokens; text/background pairings inspected against 4.5:1 (normal) / 3:1 (large). BRAND LANDED 2026-11-14 (ADR-0018): the grayscale values were replaced by the Bold Pines palette; all text/surface semantic pairs now compute >=7:1 (AAA) in BOTH light and dark, proven by the executable test src/styles/theme-contract.test.ts (20/20). The mapping follows the Figma Color Usage decision set (Pine BG -> Mist text only; Coral is decorative, never a text surface; Slate BG -> Mist text; Dark Pine BG -> Mist or Sage text). Prior grayscale note (ADR-0006): TP1-05: the warning dialog, session-expired card and Active sessions card reuse the same grayscale text/surface token pairings already inspected against 4.5:1 / 3:1. TP1-06: the shell, nav, error screens and placeholders reuse the grayscale text/surface token pairings already inspected against 4.5:1 / 3:1; the active nav item uses a secondary-container background with on-secondary-container text, not colour alone. PR 3/4 (shadcn): the migrated primitives resolve their colours from the SAME MD3 grayscale tokens (bg-background/text-foreground/etc. map 1:1 to the inspected token pairings), so contrast is preserved BY CONSTRUCTION — but the RENDERED shadcn appearance was NOT re-measured headlessly (not-assessed); a human/Figma + axe pass is required before merge.",
     "reviewer": "agent static review extended to the TP1-06 app shell (role-gated side navigation + top bar), the forbidden (403)/not-found (404) screens and guarded placeholder routes, and to the PR 3/4 shadcn-migrated sign-in, sign-in/verify, account-locked and password-reset screens (token-derived colour unchanged; rendered contrast not headlessly re-measured; pending human a11y + axe audit in P1-16)",
     "date": "2026-11-10"
   },
@@ -87,9 +87,9 @@
   },
   "1.4.11": {
     "status": "pass-manual",
-    "note": "Text-field outlines, button surfaces, the error outline and the focus ring were inspected for >=3:1 contrast against their adjacent colours.",
-    "reviewer": "agent static review of the TP1-02 sign-in + TP1-03 recovery screens (pending human a11y audit in P1-16)",
-    "date": "2026-11-05"
+    "note": "BRAND UPDATE 2026-11-14 (ADR-0018). The focus ring is Pine on a Mist surface (~7.6:1, well above 3:1), so the FOCUSED-state boundary passes strongly. KNOWN LIMITATION (deliberate, product-owner decision): the RESTING component border/input outline uses Dark Pine Translucent (Dark Pine @ 40%), which resolves over Mist to ~#9aa6a0 at ~2.2:1 against the surface — BELOW the 3:1 minimum. It is accepted as a decorative hairline: components are identified by their fill + label, not the border, and the strong Pine focus ring carries interaction state. Flagged for a human a11y pass (P1-16) and a dark-mode border fallback (near-invisible on the Dark-Pine dark surface). This is an evidence state of fail-accepted, not pass, for the resting border.",
+    "reviewer": "agent static review; resting-border contrast measured by computation (Dark Pine @40% over Mist = ~2.2:1), focus-ring contrast ~7.6:1; pending human a11y audit in P1-16",
+    "date": "2026-11-14"
   },
   "1.4.12": {
     "status": "pass-manual",

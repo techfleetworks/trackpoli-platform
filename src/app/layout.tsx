@@ -1,17 +1,32 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Mulish, Figtree, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { getSessionUser } from "@/features/auth/session";
 import { SessionGuard } from "@/features/auth/session/SessionGuard";
 import { sessionLimits } from "@/lib/config";
 import "./globals.css";
 
-// Roboto is the Material Design 3 default type (ADR-0006); next/font self-hosts it and exposes the
-// --md-font-roboto variable the token layer consumes. 400 = body/regular, 500 = medium/labels.
-const roboto = Roboto({
+// Brand type (ADR-0018), self-hosted via next/font and exposed as CSS variables the token layer reads
+// (--tp-font-heading / --tp-font-body / --tp-font-mono). Mulish = headings (600/700/800), Figtree =
+// body + UI (400/500/600), Geist Mono = code (500). Replaces Roboto/MD3 (ADR-0006).
+const mulish = Mulish({
   subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--md-font-roboto",
+  weight: ["600", "700", "800"],
+  variable: "--font-mulish",
+  display: "swap",
+});
+
+const figtree = Figtree({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-figtree",
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  weight: ["500"],
+  variable: "--font-geist-mono",
   display: "swap",
 });
 
@@ -27,7 +42,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
   return (
-    <html lang="en-GB" className={roboto.variable}>
+    <html lang="en-GB" className={`${mulish.variable} ${figtree.variable} ${geistMono.variable}`}>
       <body>
         <AuthProvider user={user}>
           {children}
