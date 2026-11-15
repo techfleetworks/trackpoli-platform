@@ -7,23 +7,14 @@
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/Icon";
 import { formatTimeUntil } from "@/lib/relativeTime";
-import card from "./authCard.module.css";
+import { AuthCard, AuthCardFooter } from "./AuthCard";
 import styles from "./AccountLockedCard.module.css";
-import markIcon from "./assets/mark.svg";
 import lockIcon from "./assets/lock.svg";
 import clockIcon from "./assets/clock.svg";
 
 export function AccountLockedCard({ lockedUntil, onBack }: { lockedUntil: string | null; onBack: () => void }) {
   return (
-    <main className={card.page}>
-      <section className={card.card} aria-labelledby="locked-title">
-        <div className={`${card.brand} ${card.brandCentered}`}>
-          <span className={card.brandMark}>
-            <Icon src={markIcon} size={22} />
-          </span>
-          <span className={card.brandName}>TrackPoli Admin</span>
-        </div>
-
+    <AuthCard aria-labelledby="locked-title" brandCentered>
         <div className={styles.chipRow}>
           <span className={styles.chip}>
             <Icon src={lockIcon} size={30} />
@@ -48,10 +39,9 @@ export function AccountLockedCard({ lockedUntil, onBack }: { lockedUntil: string
           Back to sign in
         </Button>
 
-        <p className={card.footer}>
+        <AuthCardFooter>
           If you believe this is a mistake, contact a super administrator to unlock your account.
-        </p>
-      </section>
-    </main>
+        </AuthCardFooter>
+    </AuthCard>
   );
 }

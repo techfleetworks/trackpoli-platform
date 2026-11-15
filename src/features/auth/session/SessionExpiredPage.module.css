@@ -1,4 +1,4 @@
-/* Session-expired screen (TP1-05; Figma 1211:2489), ADR-0006 tokens. Reuses authCard.module.css for the page,
+/* Session-expired screen (TP1-05; Figma 1211:2489), ADR-0006 tokens. Reuses the shared AuthCard component (AuthCard.tsx) for the page,
    card, brand and footer; this holds the icon chip and the centred heading block. */
 
 .iconRow {

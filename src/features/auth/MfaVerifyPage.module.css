@@ -1,4 +1,4 @@
-/* Screen-specific styles for the two-step verification screen; the shell comes from authCard.module.css.
+/* Screen-specific styles for the two-step verification screen; the shell comes from the shared AuthCard component.
    Mirrors the sign-in heading block so the auth screens stay visually consistent (ADR-0006 tokens). */
 
 .headingBlock {

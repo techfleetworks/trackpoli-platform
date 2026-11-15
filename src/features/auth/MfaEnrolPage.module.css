@@ -1,4 +1,4 @@
-/* Forced-enrolment wizard styles; the card shell comes from authCard.module.css (ADR-0006 tokens). */
+/* Forced-enrolment wizard styles; the card shell comes from the shared AuthCard component (ADR-0006 tokens). */
 
 .headingBlock {
   display: flex;

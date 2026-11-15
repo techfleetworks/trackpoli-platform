@@ -20,9 +20,8 @@ import { apiFetch } from "@/lib/apiFetch";
 import { ForgotPasswordSentPage } from "./ForgotPasswordSentPage";
 import { TurnstileSlot } from "./TurnstileSlot";
 import { PASSWORD_RESET_MESSAGES } from "./messages";
-import card from "./authCard.module.css";
+import { AuthCard, AuthCardFooter } from "./AuthCard";
 import styles from "./ForgotPasswordPage.module.css";
-import markIcon from "./assets/mark.svg";
 import warningIcon from "./assets/warning.svg";
 import arrowBackIcon from "./assets/arrow-back.svg";
 
@@ -94,15 +93,8 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <main className={card.page}>
-      <form className={card.card} onSubmit={onSubmit} noValidate aria-labelledby="forgot-title">
-        <div className={card.brand}>
-          <span className={card.brandMark}>
-            <Icon src={markIcon} size={22} />
-          </span>
-          <span className={card.brandName}>TrackPoli Admin</span>
-        </div>
-
+    <AuthCard aria-labelledby="forgot-title">
+      <form className="flex w-full flex-col gap-[22px]" onSubmit={onSubmit} noValidate>
         <div className={styles.headingBlock}>
           <h1 id="forgot-title" className={styles.title}>
             Reset your password
@@ -143,8 +135,8 @@ export function ForgotPasswordPage() {
 
         <BackToSignIn />
 
-        <p className={card.footer}>Reset links expire after 24 hours and can be used only once.</p>
+        <AuthCardFooter>Reset links expire after 24 hours and can be used only once.</AuthCardFooter>
       </form>
-    </main>
+    </AuthCard>
   );
 }

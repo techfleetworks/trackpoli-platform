@@ -8,23 +8,14 @@
 // Pure presentation; the parent (ForgotPasswordPage) owns the submitted email.
 
 import { Icon } from "@/components/ui/Icon";
-import card from "./authCard.module.css";
+import { AuthCard } from "./AuthCard";
 import styles from "./ForgotPasswordSentPage.module.css";
-import markIcon from "./assets/mark.svg";
 import mailIcon from "./assets/mail.svg";
 import arrowBackIcon from "./assets/arrow-back.svg";
 
 export function ForgotPasswordSentPage({ email }: { email: string }) {
   return (
-    <main className={card.page}>
-      <section className={card.card} aria-labelledby="sent-title">
-        <div className={`${card.brand} ${card.brandCentered}`}>
-          <span className={card.brandMark}>
-            <Icon src={markIcon} size={22} />
-          </span>
-          <span className={card.brandName}>TrackPoli Admin</span>
-        </div>
-
+    <AuthCard aria-labelledby="sent-title" brandCentered>
         <div className={styles.chipRow}>
           <span className={styles.chip}>
             <Icon src={mailIcon} size={24} />
@@ -48,7 +39,6 @@ export function ForgotPasswordSentPage({ email }: { email: string }) {
             <span className={styles.backLabel}>Back to sign in</span>
           </a>
         </div>
-      </section>
-    </main>
+    </AuthCard>
   );
 }

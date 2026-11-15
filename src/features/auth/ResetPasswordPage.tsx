@@ -18,9 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/apiFetch";
 import { PASSWORD_RESET_MESSAGES } from "./messages";
-import card from "./authCard.module.css";
+import { AuthCard } from "./AuthCard";
 import styles from "./ResetPasswordPage.module.css";
-import markIcon from "./assets/mark.svg";
 import warningIcon from "./assets/warning.svg";
 import visibilityIcon from "./assets/visibility.svg";
 import checkIcon from "./assets/check.svg";
@@ -46,14 +45,7 @@ function BackToSignIn() {
  *  A stand-in until the Continue-page link-expired design lands; built to the same design system. */
 export function ResetLinkInvalidCard() {
   return (
-    <main className={card.page}>
-      <section className={card.card} aria-labelledby="reset-invalid-title">
-        <div className={card.brand}>
-          <span className={card.brandMark}>
-            <Icon src={markIcon} size={22} />
-          </span>
-          <span className={card.brandName}>TrackPoli Admin</span>
-        </div>
+    <AuthCard aria-labelledby="reset-invalid-title">
         <div className={styles.headingBlock}>
           <h1 id="reset-invalid-title" className={styles.title}>
             This link has expired
@@ -71,8 +63,7 @@ export function ResetLinkInvalidCard() {
           Request a new link
         </Button>
         <BackToSignIn />
-      </section>
-    </main>
+    </AuthCard>
   );
 }
 
@@ -124,15 +115,8 @@ export function ResetPasswordPage({ email }: { email: string }) {
   }
 
   return (
-    <main className={card.page}>
-      <form className={card.card} onSubmit={onSubmit} noValidate aria-labelledby="reset-title">
-        <div className={card.brand}>
-          <span className={card.brandMark}>
-            <Icon src={markIcon} size={22} />
-          </span>
-          <span className={card.brandName}>TrackPoli Admin</span>
-        </div>
-
+    <AuthCard aria-labelledby="reset-title">
+      <form className="flex w-full flex-col gap-[22px]" onSubmit={onSubmit} noValidate>
         <div className={styles.headingBlock}>
           <h1 id="reset-title" className={styles.title}>
             Set a new password
@@ -226,6 +210,6 @@ export function ResetPasswordPage({ email }: { email: string }) {
 
         <BackToSignIn />
       </form>
-    </main>
+    </AuthCard>
   );
 }
