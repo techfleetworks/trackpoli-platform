@@ -127,3 +127,18 @@ Feature: Existing features migrate to the design system
     Given the sign-in and set-new-password screens migrated their layout with no logic change
     When a user signs in or sets a new password
     Then the generic no-detail sign-in errors and the length-only password policy are unchanged
+
+  # Continue (/auth/confirm) & session-expired layout migration (ADR-0028 follow-up): drop the per-screen
+  # CSS Modules for design-system utilities (icon chip, centred heading/body, cancel/back links). Presentation-only.
+
+  @audience:administrator @usecase:confirm-expired-layout-migrated @category:happy @quality:functional @severity:medium
+  Scenario: The continue and session-expired screens render with design-system utilities after dropping the CSS Module
+    Given the continue and session-expired screens migrated their per-screen layout off the CSS Module
+    When each screen renders in any of its states
+    Then the icon chip, the centred heading and body, the primary action and the back/cancel link still display and behave as before
+
+  @security @audience:administrator @usecase:confirm-expired-layout-security-parity @category:adverse @quality:security @severity:high
+  Scenario: The continue and session-expired layout migration preserves the token-on-click and safe-redirect behaviour
+    Given the continue and session-expired screens migrated their layout with no logic change
+    When a one-time link is opened and a session later expires
+    Then the token is still exchanged only on Continue and the session-expired return path stays restricted to an in-app /admin path
