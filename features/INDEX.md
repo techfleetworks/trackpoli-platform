@@ -90,6 +90,8 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | design-system/migration.feature | The auth screens share the design-system AuthCard shell with behaviour parity | design-system | administrator | auth-card-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The auth-card migration preserves the screens' security properties | design-system | administrator | auth-card-security-parity | adverse | security | high | covered |
 | design-system/migration.feature | The forgot-password screen uses design-system components with behaviour parity | design-system | end-user | forgot-password-migrated | happy | functional | high | covered |
+| design-system/migration.feature | The notice screens render their content with design-system utilities after dropping the CSS Module | design-system | administrator | notice-layout-migrated | happy | functional | medium | covered |
+| design-system/migration.feature | The notice-screen layout migration keeps the enumeration-safe copy | design-system | administrator | notice-layout-security-parity | adverse | security | high | covered |
 | design-system/migration.feature | The session-timeout warning dialog uses design-system components with behaviour parity | design-system | end-user | session-warning-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The set-new-password screen uses design-system components with behaviour parity | design-system | end-user | reset-password-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The sign-in screen uses design-system components with behaviour parity | design-system | end-user | signin-migrated | happy | functional | high | covered |

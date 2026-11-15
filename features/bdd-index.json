@@ -947,6 +947,28 @@
   },
   {
     "feature": "design-system/migration.feature",
+    "scenario": "The notice screens render their content with design-system utilities after dropping the CSS Module",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "notice-layout-migrated",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
+    "scenario": "The notice-screen layout migration keeps the enumeration-safe copy",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "notice-layout-security-parity",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
     "scenario": "The session-timeout warning dialog uses design-system components with behaviour parity",
     "domain": "design-system",
     "audience": "end-user",

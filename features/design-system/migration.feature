@@ -82,3 +82,18 @@ Feature: Existing features migrate to the design system
     When the forgot-password and session-expired screens render after the migration
     Then the enumeration-safe "check your email" acknowledgement copy is unchanged
     And the session-expired screen still fires a best-effort server sign-out on mount
+
+  # Notice-screen per-screen layout migration (ADR-0028 follow-up): the check-your-email and account-locked
+  # screens drop their per-screen CSS Modules for design-system Tailwind utilities. Presentation-only.
+
+  @audience:administrator @usecase:notice-layout-migrated @category:happy @quality:functional @severity:medium
+  Scenario: The notice screens render their content with design-system utilities after dropping the CSS Module
+    Given the check-your-email and account-locked screens migrated their per-screen layout off the CSS Module
+    When each screen renders
+    Then the icon chip, the centred heading and body, and the action still display as before
+
+  @security @audience:administrator @usecase:notice-layout-security-parity @category:adverse @quality:security @severity:high
+  Scenario: The notice-screen layout migration keeps the enumeration-safe copy
+    Given the check-your-email screen migrated its layout with no logic change
+    When it renders after a password-reset request
+    Then the enumeration-safe conditional "If an account exists" copy is unchanged
