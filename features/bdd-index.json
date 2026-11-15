@@ -936,12 +936,34 @@
   },
   {
     "feature": "design-system/migration.feature",
+    "scenario": "The forgot-password and verification screens render with design-system utilities after dropping the CSS Module",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "form-layout-migrated",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
     "scenario": "The forgot-password screen uses design-system components with behaviour parity",
     "domain": "design-system",
     "audience": "end-user",
     "usecase": "forgot-password-migrated",
     "category": "happy",
     "quality": "functional",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
+    "scenario": "The form-screen layout migration keeps the enumeration-safe and no-detail behaviour",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "form-layout-security-parity",
+    "category": "adverse",
+    "quality": "security",
     "severity": "high",
     "status": "covered"
   },
