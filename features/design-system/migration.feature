@@ -157,3 +157,18 @@ Feature: Existing features migrate to the design system
     Given the Turnstile slot and the session-warning dialog migrated their layout with no logic change
     When a sign-in attempt fails and later a session is about to expire
     Then the single-use Turnstile token is still reset for a fresh challenge and the alertdialog keeps its focus trap and focus restore
+
+  # MFA-enrol wizard migration (ADR-0028 follow-up): drop the per-screen CSS Module for design-system
+  # utilities across all wizard steps (progress bar, QR frame, key box, icon chips, info rows). Presentation-only.
+
+  @audience:administrator @usecase:mfa-enrol-layout-migrated @category:happy @quality:functional @severity:medium
+  Scenario: The two-factor enrolment wizard renders with design-system utilities after dropping the CSS Module
+    Given the MFA-enrol wizard migrated its per-screen layout off the CSS Module
+    When each step renders (instructions, scan, manual key, code, success, paused, session-expired, failed)
+    Then the step-progress bar, QR frame, key box, icon chips, info rows and actions still display and behave as before
+
+  @security @audience:administrator @usecase:mfa-enrol-layout-security-parity @category:adverse @quality:security @severity:high
+  Scenario: The MFA-enrol layout migration preserves the enrolment and lockout behaviour
+    Given the MFA-enrol wizard migrated its layout with no logic change
+    When a new administrator enters a wrong code, exhausts attempts, or the setup session lapses
+    Then the wrong-code, too-many-attempts (paused) and 401 session-expired outcomes are unchanged and the factor is only confirmed server-side

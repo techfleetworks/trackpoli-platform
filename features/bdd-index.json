@@ -991,6 +991,17 @@
   },
   {
     "feature": "design-system/migration.feature",
+    "scenario": "The MFA-enrol layout migration preserves the enrolment and lockout behaviour",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "mfa-enrol-layout-security-parity",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
     "scenario": "The notice screens render their content with design-system utilities after dropping the CSS Module",
     "domain": "design-system",
     "audience": "administrator",
@@ -1097,6 +1108,17 @@
     "category": "happy",
     "quality": "functional",
     "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
+    "scenario": "The two-factor enrolment wizard renders with design-system utilities after dropping the CSS Module",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "mfa-enrol-layout-migrated",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
     "status": "covered"
   },
   {
