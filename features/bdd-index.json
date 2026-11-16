@@ -903,6 +903,17 @@
   },
   {
     "feature": "design-system/migration.feature",
+    "scenario": "Retiring LegacyButton changes no auth behaviour on the affected screens",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "legacybutton-retired-security",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "low",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
     "scenario": "The app shell (side nav + error screens) uses design-system components with behaviour parity",
     "domain": "design-system",
     "audience": "administrator",
@@ -932,6 +943,17 @@
     "category": "adverse",
     "quality": "security",
     "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
+    "scenario": "The confirm and session-expired actions render on the shadcn Button after LegacyButton is retired",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "legacybutton-retired",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
     "status": "covered"
   },
   {

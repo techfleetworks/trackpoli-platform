@@ -12,7 +12,7 @@
 
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/LegacyButton";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/Icon";
 import { apiFetch } from "@/lib/apiFetch";
 import { report } from "@/lib/report";
@@ -63,7 +63,7 @@ export function SessionExpiredPage() {
         </div>
 
         <Button
-          variant="filled"
+          variant="secondary"
           className="w-full"
           onClick={() => {
             window.location.assign(signInHref);

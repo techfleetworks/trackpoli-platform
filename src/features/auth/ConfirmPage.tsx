@@ -8,7 +8,7 @@
 // unexpected failure shows the error state. Presentation + wiring only.
 
 import { useState } from "react";
-import { Button } from "@/components/ui/LegacyButton";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/Icon";
 import { apiFetch } from "@/lib/apiFetch";
 import { AuthCard, AuthCardFooter } from "./AuthCard";
@@ -72,7 +72,8 @@ function ResultCard({
           </p>
         </div>
         <Button
-          variant="filled"
+          variant="secondary"
+          className="w-full"
           onClick={() => {
             window.location.assign(primaryHref);
           }}
@@ -171,7 +172,7 @@ export function ConfirmPage({ tokenHash, type }: { tokenHash: string | null; typ
             {copy.continueBody}
           </p>
         </div>
-        <Button variant="filled" onClick={onContinue} disabled={verifying}>
+        <Button variant="secondary" className="w-full" onClick={onContinue} disabled={verifying}>
           {verifying ? "Verifying…" : "Continue"}
         </Button>
         <div className="flex w-full justify-center">
