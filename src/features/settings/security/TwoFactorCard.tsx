@@ -18,7 +18,6 @@ import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/apiFetch";
 import { report } from "@/lib/report";
 import { MFA_REPLACE_MESSAGES as M } from "@/features/auth/messages";
-import styles from "./TwoFactorCard.module.css";
 import warningIcon from "@/features/auth/assets/warning.svg";
 import googleIcon from "@/features/auth/assets/google.svg";
 import checkIcon from "@/features/auth/assets/check.svg";
@@ -186,15 +185,32 @@ export function TwoFactorCard({
     SIX.test(currentCode) && (accountType === "password" ? password !== "" : googleReauthed);
 
   return (
-    <section className={styles.card} aria-labelledby="twofactor-title">
-      <h2 id="twofactor-title" className={styles.title}>
+    <section
+      className="flex max-w-[560px] flex-col gap-3 rounded-[var(--md-shape-card)] border border-border bg-card p-6 font-sans"
+      aria-labelledby="twofactor-title"
+    >
+      <h2
+        id="twofactor-title"
+        className="m-0 font-sans text-[length:var(--md-title-medium-size)] font-medium leading-[var(--md-title-medium-line)] tracking-[var(--md-title-medium-tracking)] text-foreground"
+      >
         {M.cardTitle}
       </h2>
-      <p className={styles.status} data-enrolled={enrolled}>
+      <p
+        data-enrolled={enrolled}
+        className={`m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] ${enrolled ? "text-foreground" : "text-muted-foreground"}`}
+      >
         {M.cardStatus}
       </p>
-      <p className={styles.note}>{M.cardNote}</p>
-      <Button variant="ghost" size="inline" type="button" className={styles.action} onClick={open}>
+      <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">
+        {M.cardNote}
+      </p>
+      <Button
+        variant="ghost"
+        size="inline"
+        type="button"
+        className="mt-1 self-start rounded-[var(--md-shape-button)] border border-[color:var(--md-outline)] bg-muted px-6 py-2.5 text-[length:var(--md-label-large-size)] leading-[var(--md-label-large-line)] tracking-[var(--md-label-large-tracking)] text-foreground"
+        onClick={open}
+      >
         {M.replaceButton}
       </Button>
 
@@ -204,9 +220,13 @@ export function TwoFactorCard({
 
   function renderDialog() {
     return (
-      <div className={styles.overlay} role="presentation" onClick={close}>
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-scrim p-6"
+        role="presentation"
+        onClick={close}
+      >
         <div
-          className={styles.dialog}
+          className="flex max-h-[90vh] w-[480px] max-w-full flex-col gap-4 overflow-y-auto rounded-[var(--md-shape-card)] bg-card p-8 font-sans shadow-[var(--md-elevation-card)]"
           role="dialog"
           aria-modal="true"
           aria-labelledby="replace-title"
@@ -221,8 +241,10 @@ export function TwoFactorCard({
   function renderStepHeader(n: 1 | 2 | 3, title: string) {
     return (
       <>
-        <p className={styles.stepLabel}>Step {n} of 3</p>
-        <h3 id="replace-title" className={styles.dialogTitle}>
+        <p className="m-0 font-sans text-[length:var(--md-body-small-size)] leading-[var(--md-body-small-line)] tracking-[var(--md-body-small-tracking)] text-muted-foreground">
+          Step {n} of 3
+        </p>
+        <h3 id="replace-title" className="m-0 font-sans text-[length:var(--md-title-medium-size)] font-medium leading-[var(--md-title-medium-line)] tracking-[var(--md-title-medium-tracking)] text-foreground">
           {title}
         </h3>
       </>
@@ -233,24 +255,28 @@ export function TwoFactorCard({
     if (step === "intro") {
       return (
         <>
-          <h3 id="replace-title" className={styles.dialogTitle}>
+          <h3 id="replace-title" className="m-0 font-sans text-[length:var(--md-title-medium-size)] font-medium leading-[var(--md-title-medium-line)] tracking-[var(--md-title-medium-tracking)] text-foreground">
             {M.introTitle}
           </h3>
-          <p className={styles.dialogText}>{M.introBody}</p>
-          <ol className={styles.introSteps}>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">{M.introBody}</p>
+          <ol className="m-0 flex w-full list-none flex-col gap-4 rounded-md bg-muted p-4">
             {[M.introStep1, M.introStep2, M.introStep3].map((text, i) => (
-              <li key={i} className={styles.introRow}>
-                <span className={styles.introNum}>{i + 1}</span>
-                <span className={styles.introText}>{text}</span>
+              <li key={i} className="flex items-start gap-3">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-card font-sans text-[length:var(--md-label-large-size)] font-medium leading-none text-foreground">
+                  {i + 1}
+                </span>
+                <span className="font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">
+                  {text}
+                </span>
               </li>
             ))}
           </ol>
-          <div className={styles.infoBox}>
-            <span className={styles.infoTitle}>{M.introReassureTitle}</span>
-            <span className={styles.infoBody}>{M.introReassure}</span>
+          <div className="flex w-full flex-col gap-1.5 rounded-md bg-muted p-4">
+            <span className="font-sans text-[length:var(--md-body-medium-size)] font-medium text-foreground">{M.introReassureTitle}</span>
+            <span className="font-sans text-[length:var(--md-body-small-size)] leading-[var(--md-body-small-line)] tracking-[var(--md-body-small-tracking)] text-muted-foreground">{M.introReassure}</span>
           </div>
-          <div className={styles.actions}>
-            <Button variant="ghost" size="inline" type="button" className={styles.textButton} onClick={close}>
+          <div className="mt-1 flex items-center justify-end gap-2">
+            <Button variant="ghost" size="inline" type="button" className="self-start px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)]" onClick={close}>
               {M.cancel}
             </Button>
             <Button variant="secondary" className="w-full" onClick={() => setStep("reauth")}>
@@ -265,7 +291,7 @@ export function TwoFactorCard({
       return (
         <>
           {renderStepHeader(1, M.step1Title)}
-          <p className={styles.dialogText}>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">
             {accountType === "password" ? M.step1PasswordIntro : M.step1GoogleIntro}
           </p>
           {notice ? <Alert><Icon src={warningIcon} size={22} /><AlertDescription>{notice}</AlertDescription></Alert> : null}
@@ -282,13 +308,15 @@ export function TwoFactorCard({
               />
             </div>
           ) : (
-            <div className={styles.googleRow}>
-              <span className={styles.fieldLabel}>{M.googleAccountLabel}</span>
+            <div className="flex w-full flex-col gap-1.5">
+              <span className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">
+                {M.googleAccountLabel}
+              </span>
               <Button
                 variant="ghost"
                 size="inline"
                 type="button"
-                className={styles.googleButton}
+                className={`flex h-14 w-full items-center justify-center gap-2.5 rounded-md border border-[color:var(--md-outline)] bg-card text-[length:var(--md-label-large-size)] leading-[var(--md-label-large-line)] tracking-[var(--md-label-large-tracking)] ${googleReauthed ? "text-muted-foreground" : "text-foreground"}`}
                 data-done={googleReauthed}
                 disabled={googleReauthed}
                 onClick={() => {
@@ -315,11 +343,11 @@ export function TwoFactorCard({
               onChange={(e) => setCurrentCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
             />
           </div>
-          <Button variant="ghost" size="inline" type="button" className={styles.textLink} onClick={() => setStep("lost")}>
+          <Button variant="ghost" size="inline" type="button" className="self-start px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)] text-primary" onClick={() => setStep("lost")}>
             {M.lostLink}
           </Button>
-          <div className={styles.actions}>
-            <Button variant="ghost" size="inline" type="button" className={styles.textButton} onClick={close}>
+          <div className="mt-1 flex items-center justify-end gap-2">
+            <Button variant="ghost" size="inline" type="button" className="self-start px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)]" onClick={close}>
               {M.cancel}
             </Button>
             <Button variant="secondary" className="w-full" onClick={authorize} disabled={!canAuthorize || busy}>
@@ -334,28 +362,36 @@ export function TwoFactorCard({
       return (
         <>
           {renderStepHeader(2, M.step2Title)}
-          <p className={styles.dialogText}>{M.step2Body}</p>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">{M.step2Body}</p>
           {showKey ? (
-            <div className={styles.keyBox}>
-              <span className={styles.key}>{groupKey(enrol.secret)}</span>
-              <Button variant="ghost" size="inline" type="button" className={styles.keyAction} onClick={copyKey}>
+            <div className="flex w-full flex-col gap-3 rounded-md bg-muted p-4">
+              <span className="font-sans text-[length:var(--md-title-medium-size)] font-medium leading-[var(--md-title-medium-line)] tracking-[0.1em] text-foreground break-all">
+                {groupKey(enrol.secret)}
+              </span>
+              <Button
+                variant="ghost"
+                size="inline"
+                type="button"
+                className="gap-2 self-start text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)] text-primary"
+                onClick={copyKey}
+              >
                 <Icon src={copyIcon} size={18} />
                 <span>{copied ? "Copied" : "Copy key"}</span>
               </Button>
             </div>
           ) : (
-            <div className={styles.qrRow}>
-              <span className={styles.qrFrame}>
+            <div className="flex w-full justify-center">
+              <span className="flex size-[184px] items-center justify-center rounded-lg border border-border p-[17px]">
                 {/* eslint-disable-next-line @next/next/no-img-element -- dynamic QR from the server; next/image cannot optimize it */}
                 <img src={qrSrc(enrol.qrCode)} alt="QR code for your new authenticator device" width={150} height={150} />
               </span>
             </div>
           )}
-          <Button variant="ghost" size="inline" type="button" className={styles.textLink} onClick={() => setShowKey((v) => !v)}>
+          <Button variant="ghost" size="inline" type="button" className="self-start px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)] text-primary" onClick={() => setShowKey((v) => !v)}>
             {showKey ? "Scan the QR code instead" : "Can't scan? Enter the key manually"}
           </Button>
-          <div className={styles.actions}>
-            <Button variant="ghost" size="inline" type="button" className={styles.textButton} onClick={close}>
+          <div className="mt-1 flex items-center justify-end gap-2">
+            <Button variant="ghost" size="inline" type="button" className="self-start px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)]" onClick={close}>
               {M.cancel}
             </Button>
             <Button variant="secondary" className="w-full" onClick={() => setStep("newCode")}>
@@ -370,7 +406,7 @@ export function TwoFactorCard({
       return (
         <>
           {renderStepHeader(3, M.step3Title)}
-          <p className={styles.dialogText}>{M.step3Body}</p>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">{M.step3Body}</p>
           {notice ? <Alert><Icon src={warningIcon} size={22} /><AlertDescription>{notice}</AlertDescription></Alert> : null}
           <div className="flex w-full flex-col gap-1.5">
             <Label htmlFor={newCodeId}>6-digit code</Label>
@@ -386,8 +422,8 @@ export function TwoFactorCard({
               onChange={(e) => setNewCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
             />
           </div>
-          <div className={styles.actions}>
-            <Button variant="ghost" size="inline" type="button" className={styles.textButton} onClick={() => setStep("newDevice")}>
+          <div className="mt-1 flex items-center justify-end gap-2">
+            <Button variant="ghost" size="inline" type="button" className="self-start px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)]" onClick={() => setStep("newDevice")}>
               {M.back}
             </Button>
             <Button variant="secondary" className="w-full" onClick={complete} disabled={!SIX.test(newCode) || busy}>
@@ -401,18 +437,18 @@ export function TwoFactorCard({
     if (step === "lost") {
       return (
         <>
-          <h3 id="replace-title" className={styles.dialogTitle}>
+          <h3 id="replace-title" className="m-0 font-sans text-[length:var(--md-title-medium-size)] font-medium leading-[var(--md-title-medium-line)] tracking-[var(--md-title-medium-tracking)] text-foreground">
             {M.lostTitle}
           </h3>
-          <p className={styles.dialogText}>{isManager ? M.lostBodyManager : M.lostBodyAdmin}</p>
-          <div className={styles.infoBox}>
-            <span className={styles.infoTitle}>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">{isManager ? M.lostBodyManager : M.lostBodyAdmin}</p>
+          <div className="flex w-full flex-col gap-1.5 rounded-md bg-muted p-4">
+            <span className="font-sans text-[length:var(--md-body-medium-size)] font-medium text-foreground">
               {isManager ? M.lostNextManagerTitle : M.lostNextAdminTitle}
             </span>
-            <span className={styles.infoBody}>{isManager ? M.lostNextManager : M.lostNextAdmin}</span>
+            <span className="font-sans text-[length:var(--md-body-small-size)] leading-[var(--md-body-small-line)] tracking-[var(--md-body-small-tracking)] text-muted-foreground">{isManager ? M.lostNextManager : M.lostNextAdmin}</span>
           </div>
-          <div className={styles.actions}>
-            <Button variant="ghost" size="inline" type="button" className={styles.textButton} onClick={close}>
+          <div className="mt-1 flex items-center justify-end gap-2">
+            <Button variant="ghost" size="inline" type="button" className="self-start px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)]" onClick={close}>
               {M.close}
             </Button>
             <Button variant="secondary" className="w-full" onClick={() => setStep("reauth")}>
@@ -435,14 +471,14 @@ export function TwoFactorCard({
 
   function renderOutcome(icon: typeof checkIcon, title: string, body: string) {
     return (
-      <div className={styles.outcome}>
-        <span className={styles.iconChip}>
+      <div className="flex flex-col items-center gap-4 text-center">
+        <span className="flex size-16 items-center justify-center rounded-full bg-muted">
           <Icon src={icon} size={30} />
         </span>
-        <h3 id="replace-title" className={styles.dialogTitle}>
+        <h3 id="replace-title" className="m-0 font-sans text-[length:var(--md-title-medium-size)] font-medium leading-[var(--md-title-medium-line)] tracking-[var(--md-title-medium-tracking)] text-foreground">
           {title}
         </h3>
-        <p className={styles.dialogText}>{body}</p>
+        <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">{body}</p>
         <Button variant="secondary" className="w-full" onClick={close}>
           {M.close}
         </Button>
