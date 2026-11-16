@@ -13,7 +13,6 @@
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { SESSION_MESSAGES as M } from "@/features/auth/messages";
-import styles from "./SessionWarningDialog.module.css";
 
 export type WarnMode = "idle-warn" | "absolute-warn";
 
@@ -79,29 +78,45 @@ export function SessionWarningDialog({
   const noteBody = isIdle ? M.idleNoteBody : M.absoluteNoteBody;
 
   return (
-    <div className={styles.overlay} role="presentation">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-scrim p-6" role="presentation">
       <div
         ref={dialogRef}
-        className={styles.dialog}
+        className="flex max-h-[90vh] w-[480px] max-w-full flex-col gap-4 overflow-y-auto rounded-[var(--md-shape-card)] bg-card p-6 font-sans shadow-[var(--md-elevation-card)]"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="session-warning-title"
         aria-describedby="session-warning-body"
       >
-        <h2 id="session-warning-title" className={styles.title}>
+        <h2
+          id="session-warning-title"
+          className="m-0 font-sans text-[length:var(--md-title-medium-size)] font-medium leading-[var(--md-title-medium-line)] tracking-[var(--md-title-medium-tracking)] text-foreground"
+        >
           {title}
         </h2>
-        <p id="session-warning-body" className={styles.body}>
+        <p
+          id="session-warning-body"
+          className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground"
+        >
           {body}
         </p>
-        <div className={styles.note}>
-          <span className={styles.noteTitle} aria-hidden="true">
+        <div className="flex w-full flex-col gap-1.5 rounded-md bg-muted p-4">
+          <span
+            className="font-sans text-[length:var(--md-body-medium-size)] font-medium tabular-nums text-foreground"
+            aria-hidden="true"
+          >
             {M.noteTitle(formatClock(secondsLeft))}
           </span>
-          <span className={styles.noteBody}>{noteBody}</span>
+          <span className="font-sans text-[length:var(--md-body-small-size)] leading-[var(--md-body-small-line)] tracking-[var(--md-body-small-tracking)] text-muted-foreground">
+            {noteBody}
+          </span>
         </div>
-        <div className={styles.actions}>
-          <Button variant="ghost" size="inline" className={styles.textButton} onClick={onSecondary}>
+        <div className="mt-1 flex items-center justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="inline"
+            className="px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)]"
+            onClick={onSecondary}
+          >
             {isIdle ? M.signOut : M.dismiss}
           </Button>
           <Button variant="secondary" onClick={onPrimary}>

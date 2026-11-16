@@ -11,7 +11,6 @@
 // on every keystroke.
 
 import { useEffect, useRef } from "react";
-import styles from "./TurnstileSlot.module.css";
 
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 const SCRIPT_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
@@ -86,10 +85,13 @@ export function TurnstileSlot({ onToken, resetKey = 0 }: { onToken: (token: stri
 
   if (!SITE_KEY) {
     return (
-      <div className={styles.placeholder} aria-hidden="true">
+      <div
+        className="flex min-h-14 w-full items-center justify-center rounded-md border border-dashed border-border px-4 py-2 text-center font-sans text-[length:var(--md-body-small-size)] leading-[var(--md-body-small-line)] tracking-[var(--md-body-small-tracking)] text-muted-foreground"
+        aria-hidden="true"
+      >
         Bot check appears here once configured
       </div>
     );
   }
-  return <div ref={containerRef} className={styles.widget} />;
+  return <div ref={containerRef} className="flex w-full justify-center" />;
 }

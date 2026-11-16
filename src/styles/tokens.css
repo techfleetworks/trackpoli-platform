@@ -58,6 +58,10 @@
   --input: var(--tp-dark-pine-translucent);
   --ring: var(--tp-pine);
   --coral: var(--tp-coral);
+  /* Modal scrim (overlay behind a dialog). Theme-independent black at 32% — the exact value the
+     hand-built session/two-factor modals used as a raw literal; tokenized here (the one colour home)
+     so feature code carries no colour literal (ADR-0029). .dark inherits this same value. */
+  --scrim: rgba(0, 0, 0, 0.32);
 
   --radius: 8px; /* base control radius; the flat 4/8/12/16 scale is mapped in globals.css @theme */
 
