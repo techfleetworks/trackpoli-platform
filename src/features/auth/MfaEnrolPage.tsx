@@ -18,7 +18,6 @@ import { apiFetch, ApiError } from "@/lib/apiFetch";
 import { report } from "@/lib/report";
 import { MFA_ENROL_MESSAGES as M } from "./messages";
 import { AuthCard, AuthCardFooter } from "./AuthCard";
-import styles from "./MfaEnrolPage.module.css";
 import arrowBackIcon from "./assets/arrow-back.svg";
 import copyIcon from "./assets/copy.svg";
 import checkIcon from "./assets/check.svg";
@@ -49,11 +48,13 @@ function groupKey(secret: string): string {
 
 function StepProgress({ current }: { current: 1 | 2 }) {
   return (
-    <div className={styles.progress}>
-      <span className={styles.stepLabel}>Step {current} of 2</span>
-      <span className={styles.bar}>
-        <span className={styles.seg} data-on />
-        <span className={styles.seg} data-on={current === 2 ? "" : undefined} />
+    <div className="flex w-full flex-col gap-2">
+      <span className="font-sans text-[length:var(--md-body-small-size)] leading-[var(--md-body-small-line)] tracking-[var(--md-body-small-tracking)] text-muted-foreground">
+        Step {current} of 2
+      </span>
+      <span className="flex w-full gap-1.5">
+        <span className="h-1 flex-1 rounded-[2px] bg-primary" />
+        <span className={`h-1 flex-1 rounded-[2px] ${current === 2 ? "bg-primary" : "bg-border"}`} />
       </span>
     </div>
   );
@@ -145,24 +146,28 @@ export function MfaEnrolPage({ email }: { email: string }) {
   if (step === "instructions") {
     return (
       <AuthCard aria-labelledby="enrol-title">
-        <div className={styles.headingBlock}>
-          <h1 id="enrol-title" className={styles.title}>
+        <div className="flex w-full flex-col gap-2">
+          <h1 id="enrol-title" className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground">
             {M.title}
           </h1>
-          <p className={styles.subtext}>{M.intro}</p>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">{M.intro}</p>
         </div>
-        <ol className={styles.steps}>
+        <ol className="m-0 flex w-full list-none flex-col gap-4 p-0">
           {[M.step1, M.step2, M.step3].map((text, i) => (
-            <li key={i} className={styles.stepRow}>
-              <span className={styles.stepNum}>{i + 1}</span>
-              <span className={styles.stepText}>{text}</span>
+            <li key={i} className="flex items-start gap-3">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted font-sans text-[length:var(--md-label-large-size)] font-medium leading-none text-foreground">
+                {i + 1}
+              </span>
+              <span className="font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">
+                {text}
+              </span>
             </li>
           ))}
         </ol>
         <Button variant="secondary" className="w-full" onClick={begin} disabled={busy}>
           {M.continueButton}
         </Button>
-        <Button variant="ghost" size="inline" type="button" className={styles.textButton} onClick={signOut}>
+        <Button variant="ghost" size="inline" type="button" className="self-center px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)] text-primary" onClick={signOut}>
           {M.signOut}
         </Button>
         <AuthCardFooter>{M.gateNote}</AuthCardFooter>
@@ -175,25 +180,25 @@ export function MfaEnrolPage({ email }: { email: string }) {
     return (
       <AuthCard aria-labelledby="enrol-scan-title">
         <StepProgress current={1} />
-        <div className={styles.headingBlock}>
-          <h2 id="enrol-scan-title" className={styles.title}>
+        <div className="flex w-full flex-col gap-2">
+          <h2 id="enrol-scan-title" className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground">
             {M.scanTitle}
           </h2>
-          <p className={styles.subtext}>{M.scanBody}</p>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">{M.scanBody}</p>
         </div>
-        <div className={styles.qrRow}>
-          <span className={styles.qrFrame}>
+        <div className="flex w-full justify-center">
+          <span className="flex size-[184px] items-center justify-center rounded-lg border border-border bg-card p-[17px]">
             {/* eslint-disable-next-line @next/next/no-img-element -- dynamic QR SVG/data-URI from the server; next/image cannot optimize it */}
-            <img src={qrSrc(enrol.qrCode)} alt="QR code to add TrackPoli Admin to your authenticator app" width={150} height={150} />
+            <img src={qrSrc(enrol.qrCode)} alt="QR code to add TrackPoli Admin to your authenticator app" width={150} height={150} className="size-[150px]" />
           </span>
         </div>
-        <Button variant="ghost" size="inline" type="button" className={styles.textButton} onClick={() => setStep("manual")}>
+        <Button variant="ghost" size="inline" type="button" className="self-center px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)] text-primary" onClick={() => setStep("manual")}>
           {M.enterKeyLink}
         </Button>
         <Button variant="secondary" className="w-full" onClick={() => setStep("code")}>
           {M.continueButton}
         </Button>
-        <Button variant="ghost" size="inline" type="button" className={styles.backButton} onClick={() => setStep("instructions")}>
+        <Button variant="ghost" size="inline" type="button" className="gap-1.5 self-center px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)]" onClick={() => setStep("instructions")}>
           <Icon src={arrowBackIcon} size={20} />
           <span>{M.back}</span>
         </Button>
@@ -206,22 +211,34 @@ export function MfaEnrolPage({ email }: { email: string }) {
     return (
       <AuthCard aria-labelledby="enrol-manual-title">
         <StepProgress current={1} />
-        <div className={styles.headingBlock}>
-          <h2 id="enrol-manual-title" className={styles.title}>
+        <div className="flex w-full flex-col gap-2">
+          <h2 id="enrol-manual-title" className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground">
             {M.manualTitle}
           </h2>
-          <p className={styles.subtext}>{M.manualBody}</p>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">{M.manualBody}</p>
         </div>
-        <div className={styles.keyBox}>
-          <span className={styles.keyLabel}>{M.keyLabel}</span>
-          <span className={styles.key}>{groupKey(enrol.secret)}</span>
-          <Button variant="ghost" size="inline" type="button" className={styles.keyAction} onClick={copyKey}>
+        <div className="flex w-full flex-col gap-3 rounded-md bg-muted p-4">
+          <span className="font-sans text-[length:var(--md-body-small-size)] leading-[var(--md-body-small-line)] tracking-[var(--md-body-small-tracking)] text-muted-foreground">
+            {M.keyLabel}
+          </span>
+          <span className="font-sans text-[length:var(--md-title-medium-size)] font-medium leading-[var(--md-title-medium-line)] tracking-[0.1em] text-foreground break-all">
+            {groupKey(enrol.secret)}
+          </span>
+          <Button
+            variant="ghost"
+            size="inline"
+            type="button"
+            className="gap-2 self-start text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)] text-primary"
+            onClick={copyKey}
+          >
             <Icon src={copyIcon} size={18} />
             <span>{copied ? M.copied : M.copyKey}</span>
           </Button>
-          <span className={styles.accountLine}>TrackPoli Admin · {email}</span>
+          <span className="font-sans text-[length:var(--md-body-small-size)] leading-[var(--md-body-small-line)] tracking-[var(--md-body-small-tracking)] text-muted-foreground">
+            TrackPoli Admin · {email}
+          </span>
         </div>
-        <Button variant="ghost" size="inline" type="button" className={styles.textButton} onClick={() => setStep("scan")}>
+        <Button variant="ghost" size="inline" type="button" className="self-center px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)] text-primary" onClick={() => setStep("scan")}>
           {M.scanInsteadLink}
         </Button>
         <Button variant="secondary" className="w-full" onClick={() => setStep("code")}>
@@ -238,11 +255,11 @@ export function MfaEnrolPage({ email }: { email: string }) {
       <AuthCard aria-labelledby="enrol-code-title">
         <form className="flex w-full flex-col gap-[22px]" onSubmit={confirm} noValidate>
           <StepProgress current={2} />
-          <div className={styles.headingBlock}>
-            <h2 id="enrol-code-title" className={styles.title}>
+          <div className="flex w-full flex-col gap-2">
+            <h2 id="enrol-code-title" className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground">
               {M.codeTitle}
             </h2>
-            <p className={styles.subtext}>{M.codeBody}</p>
+            <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">{M.codeBody}</p>
           </div>
           {codeError ? (
             <Alert>
@@ -250,7 +267,7 @@ export function MfaEnrolPage({ email }: { email: string }) {
               <AlertDescription>{codeError}</AlertDescription>
             </Alert>
           ) : null}
-          <div className={styles.fields}>
+          <div className="flex w-full flex-col gap-4">
             <div className="flex w-full flex-col gap-1.5">
               <Label htmlFor={codeId}>6-digit code</Label>
               <Input
@@ -270,7 +287,7 @@ export function MfaEnrolPage({ email }: { email: string }) {
           <Button variant="secondary" className="w-full" type="submit" disabled={!canSubmit}>
             {M.verifyButton}
           </Button>
-          <Button variant="ghost" size="inline" type="button" className={styles.backButton} onClick={() => setStep("scan")}>
+          <Button variant="ghost" size="inline" type="button" className="gap-1.5 self-center px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)]" onClick={() => setStep("scan")}>
             <Icon src={arrowBackIcon} size={20} />
             <span>{M.backToQr}</span>
           </Button>
@@ -283,16 +300,16 @@ export function MfaEnrolPage({ email }: { email: string }) {
   if (step === "success") {
     return (
       <AuthCard aria-labelledby="enrol-success-title" brandCentered>
-        <span className={styles.iconChip} data-tone="ok">
+        <span className="flex size-16 items-center justify-center self-center rounded-full bg-muted" data-tone="ok">
           <Icon src={checkIcon} size={30} />
         </span>
-        <div className={styles.headingBlock} data-center>
-          <h1 id="enrol-success-title" className={styles.title}>
+        <div className="flex w-full flex-col items-center gap-2 text-center">
+          <h1 id="enrol-success-title" className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground">
             {M.successTitle}
           </h1>
-          <p className={styles.subtext}>{M.successBody}</p>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">{M.successBody}</p>
         </div>
-        <div className={styles.infoRow}>
+        <div className="flex w-full items-center gap-3 rounded-md bg-muted px-4 py-3 font-sans text-[length:var(--md-body-small-size)] leading-[var(--md-body-small-line)] tracking-[var(--md-body-small-tracking)] text-muted-foreground">
           <Icon src={phoneIcon} size={22} />
           <span>{M.successRecovery}</span>
         </div>
@@ -313,16 +330,16 @@ export function MfaEnrolPage({ email }: { email: string }) {
   if (step === "paused") {
     return (
       <AuthCard aria-labelledby="enrol-paused-title" brandCentered>
-        <span className={styles.iconChip}>
+        <span className="flex size-16 items-center justify-center self-center rounded-full bg-muted">
           <Icon src={lockIcon} size={30} />
         </span>
-        <div className={styles.headingBlock} data-center>
-          <h1 id="enrol-paused-title" className={styles.title}>
+        <div className="flex w-full flex-col items-center gap-2 text-center">
+          <h1 id="enrol-paused-title" className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground">
             {M.pausedTitle}
           </h1>
-          <p className={styles.subtext}>{M.pausedBody}</p>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">{M.pausedBody}</p>
         </div>
-        <div className={styles.infoRow}>
+        <div className="flex w-full items-center gap-3 rounded-md bg-muted px-4 py-3 font-sans text-[length:var(--md-body-small-size)] leading-[var(--md-body-small-line)] tracking-[var(--md-body-small-tracking)] text-muted-foreground">
           <Icon src={lockIcon} size={22} />
           <span>{M.pausedRetry}</span>
         </div>
@@ -338,14 +355,14 @@ export function MfaEnrolPage({ email }: { email: string }) {
   if (step === "sessionExpired") {
     return (
       <AuthCard aria-labelledby="enrol-expired-title" brandCentered>
-        <span className={styles.iconChip}>
+        <span className="flex size-16 items-center justify-center self-center rounded-full bg-muted">
           <Icon src={clockIcon} size={30} />
         </span>
-        <div className={styles.headingBlock} data-center>
-          <h1 id="enrol-expired-title" className={styles.title}>
+        <div className="flex w-full flex-col items-center gap-2 text-center">
+          <h1 id="enrol-expired-title" className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground">
             {M.sessionExpiredTitle}
           </h1>
-          <p className={styles.subtext}>{M.sessionExpiredBody}</p>
+          <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">{M.sessionExpiredBody}</p>
         </div>
         <Button
           variant="secondary" className="w-full"
@@ -364,19 +381,19 @@ export function MfaEnrolPage({ email }: { email: string }) {
   // Could not start setup (begin() / confirm() transport failure).
   return (
     <AuthCard aria-labelledby="enrol-failed-title" brandCentered>
-      <span className={styles.iconChip}>
+      <span className="flex size-16 items-center justify-center self-center rounded-full bg-muted">
         <Icon src={errorIcon} size={30} />
       </span>
-      <div className={styles.headingBlock} data-center>
-        <h1 id="enrol-failed-title" className={styles.title}>
+      <div className="flex w-full flex-col items-center gap-2 text-center">
+        <h1 id="enrol-failed-title" className="m-0 font-sans text-[length:var(--md-headline-medium-size)] font-normal leading-[var(--md-headline-medium-line)] tracking-[var(--md-headline-medium-tracking)] text-foreground">
           {M.failedTitle}
         </h1>
-        <p className={styles.subtext}>{M.failedBody}</p>
+        <p className="m-0 font-sans text-[length:var(--md-body-medium-size)] leading-[var(--md-body-medium-line)] tracking-[var(--md-body-medium-tracking)] text-muted-foreground">{M.failedBody}</p>
       </div>
       <Button variant="secondary" className="w-full" onClick={begin} disabled={busy}>
         {M.tryAgain}
       </Button>
-      <Button variant="ghost" size="inline" type="button" className={styles.textButton} onClick={signOut}>
+      <Button variant="ghost" size="inline" type="button" className="self-center px-3 py-2.5 text-[length:var(--md-label-large-size)] tracking-[var(--md-label-large-tracking)] text-primary" onClick={signOut}>
         {M.signOut}
       </Button>
       <AuthCardFooter>{M.failedHelp}</AuthCardFooter>
