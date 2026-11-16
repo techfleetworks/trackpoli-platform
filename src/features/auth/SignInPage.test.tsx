@@ -30,6 +30,15 @@ describe("SignInPage", () => {
     expect(screen.getByRole("button", { name: "Continue with Google" })).toBeInTheDocument();
   });
 
+  // Regression guard (WCAG 4.1.2 Name, Role, Value): the <form> must carry an accessible name, so it is
+  // exposed as a named "form" landmark and the error alert can be scoped to it. A <form> with no name is
+  // NOT given the implicit form role, so this fails if aria-labelledby is dropped (as the ADR-0028 migration
+  // did when it placed the label on the AuthCard div instead of the form).
+  it("exposes the sign-in form as a named landmark 'Sign in'", () => {
+    render(<SignInPage />);
+    expect(screen.getByRole("form", { name: "Sign in" })).toBeInTheDocument();
+  });
+
   it("shows the generic error and the remaining-attempts helper on a failed outcome", async () => {
     mockApiFetch.mockResolvedValue({ outcome: "failed", attemptsRemaining: 2 });
     render(<SignInPage />);

@@ -41,3 +41,10 @@ Feature: Sign-in protection (lockout, enumeration resistance, bot check)
     When that administrator manager signs in successfully
     Then the recorded failures for that email are cleared
     And an "auth.sign_in" event is written by the auth trigger
+
+  @audience:assistive-tech @usecase:named-error-region @category:negative @security @severity:high
+  Scenario: The generic sign-in failure is announced within the named sign-in form
+    Given the admin sign-in screen, whose form is a landmark named "Sign in"
+    When a sign-in attempt fails
+    Then the single generic failure message, which reveals nothing about the account, is announced as an alert inside that named form
+    And assistive technology and the end-to-end tests can locate the error by the form's accessible name

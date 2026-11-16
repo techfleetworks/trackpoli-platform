@@ -309,6 +309,17 @@
   },
   {
     "feature": "auth/password-recovery.feature",
+    "scenario": "The generic reset notice is announced within the named reset form",
+    "domain": "auth",
+    "audience": "assistive-tech",
+    "usecase": "named-notice-region",
+    "category": "negative",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/password-recovery.feature",
     "scenario": "The one-time token is exchanged only on an explicit continue, not on a page fetch",
     "domain": "auth",
     "audience": "anonymous",
@@ -622,6 +633,17 @@
     "audience": "anonymous",
     "usecase": "bot-check",
     "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/sign-in-protection.feature",
+    "scenario": "The generic sign-in failure is announced within the named sign-in form",
+    "domain": "auth",
+    "audience": "assistive-tech",
+    "usecase": "named-error-region",
+    "category": "negative",
     "quality": "security",
     "severity": "high",
     "status": "covered"

@@ -98,7 +98,9 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthCard aria-labelledby="forgot-title">
-      <form className="flex w-full flex-col gap-[22px]" onSubmit={onSubmit} noValidate>
+      {/* aria-labelledby names the FORM "Reset your password" (via the h1) so it is a named landmark and the
+          error alert can be scoped to it. AuthCard renders a div (no role), where the attribute is inert. */}
+      <form aria-labelledby="forgot-title" className="flex w-full flex-col gap-[22px]" onSubmit={onSubmit} noValidate>
         <div className="flex w-full flex-col gap-2">
           <h1
             id="forgot-title"
