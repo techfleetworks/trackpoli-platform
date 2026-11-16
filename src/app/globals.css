@@ -52,6 +52,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-coral: var(--coral);
+  --color-scrim: var(--scrim);
 
   /* Brand palette as colour utilities (bg-pine/text-mist/…), for the fixed-colour component variants the
      design system defines (coloured toasts, the Card Type×Color matrix, hover-card colours — ADR-0019).

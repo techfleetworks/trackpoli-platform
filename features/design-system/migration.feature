@@ -142,3 +142,18 @@ Feature: Existing features migrate to the design system
     Given the continue and session-expired screens migrated their layout with no logic change
     When a one-time link is opened and a session later expires
     Then the token is still exchanged only on Continue and the session-expired return path stays restricted to an in-app /admin path
+
+  # Turnstile slot & session-warning dialog migration (ADR-0029): drop the per-screen CSS Modules for
+  # design-system utilities; adds a --scrim token (the dialog overlay colour had no token). Presentation-only.
+
+  @audience:administrator @usecase:turnstile-warndialog-layout-migrated @category:happy @quality:functional @severity:medium
+  Scenario: The Turnstile slot and session-warning dialog render with design-system utilities after dropping the CSS Module
+    Given the Turnstile slot and the session-warning alertdialog migrated their layout off the CSS Module
+    When each renders in any of its states
+    Then the slot placeholder/widget and the dialog scrim, surface, note and actions still display as before
+
+  @security @audience:administrator @usecase:turnstile-warndialog-security-parity @category:adverse @quality:security @severity:high
+  Scenario: The Turnstile and session-warning migration preserves the bot-check reset and the alertdialog focus trap
+    Given the Turnstile slot and the session-warning dialog migrated their layout with no logic change
+    When a sign-in attempt fails and later a session is about to expire
+    Then the single-use Turnstile token is still reset for a fresh challenge and the alertdialog keeps its focus trap and focus restore
