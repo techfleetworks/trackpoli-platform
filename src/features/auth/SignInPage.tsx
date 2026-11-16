@@ -112,7 +112,10 @@ export function SignInPage() {
 
   return (
     <AuthCard aria-labelledby="signin-title">
-      <form className="flex w-full flex-col gap-[22px]" onSubmit={onSubmit} noValidate>
+      {/* aria-labelledby names the FORM "Sign in" (via the h1), so the form is a named landmark and assistive
+          tech / the e2e can scope the error alert to it. AuthCard renders a div (no role), where the same
+          attribute is inert — the name must live on the form. */}
+      <form aria-labelledby="signin-title" className="flex w-full flex-col gap-[22px]" onSubmit={onSubmit} noValidate>
         <div className="flex w-full flex-col gap-2">
           <h1
             id="signin-title"
