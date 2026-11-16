@@ -86,6 +86,8 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | design-system/components.feature | A Hover Card exposes its content when open | design-system | assistive-tech | hover-card-content | happy | functional | medium | covered |
 | design-system/components.feature | A Toast announces itself and shows its icon before the header | design-system | assistive-tech | toast-a11y | happy | accessibility | high | covered |
 | design-system/components.feature | The button is disabled consistently at every size | design-system | assistive-tech | button-disabled-all-sizes | negative | accessibility | medium | covered |
+| design-system/migration.feature | Removing the unused Banner component changes nothing a user can see | design-system | administrator | banner-dead-code-removed | happy | functional | low | covered |
+| design-system/migration.feature | Removing the unused Banner component removes no security-relevant surface | design-system | administrator | banner-dead-code-removed-security | adverse | security | low | covered |
 | design-system/migration.feature | The app shell (side nav + error screens) uses design-system components with behaviour parity | design-system | administrator | shell-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The auth screens share the design-system AuthCard shell with behaviour parity | design-system | administrator | auth-card-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The auth-card migration preserves the screens' security properties | design-system | administrator | auth-card-security-parity | adverse | security | high | covered |
