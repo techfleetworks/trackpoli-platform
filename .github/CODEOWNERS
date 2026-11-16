@@ -1,0 +1,35 @@
+# CODEOWNERS — who must review changes to the highest-risk surfaces before they merge.
+#
+# This file is the enforcement the production deploy workflow already assumes: a SECOND reviewer on
+# database migrations (deploy-production.yml names "the second migration reviewer") and on the deploy
+# pipeline itself. GitHub auto-requests review from the owners below and, once branch protection has
+# `require_code_owner_review: true`, BLOCKS merge until an owner approves the matching files.
+#
+# >>> BEFORE THIS WORKS, DO TWO THINGS (one-time):
+# 1. Replace @techfleetworks/trackpoli-maintainers with a REAL GitHub team in the techfleetworks org
+#    (Org → Teams → New team), or list individual @handles. A team/handle that does not exist is
+#    silently ignored — no review is requested — so confirm it resolves on a test PR.
+# 2. Turn on code-owner review: set "require_code_owner_review": true in
+#    .github/rulesets/main-protection.json and re-apply it with scripts/apply-ruleset.sh.
+#    See docs/setup/multi-dev-deploy.md §2.
+#
+# Owners need write access to the repo. The last matching pattern wins, so order matters.
+
+# Default: any change gets a maintainer's eyes.
+*                               @techfleetworks/trackpoli-maintainers
+
+# Database migrations — a bad migration is the hardest thing to undo. Two-person review (release-
+# deployment-safety: expand/contract, never destructive in the expand phase).
+/supabase/migrations/**         @techfleetworks/trackpoli-maintainers
+/supabase/config.toml           @techfleetworks/trackpoli-maintainers
+/data-map.json                  @techfleetworks/trackpoli-maintainers
+
+# The deploy pipeline and what runs in CI — a change here can ship anything, so it is maintainer-owned.
+/.github/workflows/**           @techfleetworks/trackpoli-maintainers
+/.github/rulesets/**            @techfleetworks/trackpoli-maintainers
+/.github/CODEOWNERS             @techfleetworks/trackpoli-maintainers
+
+# Standing architectural rules and the gate config — changing these changes what "done" means.
+/decisions.md                   @techfleetworks/trackpoli-maintainers
+/arch-gate.config.json          @techfleetworks/trackpoli-maintainers
+/arch-gate.waivers.json         @techfleetworks/trackpoli-maintainers
