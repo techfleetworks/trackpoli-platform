@@ -1112,6 +1112,28 @@
   },
   {
     "feature": "design-system/migration.feature",
+    "scenario": "The two-factor card and replacement modal render with design-system utilities after dropping the CSS Module",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "twofactor-card-layout-migrated",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
+    "scenario": "The two-factor card layout migration preserves the re-authentication and replacement safeguards",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "twofactor-card-security-parity",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
     "scenario": "The two-factor enrolment wizard renders with design-system utilities after dropping the CSS Module",
     "domain": "design-system",
     "audience": "administrator",

@@ -172,3 +172,18 @@ Feature: Existing features migrate to the design system
     Given the MFA-enrol wizard migrated its layout with no logic change
     When a new administrator enters a wrong code, exhausts attempts, or the setup session lapses
     Then the wrong-code, too-many-attempts (paused) and 401 session-expired outcomes are unchanged and the factor is only confirmed server-side
+
+  # Two-factor card + device-replacement modal migration (ADR-0028 follow-up; adopts the ADR-0029 --scrim
+  # token for the overlay): drop the per-screen CSS Module for design-system utilities. Presentation-only.
+
+  @audience:administrator @usecase:twofactor-card-layout-migrated @category:happy @quality:functional @severity:medium
+  Scenario: The two-factor card and replacement modal render with design-system utilities after dropping the CSS Module
+    Given the Security-tab two-factor card and its device-replacement modal migrated their layout off the CSS Module
+    When the card and each wizard step render (intro, reauth, new device, new code, lost device, paused, success, failed)
+    Then the card, the scrim overlay, the step headers, the QR/key, the info boxes and the actions still display and behave as before
+
+  @security @audience:administrator @usecase:twofactor-card-security-parity @category:adverse @quality:security @severity:high
+  Scenario: The two-factor card layout migration preserves the re-authentication and replacement safeguards
+    Given the two-factor replacement modal migrated its layout with no logic change
+    When an administrator re-authenticates, enters a wrong current or new code, or exhausts attempts
+    Then re-auth is still required with a current-device code, the wrong-code and too-many-attempts outcomes are unchanged, and the factor is replaced only server-side
