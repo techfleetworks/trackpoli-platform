@@ -189,9 +189,12 @@ export async function updateSession(
   let status: AdminStatus | null = null;
   if (user) {
     try {
-      const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      const { data, error: aalErr } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      // DEBUG(E2E-11): capture exactly what the middleware sees so we know why forced MFA enrol is skipped.
+      console.error("[DEBUG-AAL]", JSON.stringify({ path: request.nextUrl.pathname, data, aalErr: aalErr?.message }));
       if (data) aal = { currentLevel: data.currentLevel, nextLevel: data.nextLevel };
     } catch (error) {
+      console.error("[DEBUG-AAL-THROW]", request.nextUrl.pathname, error instanceof Error ? error.message : String(error));
       report("debug", "assurance-level read skipped", {
         reason: error instanceof Error ? error.message : String(error),
       });

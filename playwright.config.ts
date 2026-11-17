@@ -30,5 +30,6 @@ export default defineConfig({
     url: "http://localhost:3000/admin/sign-in",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    stdout: "pipe", // DEBUG(E2E-11): surface the dev server's console in CI to capture the [DEBUG-AAL] line
   },
 });
