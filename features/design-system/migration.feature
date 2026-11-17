@@ -202,3 +202,18 @@ Feature: Existing features migrate to the design system
     Given the confirm and session-expired screens swapped only the button component, not their logic
     When the one-time-link continue and the session-expired sign-in-again actions are used
     Then the token-on-click exchange and the safe in-app redirect are unchanged
+
+  # Dead-code removal (ADR-0011 cleanup): the unused hand-built Banner component is deleted; the shadcn Alert
+  # primitive already owns the role=alert notice surface. No behaviour change - parity is the empty set.
+
+  @audience:administrator @usecase:banner-dead-code-removed @category:happy @quality:functional @severity:low
+  Scenario: Removing the unused Banner component changes nothing a user can see
+    Given the hand-built Banner component had no importers and was never rendered
+    When it is deleted and the shadcn Alert primitive remains the role=alert notice surface
+    Then every screen still shows its alerts and the full test suite stays green
+
+  @security @audience:administrator @usecase:banner-dead-code-removed-security @category:adverse @quality:security @severity:low
+  Scenario: Removing the unused Banner component removes no security-relevant surface
+    Given the Banner component was dead code with no renderers
+    When it is deleted
+    Then no error, alert or notice that any security flow relies on is lost, because those use the Alert primitive
