@@ -41,6 +41,20 @@ select '00000000-0000-0000-0000-000000000000', p.id, 'authenticated', 'authentic
        '', '', '', '', '', '', '', ''
 from tests.people p;
 
+-- Email identities. supabase.auth.getUser() populates user.identities from auth.identities, NOT from
+-- raw_app_meta_data, so a seeded account is recognised as a password account only when it has an identity
+-- row with provider 'email' (getTwoFactorStatus, src/features/settings/security/twoFactor.ts). Without it
+-- every seeded user is treated as Google-only, and device replacement asks for a Google re-auth instead of
+-- the password (found by the full-stack E2E-11 harness). For the email provider GoTrue sets provider_id to
+-- the user id; the id primary key and the generated email column are left to their defaults. Seed-data only;
+-- password sign-in itself uses auth.users.encrypted_password and does not depend on this row.
+insert into auth.identities (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+select p.id::text, p.id,
+       jsonb_build_object('sub', p.id::text, 'email', p.name || '@example.test',
+                          'email_verified', true, 'phone_verified', false),
+       'email', now(), now(), now()
+from tests.people p;
+
 insert into public.profiles (id, email, display_name, role, status, invited_at, activated_at, deactivated_at) values
   ('00000000-0000-4000-8000-0000000000a1', 'mia@example.test', 'Mia Manager',   'admin_manager', 'active',      now(), now(), null),
   ('00000000-0000-4000-8000-0000000000a2', 'max@example.test', 'Max Manager',   'admin_manager', 'active',      now(), now(), null),
