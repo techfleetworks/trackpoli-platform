@@ -72,3 +72,11 @@ Feature: Password recovery (forgot password, enumeration resistance, single-use 
     When the request cannot complete
     Then the single generic notice, which reveals nothing about whether the account exists, is announced as an alert inside that named form
     And assistive technology and the end-to-end tests can locate the notice by the form's accessible name
+
+  @audience:administrator @usecase:recovery-reachable-signed-out @category:boundary @security @owasp:authorization @severity:high
+  Scenario: Password recovery is reachable without a two-factor session
+    Given a signed-out visitor with no session
+    When they open the forgot-password screen, or an emailed recovery or invite Continue link at /auth/confirm
+    Then the page loads instead of the sign-in guard redirecting them to /sign-in
+    And the reset-password screen is reachable on a recovery session without being funnelled to two-factor enrolment
+    But each page still enforces its own recovery or invite session, and RLS remains the authorization boundary

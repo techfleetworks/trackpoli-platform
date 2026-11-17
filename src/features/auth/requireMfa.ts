@@ -14,6 +14,21 @@ export const MFA_PUBLIC_PATHS = [
   "/auth/google",
   "/api/sign-in",
   "/session-expired",
+  // Password recovery is reachable without a two-factor session: the signed-out entry points
+  // (/forgot-password and its /sent subpath, via the prefix match) and their POST endpoint, plus the
+  // recovery-session pages — /reset-password and its /api/reset-password, and /auth/confirm (the token-hash
+  // Continue landing for recovery AND invite email links) together with /api/auth/confirm, the POST that
+  // actually exchanges the one-time token and establishes the session (the Continue click runs while still
+  // signed OUT, so the API itself must be public, not just its page — ADR-0008). Without these, the sign-in
+  // guard redirected a signed-out visitor straight to /sign-in, so "Forgot password?" and an emailed link
+  // could never be reached once the middleware is active (TP1-03/07/09, E2E-05). Routing only — each page and
+  // API still enforces its own recovery/invite session, and RLS is the authorization boundary (ADR-0012).
+  "/forgot-password",
+  "/reset-password",
+  "/auth/confirm",
+  "/api/auth/confirm",
+  "/api/request-password-reset",
+  "/api/reset-password",
 ] as const;
 
 // Paths a signed-in administrator may reach while still at aal1, so the two-factor funnel cannot deadlock:
