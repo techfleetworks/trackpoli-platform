@@ -96,3 +96,11 @@ Feature: Two-factor protection (mandatory TOTP, forced enrolment, step-up, devic
     When they enrol a second factor, then later replace the device in Security settings
     Then replacing requires their password and current code
     And a code is required at the next sign-in using the new device
+
+  @audience:administrator @usecase:enrol-enforced-on-root @category:boundary @security @owasp:authorization @severity:high
+  Scenario: Forced two-factor enrolment is enforced on the dashboard landing page
+    Given a signed-in administrator at aal1 with no verified factor
+    When they land on the application root (the dashboard) after signing in
+    Then the middleware funnels them to two-factor enrolment instead of rendering the dashboard
+    And this holds because the middleware matcher gates the basePath root, not only its sub-paths
+    But RLS still denies every aal1 data request regardless, so the routing gate is defence in depth
