@@ -42,10 +42,11 @@ function totp(secret: string): string {
   return String(code % 1_000_000).padStart(6, "0");
 }
 
-// Sign in and complete forced first-time enrolment, leaving the page on /admin at aal2.
-async function signInAndEnrol(page: Page): Promise<void> {
+// Sign in and complete forced first-time enrolment, leaving the page on /admin at aal2. Takes the email so
+// the two tests enrol DIFFERENT seed users (abe, bea) and do not collide on a shared stack (see E2E-11).
+async function signInAndEnrol(page: Page, email = ADMIN): Promise<void> {
   await page.goto("/admin/sign-in");
-  await page.getByLabel("Email", { exact: true }).fill(ADMIN);
+  await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   const submit = page.getByRole("button", { name: "Sign in" });
   await expect(submit).toBeEnabled();
@@ -56,7 +57,7 @@ async function signInAndEnrol(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Continue" }).click();
   const secret = ((await (await begin).json()) as { secret?: string }).secret as string;
   await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByLabel("6-digit code").fill(totp(secret));
+  await page.getByRole("textbox", { name: /digit code/i }).fill(totp(secret));
   await page.getByRole("button", { name: "Verify and turn on" }).click();
   await page.getByRole("button", { name: "Go to dashboard" }).click();
   await expect(page).toHaveURL(/\/admin$/);
@@ -64,6 +65,9 @@ async function signInAndEnrol(page: Page): Promise<void> {
 
 test.describe("Safe sessions (full stack)", () => {
   test.skip(!process.env.E2E_FULL_STACK, "requires the full Supabase stack + seed + shortened SESSION_* limits");
+  // Each test enrols a factor in the shared stack, so a retry against the un-reset DB would not see the user
+  // un-enrolled again — not safely retryable (see E2E-11). Turn retries off.
+  test.describe.configure({ retries: 0 });
 
   test("E2E-06: an idle session warns, then lands on /session-expired keeping the return path", async ({ page }) => {
     await signInAndEnrol(page);
@@ -81,7 +85,7 @@ test.describe("Safe sessions (full stack)", () => {
 
   test("E2E-07: signing out in one tab signs out the other within two seconds", async ({ context }) => {
     const tab1 = await context.newPage();
-    await signInAndEnrol(tab1);
+    await signInAndEnrol(tab1, "bea@example.test"); // bea, not abe: E2E-06 above already enrolled abe in this stack
 
     const tab2 = await context.newPage();
     await tab2.goto("/admin/settings/security");
