@@ -132,7 +132,12 @@ jobs:
         run: |
           git fetch --no-tags origin "$BASE_REF"
           base=$(git merge-base HEAD "origin/$BASE_REF")
-          changed=$(git diff --name-only --diff-filter=ACMR "$base" HEAD | paste -sd, -)
+          # ACMRD, not ACMR: the D (deleted) class is INCLUDED here on purpose. The receipt's diff-binding
+          # only checks that each `where` file is in the change; a deletion PR legitimately applies a skill
+          # TO the file it deletes (e.g. "remove the dead component"), so that file must appear in the list
+          # or the honest receipt is structurally un-passable. This is the ONE changed-list that includes
+          # deletions; the arch-review list (below) must NOT, because it greps file contents. See ADR-0031.
+          changed=$(git diff --name-only --diff-filter=ACMRD "$base" HEAD | paste -sd, -)
           echo "changed=$changed" >> "$GITHUB_OUTPUT"
           git show "$base:docs/skill-receipts/log.jsonl" > base-receipts.jsonl 2>/dev/null || : > base-receipts.jsonl
       - name: Skill-application receipt gate
