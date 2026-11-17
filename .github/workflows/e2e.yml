@@ -132,6 +132,18 @@ jobs:
           supabase status -o env > supabase-status.env
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(sed -n 's/^ANON_KEY=//p' supabase-status.env | tr -d '\"')" >> "$GITHUB_ENV"
           echo "SUPABASE_SERVICE_ROLE_KEY=$(sed -n 's/^SERVICE_ROLE_KEY=//p' supabase-status.env | tr -d '\"')" >> "$GITHUB_ENV"
+      # TEMP DIAGNOSTIC (E2E-11): probe GoTrue's password grant directly for a seeded user, to tell apart a
+      # seed/auth problem from an app-flow problem. Non-fatal; prints only whether a token came back + any
+      # error (never the token itself). Remove once the full-stack sign-in path is green.
+      - name: DIAG - direct auth token probe for a seeded user
+        run: |
+          code=$(curl -s -o /tmp/tok.json -w "%{http_code}" -X POST \
+            "http://127.0.0.1:54321/auth/v1/token?grant_type=password" \
+            -H "apikey: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"email":"abe@example.test","password":"LocalOnly-Passw0rd!"}')
+          echo "HTTP ${code}"
+          node -e "let r={};try{r=require('/tmp/tok.json')}catch(e){};console.log(JSON.stringify({ok:!!r.access_token,error:r.error,error_description:r.error_description,msg:r.msg,error_code:r.error_code,weak_password:r.weak_password}))" || cat /tmp/tok.json
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
       # E2E-05 reads the recovery email from the local mail catcher (Inbucket/Mailpit) that `supabase start`
