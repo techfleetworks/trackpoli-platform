@@ -144,6 +144,10 @@ jobs:
             -d '{"email":"abe@example.test","password":"LocalOnly-Passw0rd!"}')
           echo "HTTP ${code}"
           node -e "let r={};try{r=require('/tmp/tok.json')}catch(e){};console.log(JSON.stringify({ok:!!r.access_token,error:r.error,error_description:r.error_description,msg:r.msg,error_code:r.error_code,weak_password:r.weak_password}))" || cat /tmp/tok.json
+          echo "--- run the access-token hook AS supabase_auth_admin (prints the exact DB error) ---"
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -v ON_ERROR_STOP=0 \
+            -c "set role supabase_auth_admin;" \
+            -c "select public.custom_access_token_hook('{\"user_id\":\"00000000-0000-4000-8000-0000000000b1\",\"claims\":{\"sub\":\"x\"}}'::jsonb);" 2>&1 || true
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
       # E2E-05 reads the recovery email from the local mail catcher (Inbucket/Mailpit) that `supabase start`
