@@ -62,6 +62,13 @@ Feature: Two-factor protection (mandatory TOTP, forced enrolment, step-up, devic
     Then it is refused before any new factor is created
     And the current factor is left unchanged
 
+  @audience:administrator @usecase:replacement-endpoint-contract @category:adverse @security @severity:high
+  Scenario: The device-replacement endpoint accepts a valid re-authentication and never fails closed with a server error
+    Given a signed-in administrator submitting a device-replacement step
+    When the request carries a recognised shape: password or Google re-auth with a current code, or a completion with a new code
+    Then the endpoint validates it and returns a typed replacement outcome
+    And a malformed request is refused as a re-authentication failure, not a 500 server error
+
   @audience:administrator @usecase:lost-device-no-self-service @category:negative @security @severity:medium
   Scenario: A lost authenticator is not self-service and must be a manager recreate
     Given an administrator who has lost their device and has no current code

@@ -25,7 +25,13 @@ import { report } from "@/lib/report";
 
 const SixDigits = z.string().regex(/^\d{6}$/);
 
-const Body = z.discriminatedUnion("step", [
+// A plain union, NOT z.discriminatedUnion("step"): two members share the step "authorize" (password and
+// google re-auth), and Zod forbids a discriminated union from having the same discriminator value twice — it
+// throws "Duplicate discriminator value 'authorize'" when the schema is evaluated, which turned EVERY POST
+// here into a 500 (found by the full-stack E2E-11 harness; the endpoint had no unit test). Each member is
+// .strict() with distinct required fields, so a plain union discriminates the three shapes unambiguously; an
+// unmatched body falls through to parsed.success === false and the safe reauth_failed outcome below.
+const Body = z.union([
   z.object({ step: z.literal("authorize"), method: z.literal("password"), password: z.string().min(1), currentCode: SixDigits }).strict(),
   z.object({ step: z.literal("authorize"), method: z.literal("google"), currentCode: SixDigits }).strict(),
   z.object({ step: z.literal("complete"), newFactorId: z.string().min(1), newCode: SixDigits }).strict(),
