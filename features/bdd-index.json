@@ -1496,6 +1496,17 @@
     "status": "covered"
   },
   {
+    "feature": "shell/admin-shell.feature",
+    "scenario": "The shell shows the administrator's own name, read only from their own profile row",
+    "domain": "shell",
+    "audience": "administrator",
+    "usecase": "shell-identity-own-name",
+    "category": "permission",
+    "quality": "security",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
     "feature": "terms/accept-terms.feature",
     "scenario": "A new version forces an existing administrator to accept again",
     "domain": "terms",

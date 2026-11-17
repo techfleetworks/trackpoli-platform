@@ -140,6 +140,7 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | shell/admin-shell.feature | The navigation is a rail on desktop and a drawer on small screens | shell | end-user | responsive-nav | happy | functional | medium | covered |
 | shell/admin-shell.feature | The password field keeps paste and the correct autocomplete, never exposing the value | shell | end-user | password-field-paste | happy | security | medium | covered |
 | shell/admin-shell.feature | The shell renders at the 320px minimum width without horizontal scrolling | shell | end-user | responsive-min-width | boundary | functional | medium | covered |
+| shell/admin-shell.feature | The shell shows the administrator's own name, read only from their own profile row | shell | administrator | shell-identity-own-name | permission | security | medium | covered |
 | terms/accept-terms.feature | A new version forces an existing administrator to accept again | terms | administrator | E2E-15 | happy | security | high | covered |
 | terms/accept-terms.feature | A newly invited administrator is sent to terms first and acceptance is recorded | terms | administrator | E2E-15 | happy | security | critical | covered |
 | terms/accept-terms.feature | A recorded acceptance cannot be changed or deleted | terms | maintainer | immutable-consent-record | adverse | compliance | high | covered |
