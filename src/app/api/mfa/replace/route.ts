@@ -27,8 +27,9 @@ const SixDigits = z.string().regex(/^\d{6}$/);
 
 // A plain union, NOT z.discriminatedUnion("step"): two members share the step "authorize" (password and
 // google re-auth), and Zod forbids a discriminated union from having the same discriminator value twice — it
-// throws "Duplicate discriminator value 'authorize'" when the schema is evaluated, which turned EVERY POST
-// here into a 500 (found by the full-stack E2E-11 harness; the endpoint had no unit test). Each member is
+// throws "Duplicate discriminator value 'authorize'" the first time it validates a body (at safeParse, not at
+// construction), which turned EVERY POST here into a 500 (found by the full-stack E2E-11 harness; the endpoint
+// had no unit test, and safeParse below is not wrapped, so the throw escaped). Each member is
 // .strict() with distinct required fields, so a plain union discriminates the three shapes unambiguously; an
 // unmatched body falls through to parsed.success === false and the safe reauth_failed outcome below.
 const Body = z.union([
