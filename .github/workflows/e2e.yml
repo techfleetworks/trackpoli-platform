@@ -96,7 +96,7 @@ jobs:
   # the always-pass TEST keys. (E2E-18 proves the internal-only notice contract; the LIVE email-delivery check
   # stays domain-blocked — Q-1-21 — in docs/TODO.md until the Porkbun SMTP secrets exist.)
   e2e-full-stack:
-    name: e2e (full stack · E2E-02, E2E-05, E2E-08, E2E-11, E2E-15, E2E-18)
+    name: e2e (full stack · E2E-02, E2E-05, E2E-08, E2E-11, E2E-15, E2E-18, E2E-04)
     runs-on: ubuntu-latest
     env:
       E2E_FULL_STACK: "1"
@@ -142,7 +142,7 @@ jobs:
         # run against `next dev`. In parallel a slow spec starves the other worker, which made a sibling spec
         # sit long enough on a page for the real idle session-timeout (TP1-05) to fire mid-test. Serial removes
         # the contention and the cross-spec state races; reliability matters more than wall-clock here.
-        run: npx playwright test --workers=1 e2e/sign-in.full-stack.spec.ts e2e/password-reset.full-stack.spec.ts e2e/role-based-access.full-stack.spec.ts e2e/two-factor.full-stack.spec.ts e2e/accept-terms.full-stack.spec.ts e2e/security-alert-emails.full-stack.spec.ts
+        run: npx playwright test --workers=1 e2e/sign-in.full-stack.spec.ts e2e/password-reset.full-stack.spec.ts e2e/role-based-access.full-stack.spec.ts e2e/two-factor.full-stack.spec.ts e2e/accept-terms.full-stack.spec.ts e2e/accept-invite.full-stack.spec.ts e2e/security-alert-emails.full-stack.spec.ts
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:

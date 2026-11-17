@@ -23,7 +23,10 @@ async function latestInviteLink(email: string): Promise<string> {
 test.describe("E2E-03/E2E-04: invite and onboard an administrator", () => {
   test.skip(!process.env.E2E_FULL_STACK, "requires the full Supabase stack + seed + mail-catcher + Turnstile test keys");
 
-  test("E2E-03: an invited administrator accepts terms, sets a password, enrols two-factor and reaches the dashboard", async ({ page }) => {
+  // fixme: the happy-path onboarding needs the invite-creation setup (a signed-in aal2 manager calling
+  // invite-admin) and the Mailpit invite-link reader, both still to be built (the TP1-09 harness spike).
+  // E2E-04 below is self-contained and runs now.
+  test.fixme("E2E-03: an invited administrator accepts terms, sets a password, enrols two-factor and reaches the dashboard", async ({ page }) => {
     // Setup (outside the UI, since the invite UI is TP1-13): a manager invites a brand-new address via the
     // invite-admin edge function, which creates the invited profile and sends the invite email.
     const email = `invitee-${Date.now()}@example.test`;
