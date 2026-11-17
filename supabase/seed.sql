@@ -24,11 +24,19 @@ insert into tests.people (name, id) values
   ('dee', '00000000-0000-4000-8000-0000000000d1');
 
 -- Auth users. The local password is only for signing in by hand on a developer machine.
+-- GoTrue scans several auth.users token columns into non-nullable Go strings, so a NULL there fails every
+-- sign-in with "converting NULL to string is unsupported" (error finding user). Real users created through
+-- GoTrue (the invite flow) get '' here; a raw seed insert must set them explicitly or no seeded user can
+-- sign in. Production is unaffected — this is seed-data only.
 insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-                        raw_app_meta_data, raw_user_meta_data)
+                        raw_app_meta_data, raw_user_meta_data,
+                        confirmation_token, recovery_token, email_change,
+                        email_change_token_new, email_change_token_current,
+                        phone_change, phone_change_token, reauthentication_token)
 select '00000000-0000-0000-0000-000000000000', p.id, 'authenticated', 'authenticated',
        p.name || '@example.test', extensions.crypt('LocalOnly-Passw0rd!', extensions.gen_salt('bf')), now(),
-       '{"provider":"email","providers":["email"]}', '{}'
+       '{"provider":"email","providers":["email"]}', '{}',
+       '', '', '', '', '', '', '', ''
 from tests.people p;
 
 insert into public.profiles (id, email, display_name, role, status, invited_at, activated_at, deactivated_at) values
