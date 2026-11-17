@@ -749,6 +749,17 @@
   },
   {
     "feature": "auth/two-factor.feature",
+    "scenario": "Forced two-factor enrolment is enforced on the dashboard landing page",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "enrol-enforced-on-root",
+    "category": "boundary",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/two-factor.feature",
     "scenario": "No data is reachable until the second factor is satisfied",
     "domain": "auth",
     "audience": "administrator",
@@ -787,6 +798,17 @@
     "audience": "administrator",
     "usecase": "device-replacement-google",
     "category": "happy",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/two-factor.feature",
+    "scenario": "The device-replacement endpoint accepts a valid re-authentication and never fails closed with a server error",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "replacement-endpoint-contract",
+    "category": "adverse",
     "quality": "security",
     "severity": "high",
     "status": "covered"
@@ -936,6 +958,39 @@
   },
   {
     "feature": "design-system/migration.feature",
+    "scenario": "Removing the unused Banner component changes nothing a user can see",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "banner-dead-code-removed",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "low",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
+    "scenario": "Removing the unused Banner component removes no security-relevant surface",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "banner-dead-code-removed-security",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "low",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
+    "scenario": "Retiring LegacyButton changes no auth behaviour on the affected screens",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "legacybutton-retired-security",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "low",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
     "scenario": "The app shell (side nav + error screens) uses design-system components with behaviour parity",
     "domain": "design-system",
     "audience": "administrator",
@@ -965,6 +1020,17 @@
     "category": "adverse",
     "quality": "security",
     "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
+    "scenario": "The confirm and session-expired actions render on the shadcn Button after LegacyButton is retired",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "legacybutton-retired",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
     "status": "covered"
   },
   {

@@ -187,3 +187,33 @@ Feature: Existing features migrate to the design system
     Given the two-factor replacement modal migrated its layout with no logic change
     When an administrator re-authenticates, enters a wrong current or new code, or exhausts attempts
     Then re-auth is still required with a current-device code, the wrong-code and too-many-attempts outcomes are unchanged, and the factor is replaced only server-side
+
+  # LegacyButton retirement (ADR-0011 D5 expand/contract): the two remaining importers (ConfirmPage,
+  # SessionExpiredPage) move onto the shadcn Button primitive (filled -> secondary); LegacyButton is deleted.
+
+  @audience:administrator @usecase:legacybutton-retired @category:happy @quality:functional @severity:medium
+  Scenario: The confirm and session-expired actions render on the shadcn Button after LegacyButton is retired
+    Given ConfirmPage and SessionExpiredPage moved their primary action off the hand-built LegacyButton onto the shadcn Button primitive
+    When each screen renders its primary action
+    Then the full-width filled action still displays and behaves as before and LegacyButton no longer exists
+
+  @security @audience:administrator @usecase:legacybutton-retired-security @category:adverse @quality:security @severity:low
+  Scenario: Retiring LegacyButton changes no auth behaviour on the affected screens
+    Given the confirm and session-expired screens swapped only the button component, not their logic
+    When the one-time-link continue and the session-expired sign-in-again actions are used
+    Then the token-on-click exchange and the safe in-app redirect are unchanged
+
+  # Dead-code removal (ADR-0011 cleanup): the unused hand-built Banner component is deleted; the shadcn Alert
+  # primitive already owns the role=alert notice surface. No behaviour change - parity is the empty set.
+
+  @audience:administrator @usecase:banner-dead-code-removed @category:happy @quality:functional @severity:low
+  Scenario: Removing the unused Banner component changes nothing a user can see
+    Given the hand-built Banner component had no importers and was never rendered
+    When it is deleted and the shadcn Alert primitive remains the role=alert notice surface
+    Then every screen still shows its alerts and the full test suite stays green
+
+  @security @audience:administrator @usecase:banner-dead-code-removed-security @category:adverse @quality:security @severity:low
+  Scenario: Removing the unused Banner component removes no security-relevant surface
+    Given the Banner component was dead code with no renderers
+    When it is deleted
+    Then no error, alert or notice that any security flow relies on is lost, because those use the Alert primitive

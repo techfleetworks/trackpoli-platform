@@ -72,10 +72,12 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | auth/two-factor.feature | A wrong code at the verify step is refused and the session stays aal1 | auth | administrator | verify-wrong-code | negative | security | medium | covered |
 | auth/two-factor.feature | Enrol at first sign-in, then replace the device, and the next sign-in needs a code | auth | administrator | E2E-11 | happy | security | high | covered |
 | auth/two-factor.feature | Forced enrolment applies to Google sign-ins too | auth | administrator | forced-enrolment-google | permission | security | high | covered |
+| auth/two-factor.feature | Forced two-factor enrolment is enforced on the dashboard landing page | auth | administrator | enrol-enforced-on-root | boundary | security | high | covered |
 | auth/two-factor.feature | No data is reachable until the second factor is satisfied | auth | administrator | aal2-data-gate | permission | security | critical | covered |
 | auth/two-factor.feature | Repeated wrong codes during replacement are rate-limited, not endlessly retriable | auth | administrator | replacement-attempt-cap | adverse | security | medium | covered |
 | auth/two-factor.feature | Replacing a device requires password and the current code for an email administrator | auth | administrator | device-replacement | happy | security | high | covered |
 | auth/two-factor.feature | Replacing a device uses Google re-auth and the current code for a Google-only administrator | auth | administrator | device-replacement-google | happy | security | high | covered |
+| auth/two-factor.feature | The device-replacement endpoint accepts a valid re-authentication and never fails closed with a server error | auth | administrator | replacement-endpoint-contract | adverse | security | high | covered |
 | auth/two-factor.feature | The only Admin manager who loses their device cannot self-recreate from the app | auth | administrator-manager | lost-device-only-manager | adverse | security | medium | covered |
 | auth/two-factor.feature | Two-factor cannot be switched off | auth | administrator | no-self-disable | adverse | security | high | covered |
 | design-system/component-accessibility.feature | A disabled control is non-interactive and announced as disabled | design-system | assistive-tech | disabled-control | edge | accessibility | medium | covered |
@@ -89,9 +91,13 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | design-system/components.feature | A Hover Card exposes its content when open | design-system | assistive-tech | hover-card-content | happy | functional | medium | covered |
 | design-system/components.feature | A Toast announces itself and shows its icon before the header | design-system | assistive-tech | toast-a11y | happy | accessibility | high | covered |
 | design-system/components.feature | The button is disabled consistently at every size | design-system | assistive-tech | button-disabled-all-sizes | negative | accessibility | medium | covered |
+| design-system/migration.feature | Removing the unused Banner component changes nothing a user can see | design-system | administrator | banner-dead-code-removed | happy | functional | low | covered |
+| design-system/migration.feature | Removing the unused Banner component removes no security-relevant surface | design-system | administrator | banner-dead-code-removed-security | adverse | security | low | covered |
+| design-system/migration.feature | Retiring LegacyButton changes no auth behaviour on the affected screens | design-system | administrator | legacybutton-retired-security | adverse | security | low | covered |
 | design-system/migration.feature | The app shell (side nav + error screens) uses design-system components with behaviour parity | design-system | administrator | shell-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The auth screens share the design-system AuthCard shell with behaviour parity | design-system | administrator | auth-card-migrated | happy | functional | high | covered |
 | design-system/migration.feature | The auth-card migration preserves the screens' security properties | design-system | administrator | auth-card-security-parity | adverse | security | high | covered |
+| design-system/migration.feature | The confirm and session-expired actions render on the shadcn Button after LegacyButton is retired | design-system | administrator | legacybutton-retired | happy | functional | medium | covered |
 | design-system/migration.feature | The continue and session-expired layout migration preserves the token-on-click and safe-redirect behaviour | design-system | administrator | confirm-expired-layout-security-parity | adverse | security | high | covered |
 | design-system/migration.feature | The continue and session-expired screens render with design-system utilities after dropping the CSS Module | design-system | administrator | confirm-expired-layout-migrated | happy | functional | medium | covered |
 | design-system/migration.feature | The forgot-password and verification screens render with design-system utilities after dropping the CSS Module | design-system | administrator | form-layout-migrated | happy | functional | medium | covered |
