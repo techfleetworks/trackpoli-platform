@@ -749,6 +749,17 @@
   },
   {
     "feature": "auth/two-factor.feature",
+    "scenario": "Forced two-factor enrolment is enforced on the dashboard landing page",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "enrol-enforced-on-root",
+    "category": "boundary",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/two-factor.feature",
     "scenario": "No data is reachable until the second factor is satisfied",
     "domain": "auth",
     "audience": "administrator",

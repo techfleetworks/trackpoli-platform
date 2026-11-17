@@ -159,5 +159,14 @@ export async function middleware(request: NextRequest) {
 export const config = {
   // Run on every request except Next.js internals and static assets; those never carry a session to
   // refresh and must not pay the auth-server round-trip.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  matcher: [
+    // Match the application ROOT as well as every sub-path. With basePath "/admin", Next prefixes a glob
+    // matcher with the basePath, so the glob below becomes "/admin/(...)" and does NOT match the bare
+    // "/admin" (the dashboard at app/(app)/page.tsx, where a signed-in user lands after sign-in). Without this
+    // "/" entry the ENTIRE middleware gate — forced two-factor enrolment, session timeout, the terms and role
+    // gates — is silently bypassed for the landing page (found by the full-stack E2E-11 harness). RLS still
+    // protects the data, but the routing guards must run here too (ADR-0009/0012).
+    "/",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };
