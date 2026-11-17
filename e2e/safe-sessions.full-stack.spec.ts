@@ -80,7 +80,9 @@ test.describe("Safe sessions (full stack)", () => {
     await expect(page).toHaveURL(/\/admin\/session-expired\?/, { timeout: 15_000 });
     await expect(page.getByRole("heading", { name: "Your session has expired" })).toBeVisible();
     // The return path is kept so "Sign in again" comes back to where they were.
-    expect(new URL(page.url()).searchParams.get("next")).toContain("/admin/settings/security");
+    // /admin/settings/security now redirects to the unified settings page (/admin/settings?tab=security),
+    // so the captured return path is /admin/settings.
+    expect(new URL(page.url()).searchParams.get("next")).toContain("/admin/settings");
   });
 
   test("E2E-07: signing out in one tab signs out the other within two seconds", async ({ context }) => {
@@ -88,8 +90,8 @@ test.describe("Safe sessions (full stack)", () => {
     await signInAndEnrol(tab1, "bea@example.test"); // bea, not abe: E2E-06 above already enrolled abe in this stack
 
     const tab2 = await context.newPage();
-    await tab2.goto("/admin/settings/security");
-    await expect(tab2).toHaveURL(/\/admin\/settings\/security/);
+    await tab2.goto("/admin/settings/security"); // redirects to the unified /admin/settings?tab=security
+    await expect(tab2).toHaveURL(/\/admin\/settings/);
 
     // Sign out in tab 1 through the idle warning's "Sign out" (which broadcasts over the shared channel).
     await expect(tab1.getByRole("alertdialog")).toBeVisible({ timeout: 15_000 });
