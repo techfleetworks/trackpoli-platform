@@ -17,6 +17,10 @@ export interface AuthUser {
   // claim is absent or unreadable (e.g. a user with no profile row, whom the hook stamps 'none').
   readonly role: AdminRole | null;
   readonly status: AdminStatus | null;
+  // The administrator's own profile display name (profiles.display_name), read server-side for the shell
+  // to show the real name rather than the email (TP1-06). Null when it cannot be read; the shell then
+  // falls back to the email. Presentation only.
+  readonly display_name: string | null;
 }
 
 export interface AuthState {

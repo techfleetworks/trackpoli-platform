@@ -91,6 +91,37 @@ export async function readAdminClaims(
 }
 
 /**
+ * Read the current user's own display name from their profile row (profiles_select_own, migration 005,
+ * lets a user read their own row). Presentation only — the shell shows the administrator's real name
+ * instead of their email (TP1-06). Best-effort: returns null when it cannot be read (no profile row yet,
+ * or a transient error), so the caller falls back to the email and a read gap never blocks rendering.
+ */
+export async function readOwnDisplayName(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", userId)
+      .maybeSingle();
+    if (error) {
+      report("warning", "own display name read failed (shell name degraded to email)", {
+        reason: error.message,
+      });
+      return null;
+    }
+    return data?.display_name ?? null;
+  } catch (error) {
+    report("debug", "own display name read skipped", {
+      reason: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
+/**
  * Refresh the session for a middleware pass and return the current user alongside the response that
  * carries any refreshed cookies. The caller (src/middleware.ts) owns the routing/guard decision; this
  * function owns only the session read, the assurance-level read, and the cookie plumbing.
