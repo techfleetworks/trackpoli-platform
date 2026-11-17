@@ -96,7 +96,7 @@ test.describe("E2E-11: two-factor enrolment, step-up, and device replacement", (
 
     await expect(page.getByRole("heading", { name: "Scan the QR code" })).toBeVisible();
     await page.getByRole("button", { name: "Continue" }).click();
-    await page.getByLabel("6-digit code").fill(await freshCode(secret1, used));
+    await page.getByRole("textbox", { name: /digit code/i }).fill(await freshCode(secret1, used));
     await page.getByRole("button", { name: "Verify and turn on" }).click();
 
     await expect(page.getByRole("heading", { name: "Two-step verification is on" })).toBeVisible();
@@ -127,7 +127,7 @@ test.describe("E2E-11: two-factor enrolment, step-up, and device replacement", (
 
     await expect(dialog.getByRole("heading", { name: "Add your new device" })).toBeVisible();
     await dialog.getByRole("button", { name: "Continue" }).click();
-    await dialog.getByLabel("6-digit code").fill(await freshCode(secret2, used));
+    await dialog.getByRole("textbox", { name: /digit code/i }).fill(await freshCode(secret2, used));
     await dialog.getByRole("button", { name: "Replace device" }).click();
 
     await expect(dialog.getByRole("heading", { name: "Authenticator device replaced" })).toBeVisible();
