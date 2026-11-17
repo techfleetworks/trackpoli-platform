@@ -29,12 +29,14 @@ insert into tests.people (name, id) values
 -- GoTrue (the invite flow) get '' here; a raw seed insert must set them explicitly or no seeded user can
 -- sign in. Production is unaffected — this is seed-data only.
 insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+                        created_at, updated_at,
                         raw_app_meta_data, raw_user_meta_data,
                         confirmation_token, recovery_token, email_change,
                         email_change_token_new, email_change_token_current,
                         phone_change, phone_change_token, reauthentication_token)
 select '00000000-0000-0000-0000-000000000000', p.id, 'authenticated', 'authenticated',
        p.name || '@example.test', extensions.crypt('LocalOnly-Passw0rd!', extensions.gen_salt('bf')), now(),
+       now(), now(),
        '{"provider":"email","providers":["email"]}', '{}',
        '', '', '', '', '', '', '', ''
 from tests.people p;
