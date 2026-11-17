@@ -55,7 +55,7 @@ async function signInAndEnrol(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Continue" }).click();
   const secret = ((await (await begin).json()) as { secret?: string }).secret as string;
   await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByLabel("6-digit code").fill(totp(secret));
+  await page.getByRole("textbox", { name: /digit code/i }).fill(totp(secret));
   await page.getByRole("button", { name: "Verify and turn on" }).click();
   await page.getByRole("button", { name: "Go to dashboard" }).click();
   await expect(page).toHaveURL(/\/admin$/);
