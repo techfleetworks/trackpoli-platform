@@ -127,6 +127,14 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | ops/security-headers.feature | Only the origins the app actually calls are allowed | ops | anonymous | csp-allowlist | boundary | security | medium | covered |
 | ops/security-headers.feature | Scripts are governed by a per-request nonce, not an inline escape hatch | ops | anonymous | csp-nonce | happy | security | high | covered |
 | ops/security-headers.feature | The CSP ships report-only until staging is confirmed, then enforces by toggle | ops | maintainer | csp-report-only-default | happy | release-safety | medium | covered |
+| parties/party-directory.feature | A search that matches nothing shows a helpful empty state, not an error | parties | end-user | directory-search-empty | negative | functional | medium | covered |
+| parties/party-directory.feature | An unknown party slug returns not-found, never a broken page | parties | end-user | directory-unknown-party | negative | functional | low | covered |
+| parties/party-directory.feature | Live search narrows the list by name, abbreviation or symbol | parties | end-user | directory-search | happy | functional | high | covered |
+| parties/party-directory.feature | Not-yet-built facets are disabled and announced as coming soon | parties | assistive-tech | directory-pending-facets | boundary | accessibility | medium | covered |
+| parties/party-directory.feature | Selecting a party opens its profile | parties | end-user | directory-open-profile | happy | functional | medium | covered |
+| parties/party-directory.feature | The directory is keyboard-operable with one page heading and a current nav item | parties | assistive-tech | directory-a11y | happy | accessibility | high | covered |
+| parties/party-directory.feature | The directory lists every registered party on first load | parties | end-user | directory-list | happy | functional | high | covered |
+| parties/party-directory.feature | The Registered quick filter keeps only registered parties | parties | end-user | directory-quick-filter | happy | functional | medium | covered |
 | settings/profile-and-security.feature | A Google-only account has no password to change | settings | administrator | change-password-google-only | negative | security | medium | covered |
 | settings/profile-and-security.feature | A new password shorter than the minimum is refused after the current one is proven | settings | administrator | change-password-weak-new | boundary | security | medium | covered |
 | settings/profile-and-security.feature | A wrong current password is rejected and throttled, changing nothing | settings | administrator | change-password-wrong-current | adverse | security | high | covered |

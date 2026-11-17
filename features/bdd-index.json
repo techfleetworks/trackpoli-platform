@@ -1353,6 +1353,94 @@
     "status": "covered"
   },
   {
+    "feature": "parties/party-directory.feature",
+    "scenario": "A search that matches nothing shows a helpful empty state, not an error",
+    "domain": "parties",
+    "audience": "end-user",
+    "usecase": "directory-search-empty",
+    "category": "negative",
+    "quality": "functional",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "parties/party-directory.feature",
+    "scenario": "An unknown party slug returns not-found, never a broken page",
+    "domain": "parties",
+    "audience": "end-user",
+    "usecase": "directory-unknown-party",
+    "category": "negative",
+    "quality": "functional",
+    "severity": "low",
+    "status": "covered"
+  },
+  {
+    "feature": "parties/party-directory.feature",
+    "scenario": "Live search narrows the list by name, abbreviation or symbol",
+    "domain": "parties",
+    "audience": "end-user",
+    "usecase": "directory-search",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "parties/party-directory.feature",
+    "scenario": "Not-yet-built facets are disabled and announced as coming soon",
+    "domain": "parties",
+    "audience": "assistive-tech",
+    "usecase": "directory-pending-facets",
+    "category": "boundary",
+    "quality": "accessibility",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "parties/party-directory.feature",
+    "scenario": "Selecting a party opens its profile",
+    "domain": "parties",
+    "audience": "end-user",
+    "usecase": "directory-open-profile",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "parties/party-directory.feature",
+    "scenario": "The directory is keyboard-operable with one page heading and a current nav item",
+    "domain": "parties",
+    "audience": "assistive-tech",
+    "usecase": "directory-a11y",
+    "category": "happy",
+    "quality": "accessibility",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "parties/party-directory.feature",
+    "scenario": "The directory lists every registered party on first load",
+    "domain": "parties",
+    "audience": "end-user",
+    "usecase": "directory-list",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "parties/party-directory.feature",
+    "scenario": "The Registered quick filter keeps only registered parties",
+    "domain": "parties",
+    "audience": "end-user",
+    "usecase": "directory-quick-filter",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
     "feature": "settings/profile-and-security.feature",
     "scenario": "A Google-only account has no password to change",
     "domain": "settings",
