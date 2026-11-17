@@ -46,6 +46,23 @@ describe("decideMfaGate — unauthenticated", () => {
       decideMfaGate(input({ authenticated: false, path: "/session-expired", currentLevel: null, nextLevel: null })),
     ).toEqual({ action: "allow" });
   });
+
+  it("treats the password-recovery + email-link-landing routes as public (reachable signed out)", () => {
+    for (const path of [
+      "/forgot-password",
+      "/forgot-password/sent", // covered by the /forgot-password prefix match
+      "/reset-password",
+      "/auth/confirm",
+      "/api/auth/confirm", // the Continue token-exchange POST runs while signed out — it must be public too
+      "/api/request-password-reset",
+      "/api/reset-password",
+    ]) {
+      expect(
+        decideMfaGate(input({ authenticated: false, path, currentLevel: null, nextLevel: null })),
+        `${path} must be reachable without a session, not bounced to /sign-in`,
+      ).toEqual({ action: "allow" });
+    }
+  });
 });
 
 describe("decideMfaGate — authenticated at aal2", () => {
@@ -61,6 +78,14 @@ describe("decideMfaGate — authenticated below aal2", () => {
 
   it("routes a session with a verified factor to verify on a gated path", () => {
     expect(decideMfaGate(input({ currentLevel: "aal1", nextLevel: "aal2" }))).toEqual({ action: "verify" });
+  });
+
+  it("does NOT bounce a recovery session (aal1) away from /reset-password", () => {
+    // A recovery link signs the user in at aal1; the reset screen must stay reachable so they can set a new
+    // password, instead of being funnelled to two-factor enrolment (it is in MFA_PUBLIC_PATHS).
+    expect(decideMfaGate(input({ path: "/reset-password", currentLevel: "aal1", nextLevel: "aal1" }))).toEqual({
+      action: "allow",
+    });
   });
 
   it("does NOT redirect on the enrol screen itself (no loop)", () => {

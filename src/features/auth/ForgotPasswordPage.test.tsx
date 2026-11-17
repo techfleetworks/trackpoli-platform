@@ -20,6 +20,14 @@ describe("ForgotPasswordPage (shadcn migration)", () => {
     expect(screen.getByRole("button", { name: "Send reset link" })).toBeInTheDocument();
   });
 
+  // Regression guard (WCAG 4.1.2 Name, Role, Value): the <form> must carry an accessible name, so it is
+  // exposed as a named "form" landmark and the error alert can be scoped to it. A <form> with no name is
+  // NOT given the implicit form role, so this fails if aria-labelledby is dropped.
+  it("exposes the request form as a named landmark 'Reset your password'", () => {
+    render(<ForgotPasswordPage />);
+    expect(screen.getByRole("form", { name: "Reset your password" })).toBeInTheDocument();
+  });
+
   it("shows the enumeration-safe sent screen on a successful request (parity)", async () => {
     mockApiFetch.mockResolvedValue({ outcome: "sent" });
     render(<ForgotPasswordPage />);

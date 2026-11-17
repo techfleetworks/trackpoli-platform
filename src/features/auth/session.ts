@@ -8,7 +8,7 @@
 
 import { redirect } from "next/navigation";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
-import { createServerSupabase, readAdminClaims } from "@/lib/supabase/server";
+import { createServerSupabase, readAdminClaims, readOwnDisplayName } from "@/lib/supabase/server";
 import type { AuthUser } from "./AuthProvider";
 
 export async function getSessionUser(): Promise<AuthUser | null> {
@@ -21,7 +21,9 @@ export async function getSessionUser(): Promise<AuthUser | null> {
   // Role/status come from the verified access-token claims (migration 006); routing/rendering only, never
   // authorization — the database (RLS) decides access (TP1-06, ADR-0012).
   const { role, status } = await readAdminClaims(supabase);
-  return { id: user.id, email: user.email ?? null, role, status };
+  // Display name for the shell (TP1-06); best-effort, falls back to the email when unreadable.
+  const display_name = await readOwnDisplayName(supabase, user.id);
+  return { id: user.id, email: user.email ?? null, role, status, display_name };
 }
 
 export async function requireUser(): Promise<AuthUser> {

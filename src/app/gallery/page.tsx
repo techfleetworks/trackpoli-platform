@@ -22,7 +22,13 @@ import { SnackbarProvider, useSnackbar } from "@/components/ui/snackbar";
 import { PageHeader } from "@/features/shell/PageHeader";
 import { SideNav } from "@/features/shell/SideNav";
 
-const MANAGER: AuthUser = { id: "demo", email: "manager@example.test", role: "admin_manager", status: "active" };
+const MANAGER: AuthUser = {
+  id: "demo",
+  email: "manager@example.test",
+  role: "admin_manager",
+  status: "active",
+  display_name: "Ada Lovelace",
+};
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

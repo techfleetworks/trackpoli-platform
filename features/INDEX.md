@@ -31,7 +31,9 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | auth/password-recovery.feature | A reused or expired reset link is refused and creates no session | auth | administrator | reset-link-single-use | adverse | security | high | covered |
 | auth/password-recovery.feature | Completing a reset ends all sessions and clears the lockout counter | auth | administrator | reset-completion | happy | security | high | covered |
 | auth/password-recovery.feature | Every reset request requires a valid bot-check token | auth | anonymous | bot-check | adverse | security | high | covered |
+| auth/password-recovery.feature | Password recovery is reachable without a two-factor session | auth | administrator | recovery-reachable-signed-out | boundary | security | high | covered |
 | auth/password-recovery.feature | Repeated reset requests never lock the targeted account | auth | anonymous | no-lockout-on-request | adverse | security | medium | covered |
+| auth/password-recovery.feature | The generic reset notice is announced within the named reset form | auth | assistive-tech | named-notice-region | negative | security | high | covered |
 | auth/password-recovery.feature | The one-time token is exchanged only on an explicit continue, not on a page fetch | auth | anonymous | scanner-safe-link | adverse | security | high | covered |
 | auth/password-recovery.feature | The reset-request endpoint rejects a non-server caller | auth | anonymous | internal-only-endpoint | permission | security | high | covered |
 | auth/role-based-access.feature | A guard redirect for a visitor without a session resolves to a single-basePath sign-in URL | auth | anonymous | guard-redirect-basepath | permission | functional | critical | covered |
@@ -61,6 +63,7 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | auth/sign-in-protection.feature | A successful sign-in clears the failure counter | auth | administrator-manager | success-clears-failures | happy | functional | medium | covered |
 | auth/sign-in-protection.feature | An unknown email and a wrong password are indistinguishable | auth | anonymous | account-enumeration | negative | security | critical | covered |
 | auth/sign-in-protection.feature | Every attempt requires a valid bot-check token | auth | anonymous | bot-check | adverse | security | high | covered |
+| auth/sign-in-protection.feature | The generic sign-in failure is announced within the named sign-in form | auth | assistive-tech | named-error-region | negative | security | high | covered |
 | auth/sign-in-protection.feature | The pre-authentication endpoints reject a non-server caller | auth | anonymous | internal-only-endpoint | permission | security | high | covered |
 | auth/two-factor.feature | A code is required at every sign-in once enrolled | auth | administrator | signin-step-up | happy | security | high | covered |
 | auth/two-factor.feature | A hijacked open session cannot replace the device without re-authentication | auth | administrator | replacement-requires-reauth | adverse | security | high | covered |
@@ -140,6 +143,7 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | shell/admin-shell.feature | The navigation is a rail on desktop and a drawer on small screens | shell | end-user | responsive-nav | happy | functional | medium | covered |
 | shell/admin-shell.feature | The password field keeps paste and the correct autocomplete, never exposing the value | shell | end-user | password-field-paste | happy | security | medium | covered |
 | shell/admin-shell.feature | The shell renders at the 320px minimum width without horizontal scrolling | shell | end-user | responsive-min-width | boundary | functional | medium | covered |
+| shell/admin-shell.feature | The shell shows the administrator's own name, read only from their own profile row | shell | administrator | shell-identity-own-name | permission | security | medium | covered |
 | terms/accept-terms.feature | A new version forces an existing administrator to accept again | terms | administrator | E2E-15 | happy | security | high | covered |
 | terms/accept-terms.feature | A newly invited administrator is sent to terms first and acceptance is recorded | terms | administrator | E2E-15 | happy | security | critical | covered |
 | terms/accept-terms.feature | A recorded acceptance cannot be changed or deleted | terms | maintainer | immutable-consent-record | adverse | compliance | high | covered |
