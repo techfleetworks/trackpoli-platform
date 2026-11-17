@@ -138,7 +138,11 @@ jobs:
       # E2E-05 reads the recovery email from the local mail catcher (Inbucket/Mailpit) that `supabase start`
       # brings up; like E2E-02 this job is manual and will need CI iteration the first time.
       - name: Run the full-stack e2e (E2E-02 lockout + E2E-05 recovery + E2E-08 roles + E2E-11 two-factor + E2E-15 terms + E2E-18 notices)
-        run: npx playwright test e2e/sign-in.full-stack.spec.ts e2e/password-reset.full-stack.spec.ts e2e/role-based-access.full-stack.spec.ts e2e/two-factor.full-stack.spec.ts e2e/accept-terms.full-stack.spec.ts e2e/security-alert-emails.full-stack.spec.ts
+        # --workers=1 (serial): these are stateful full-stack specs sharing ONE seeded Supabase DB, and they
+        # run against `next dev`. In parallel a slow spec starves the other worker, which made a sibling spec
+        # sit long enough on a page for the real idle session-timeout (TP1-05) to fire mid-test. Serial removes
+        # the contention and the cross-spec state races; reliability matters more than wall-clock here.
+        run: npx playwright test --workers=1 e2e/sign-in.full-stack.spec.ts e2e/password-reset.full-stack.spec.ts e2e/role-based-access.full-stack.spec.ts e2e/two-factor.full-stack.spec.ts e2e/accept-terms.full-stack.spec.ts e2e/security-alert-emails.full-stack.spec.ts
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
