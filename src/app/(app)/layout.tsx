@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/features/auth/session";
 import { decideRequireActive } from "@/features/auth/guards/decisions";
 import { AppShell } from "@/features/shell/AppShell";
+import { shellDisplayName } from "@/features/shell/displayName";
 
 // The authenticated route group's layout (TP1-06). Every page inside it renders within the admin shell and
 // behind the session + active guards. Enforcement is layered (ADR-0012): the middleware already redirected an
@@ -14,5 +15,5 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (active === "deactivated") redirect("/sign-in"); // no deactivated screen yet; the session is dead to RLS
   // "onboarding" (invited) and "allow" both render for now — the invite/onboarding flow is a later ticket.
 
-  return <AppShell displayName={user.email ?? "Administrator"}>{children}</AppShell>;
+  return <AppShell displayName={shellDisplayName(user)}>{children}</AppShell>;
 }

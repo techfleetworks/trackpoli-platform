@@ -298,6 +298,17 @@
   },
   {
     "feature": "auth/password-recovery.feature",
+    "scenario": "Password recovery is reachable without a two-factor session",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "recovery-reachable-signed-out",
+    "category": "boundary",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/password-recovery.feature",
     "scenario": "Repeated reset requests never lock the targeted account",
     "domain": "auth",
     "audience": "anonymous",
@@ -1492,6 +1503,17 @@
     "usecase": "responsive-min-width",
     "category": "boundary",
     "quality": "functional",
+    "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "shell/admin-shell.feature",
+    "scenario": "The shell shows the administrator's own name, read only from their own profile row",
+    "domain": "shell",
+    "audience": "administrator",
+    "usecase": "shell-identity-own-name",
+    "category": "permission",
+    "quality": "security",
     "severity": "medium",
     "status": "covered"
   },

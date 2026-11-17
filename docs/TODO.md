@@ -319,3 +319,38 @@ send is **domain-blocked (Q-1-21)**. TP1-12 cannot be marked closed until E2E-18
       a design and an HTML body added alongside the text part in `noticeTemplates.ts` (keep the text part as the
       fallback). Best done once the domain is live so they can be seen rendering. **Needs:** the email design
       (product decision — plain-text is the Phase-1 default unless changed).
+
+## From the full-stack E2E harness (branch `feat/tp1-harness-fullstack-e2e`)
+
+Standing up the full-stack E2E job (the manual `e2e (full stack …)` job in `.github/workflows/e2e.yml`,
+which runs a local Supabase stack + the 7-person seed + the edge functions + Turnstile TEST keys) surfaced
+the items below. The **password-recovery routes fix** it found shipped separately (see the PR for this
+section). The rest are **work-in-progress on the harness branch**, not yet merged.
+
+- [x] **Password-recovery routes reachable under the middleware.** Done (merged separately):
+      `/forgot-password`, `/reset-password`, `/auth/confirm` and their APIs were missing from
+      `MFA_PUBLIC_PATHS`, so the live middleware bounced a signed-out visitor (and emailed recovery/invite
+      links) to `/sign-in`. A real production-affecting bug, now fixed with a `@security` scenario + unit cases.
+
+- [ ] **Fix the seeded `auth.users` for GoTrue sign-in (test-only).** On the harness branch: the hand-seeded
+      rows left non-nullable GoTrue columns NULL (`confirmation_token` … and `created_at`/`updated_at`), so
+      every seeded sign-in failed with "converting NULL to string is unsupported". Seed now sets them.
+      Production is unaffected (real users are created through GoTrue). **Needs:** land with the harness PR.
+
+- [ ] **E2E-05: deliver the recovery email in the local stack.** The forgot-password POST succeeds, but no
+      recovery email reaches the local mail catcher — GoTrue's custom recovery template fails to load locally
+      (a template-fetch "connection refused" in the auth logs), so the mail is not sent. The spec's mail reader
+      was also updated for Mailpit (the current CLI's catcher). **Needs:** make GoTrue send the recovery mail
+      locally (use the default template, or serve the custom one), then E2E-05 can read it.
+
+- [ ] **E2E-11 / likely real bug: forced two-factor enrolment does not fire.** After a successful sign-in, a
+      no-factor administrator reaches the **Dashboard** instead of being funnelled to `/mfa/enrol`. The access
+      token carries `aal1` (confirmed), yet the middleware's `getAuthenticatorAssuranceLevel()` read comes back
+      empty, so `decideMfaGate` falls through to "allow". RLS still denies all data at aal1 (not a data breach),
+      but admins are not being forced to enrol. **Needs:** diagnose why the assurance-level read is null in
+      `updateSession` despite the aal1 JWT, and fix the forced-enrolment routing. Its own ticket.
+
+- [ ] **Finish greening the full-stack specs and promote the job to run on every PR.** Wire all 8 full-stack
+      specs into the job (currently E2E-02/05/11 only), write the missing E2E-18 (security-alert emails) spec,
+      remove the temporary diagnostic step, get them green, and change the job's `if:` from `workflow_dispatch`
+      to run on PRs so E2E-02..18 become merge-blocking acceptance for TP1-02/03/04/05/06/08/09/10/12.

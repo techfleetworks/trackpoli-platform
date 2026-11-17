@@ -46,6 +46,14 @@ Feature: Admin workspace shell and shared components (P1-12)
     Then the "Admin management" entry is not shown
     But hiding it is a convenience only, never the security boundary (ADR-0012)
 
+  @audience:administrator @usecase:shell-identity-own-name @category:permission @security @owasp:authorization @severity:medium
+  Scenario: The shell shows the administrator's own name, read only from their own profile row
+    Given a signed-in administrator whose profile has a display name
+    When the shell top bar and side navigation render the identity label
+    Then they show that administrator's own display name, not their email address
+    And the name is read from the administrator's own profile row only (own-row RLS), never another user's
+    But when the display name cannot be read the label falls back to the email, so the shell is never blank
+
   @audience:end-user @usecase:password-field-paste @category:happy @security @owasp:authentication @severity:medium
   Scenario: The password field keeps paste and the correct autocomplete, never exposing the value
     Given a password field in a form
