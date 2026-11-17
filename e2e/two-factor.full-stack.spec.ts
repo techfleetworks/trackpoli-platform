@@ -80,8 +80,19 @@ async function secretFrom(response: Response): Promise<string> {
 
 test.describe("E2E-11: two-factor enrolment, step-up, and device replacement", () => {
   test.skip(!process.env.E2E_FULL_STACK, "requires the full Supabase stack + seed + Turnstile test keys");
+  // This scenario mutates shared seed state (it enrols abe a factor), and a Playwright retry re-runs against
+  // the SAME Supabase stack — not a fresh `db reset` — so on a retry abe already has a factor and the first
+  // assertion (forced enrolment) can never hold. A full-stack, stateful flow is not safely retryable, so turn
+  // retries off here rather than let a retry fail misleadingly at a different step.
+  test.describe.configure({ retries: 0 });
 
   test("enrol at first sign-in, a code is required next sign-in, then replace the device", async ({ page }) => {
+    // The flow verifies the CURRENT device's TOTP three times (enrol, step-up, re-auth). A code is single-use
+    // per 30s window, so freshCode() waits for a new window between reuses; across three reuses that waiting
+    // can approach the 60s default on its own. Give the whole flow room so a legitimate window wait is not a
+    // timeout. freshCode always returns within one 30s window, so this is an upper bound, not a typical run.
+    test.setTimeout(180_000);
+
     const used = new Set<string>();
 
     // 1) First sign-in forces enrolment before any data route.
