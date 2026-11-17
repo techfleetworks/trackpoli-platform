@@ -143,7 +143,7 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"email":"abe@example.test","password":"LocalOnly-Passw0rd!"}')
           echo "HTTP ${code}"
-          node -e "let r={};try{r=require('/tmp/tok.json')}catch(e){};console.log(JSON.stringify({ok:!!r.access_token,error:r.error,error_description:r.error_description,msg:r.msg,error_code:r.error_code,weak_password:r.weak_password}))" || cat /tmp/tok.json
+          node -e "let r={};try{r=require('/tmp/tok.json')}catch(e){};let c={};try{c=JSON.parse(Buffer.from((r.access_token||'x.x').split('.')[1],'base64url').toString())}catch(e){};console.log(JSON.stringify({ok:!!r.access_token,error:r.error,msg:r.msg,error_code:r.error_code,aal:c.aal,amr:c.amr,app_role:c.app_role,app_status:c.app_status}))" || cat /tmp/tok.json
           echo "--- auth container logs: the real Postgres error behind the 500 ---"
           docker logs "$(docker ps --filter name=supabase_auth -q | head -1)" 2>&1 | tail -60 || echo "no auth container found"
       - name: Install Playwright browser
