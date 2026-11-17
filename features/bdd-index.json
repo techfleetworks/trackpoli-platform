@@ -804,6 +804,17 @@
   },
   {
     "feature": "auth/two-factor.feature",
+    "scenario": "The device-replacement endpoint accepts a valid re-authentication and never fails closed with a server error",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "replacement-endpoint-contract",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/two-factor.feature",
     "scenario": "The only Admin manager who loses their device cannot self-recreate from the app",
     "domain": "auth",
     "audience": "administrator-manager",
