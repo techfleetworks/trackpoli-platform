@@ -337,20 +337,26 @@ section). The rest are **work-in-progress on the harness branch**, not yet merge
       every seeded sign-in failed with "converting NULL to string is unsupported". Seed now sets them.
       Production is unaffected (real users are created through GoTrue). **Needs:** land with the harness PR.
 
-- [ ] **E2E-05: deliver the recovery email in the local stack.** The forgot-password POST succeeds, but no
-      recovery email reaches the local mail catcher — GoTrue's custom recovery template fails to load locally
-      (a template-fetch "connection refused" in the auth logs), so the mail is not sent. The spec's mail reader
-      was also updated for Mailpit (the current CLI's catcher). **Needs:** make GoTrue send the recovery mail
-      locally (use the default template, or serve the custom one), then E2E-05 can read it.
+- [x] **E2E-05: deliver the recovery email in the local stack.** Resolved — both E2E-05 scenarios pass in CI
+      (the earlier template-fetch "connection refused" did not reproduce once the stack came up cleanly). The
+      spec reads the recovery link from Mailpit.
 
-- [ ] **E2E-11 / likely real bug: forced two-factor enrolment does not fire.** After a successful sign-in, a
-      no-factor administrator reaches the **Dashboard** instead of being funnelled to `/mfa/enrol`. The access
-      token carries `aal1` (confirmed), yet the middleware's `getAuthenticatorAssuranceLevel()` read comes back
-      empty, so `decideMfaGate` falls through to "allow". RLS still denies all data at aal1 (not a data breach),
-      but admins are not being forced to enrol. **Needs:** diagnose why the assurance-level read is null in
-      `updateSession` despite the aal1 JWT, and fix the forced-enrolment routing. Its own ticket.
+- [x] **E2E-11 / real bug: forced two-factor enrolment does not fire.** Root cause was the middleware matcher:
+      with `basePath "/admin"` the glob never matched the bare `/admin` root, so the whole gate was bypassed on
+      the dashboard. Fixed by adding `"/"` to `config.matcher` (**PR #63**). Two more harness-found bugs were
+      banked alongside: password-recovery routes unreachable under the active middleware (**PR #61**) and
+      `/api/mfa/replace` 500ing on every call via a duplicate Zod discriminator (**PR #64**). E2E-11 also needed
+      a seed fix (email identities, so accounts classify as password) and a bigger timeout + `retries:0`.
 
-- [ ] **Finish greening the full-stack specs and promote the job to run on every PR.** Wire all 8 full-stack
-      specs into the job (currently E2E-02/05/11 only), write the missing E2E-18 (security-alert emails) spec,
-      remove the temporary diagnostic step, get them green, and change the job's `if:` from `workflow_dispatch`
-      to run on PRs so E2E-02..18 become merge-blocking acceptance for TP1-02/03/04/05/06/08/09/10/12.
+- [ ] **Merge order to land the harness green.** The harness branch `feat/tp1-fullstack-e2e-harness` is finished
+      (debug logs removed; E2E-18 spec written; the full-stack job now runs on every PR). In CI its specs are
+      green EXCEPT E2E-11, whose only remaining failure is the `/api/mfa/replace` 500 that **PR #64** fixes. So:
+      merge **#63** → merge **#64** → rebase the harness branch onto `main` (dropping its duplicated root-gating
+      commit) → the full-stack job goes fully green → merge the harness branch. Then E2E-02/05/11/18 are
+      merge-blocking acceptance for TP1-02/03/04/05/06/08/09/10/12.
+
+- [ ] **E2E-18: live email delivery (still domain-blocked, Q-1-21).** The E2E-18 spec
+      (`e2e/security-alert-emails.full-stack.spec.ts`) proves the internal-only notice contract the harness can
+      prove without SMTP (guard, recipient-from-id, best-effort inert). Asserting a notice is actually DELIVERED
+      needs the Porkbun SMTP secrets + a proven nodemailer-under-Deno path — the same provisioning as the TP1-03
+      recovery and TP1-09 invite items above.
