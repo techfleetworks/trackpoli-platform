@@ -96,7 +96,7 @@ jobs:
   # the always-pass TEST keys. (E2E-18 proves the internal-only notice contract; the LIVE email-delivery check
   # stays domain-blocked — Q-1-21 — in docs/TODO.md until the Porkbun SMTP secrets exist.)
   e2e-full-stack:
-    name: e2e (full stack · E2E-02, E2E-05, E2E-11, E2E-18)
+    name: e2e (full stack · E2E-02, E2E-05, E2E-08, E2E-11, E2E-15, E2E-18)
     runs-on: ubuntu-latest
     env:
       E2E_FULL_STACK: "1"
@@ -137,8 +137,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       # E2E-05 reads the recovery email from the local mail catcher (Inbucket/Mailpit) that `supabase start`
       # brings up; like E2E-02 this job is manual and will need CI iteration the first time.
-      - name: Run the full-stack e2e (E2E-02 lockout + E2E-05 recovery + E2E-11 two-factor + E2E-18 notices)
-        run: npx playwright test e2e/sign-in.full-stack.spec.ts e2e/password-reset.full-stack.spec.ts e2e/two-factor.full-stack.spec.ts e2e/security-alert-emails.full-stack.spec.ts
+      - name: Run the full-stack e2e (E2E-02 lockout + E2E-05 recovery + E2E-08 roles + E2E-11 two-factor + E2E-15 terms + E2E-18 notices)
+        run: npx playwright test e2e/sign-in.full-stack.spec.ts e2e/password-reset.full-stack.spec.ts e2e/role-based-access.full-stack.spec.ts e2e/two-factor.full-stack.spec.ts e2e/accept-terms.full-stack.spec.ts e2e/security-alert-emails.full-stack.spec.ts
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
