@@ -298,6 +298,17 @@
   },
   {
     "feature": "auth/password-recovery.feature",
+    "scenario": "Password recovery is reachable without a two-factor session",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "recovery-reachable-signed-out",
+    "category": "boundary",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/password-recovery.feature",
     "scenario": "Repeated reset requests never lock the targeted account",
     "domain": "auth",
     "audience": "anonymous",

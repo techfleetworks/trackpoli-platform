@@ -31,6 +31,7 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | auth/password-recovery.feature | A reused or expired reset link is refused and creates no session | auth | administrator | reset-link-single-use | adverse | security | high | covered |
 | auth/password-recovery.feature | Completing a reset ends all sessions and clears the lockout counter | auth | administrator | reset-completion | happy | security | high | covered |
 | auth/password-recovery.feature | Every reset request requires a valid bot-check token | auth | anonymous | bot-check | adverse | security | high | covered |
+| auth/password-recovery.feature | Password recovery is reachable without a two-factor session | auth | administrator | recovery-reachable-signed-out | boundary | security | high | covered |
 | auth/password-recovery.feature | Repeated reset requests never lock the targeted account | auth | anonymous | no-lockout-on-request | adverse | security | medium | covered |
 | auth/password-recovery.feature | The generic reset notice is announced within the named reset form | auth | assistive-tech | named-notice-region | negative | security | high | covered |
 | auth/password-recovery.feature | The one-time token is exchanged only on an explicit continue, not on a page fetch | auth | anonymous | scanner-safe-link | adverse | security | high | covered |
