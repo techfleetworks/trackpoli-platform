@@ -12,7 +12,13 @@ import { AuthProvider, type AuthUser } from "@/features/auth/AuthProvider";
 import { AppShell } from "@/features/shell/AppShell";
 import { PageHeader } from "@/features/shell/PageHeader";
 
-const MANAGER: AuthUser = { id: "demo", email: "manager@example.test", role: "admin_manager", status: "active" };
+const MANAGER: AuthUser = {
+  id: "demo",
+  email: "manager@example.test",
+  role: "admin_manager",
+  status: "active",
+  display_name: "Ada Lovelace",
+};
 
 export default function ShellDemoPage() {
   // Development/test surface only: never served in a normal production build (resolves the judge-arch LOW

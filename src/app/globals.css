@@ -17,10 +17,18 @@
    and colour. */
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/preflight.css" layer(base);
-@import "tailwindcss/utilities.css" layer(utilities);
+/* `source(none)` turns OFF Tailwind v4's automatic content detection, which otherwise scans the WHOLE
+   project (docs, logs, JSON) for class candidates. Prose files such as docs/arch-reviews/log.jsonl and the
+   ADRs contain the literal `text-[length:var(--md-*)]` as shorthand; auto-detection extracted it and emitted
+   invalid `font-size: var(--md-*)`, which lightningcss rejects at request time, so the production server
+   failed to serve CSS (e2e webServer timeout, lighthouse budget miss). Scanning is now ONLY the explicit
+   @source below. Every Tailwind utility the app uses lives in the src ts and tsx files; CSS Modules and the
+   token layer are plain CSS, not scanned for utilities. ADR-0030. */
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
 @import "tw-animate-css";
 
-/* Tailwind v4 content sources (replaces the v3 tailwind.config content globs): scan all app source. */
+/* Tailwind v4 content sources (replaces the v3 tailwind.config content globs): scan app source ONLY, never
+   prose/data files. Base is this file's dir (src/app), so `../` is src/. */
 @source "../**/*.{ts,tsx}";
 
 /* shadcn/ui dark variant: class-based and OPT-IN. Inert until a `.dark` ancestor exists, so it changes
