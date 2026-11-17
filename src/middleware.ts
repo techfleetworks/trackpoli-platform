@@ -35,6 +35,7 @@ function clearAuthCookies(request: NextRequest, response: NextResponse): void {
 }
 
 export async function middleware(request: NextRequest) {
+  console.error("[DEBUG-MW]", request.method, request.nextUrl.pathname); // DEBUG(E2E-11): which paths reach middleware
   // Per-request CSP nonce (TP1-13 PR B, ADR-0025). The nonce + the CSP ride on the forwarded REQUEST headers
   // (x-nonce + content-security-policy) so Next nonces its own scripts; `secure` then stamps every response
   // with the full security header set (CSP is report-only by default — CSP_ENFORCE flips it). Applied to the
