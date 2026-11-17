@@ -936,6 +936,28 @@
   },
   {
     "feature": "design-system/migration.feature",
+    "scenario": "Removing the unused Banner component changes nothing a user can see",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "banner-dead-code-removed",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "low",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
+    "scenario": "Removing the unused Banner component removes no security-relevant surface",
+    "domain": "design-system",
+    "audience": "administrator",
+    "usecase": "banner-dead-code-removed-security",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "low",
+    "status": "covered"
+  },
+  {
+    "feature": "design-system/migration.feature",
     "scenario": "The app shell (side nav + error screens) uses design-system components with behaviour parity",
     "domain": "design-system",
     "audience": "administrator",
