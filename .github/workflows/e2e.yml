@@ -154,16 +154,23 @@ jobs:
           supabase status -o env > supabase-status.env
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(sed -n 's/^ANON_KEY=//p' supabase-status.env | tr -d '\"')" >> "$GITHUB_ENV"
           echo "SUPABASE_SERVICE_ROLE_KEY=$(sed -n 's/^SERVICE_ROLE_KEY=//p' supabase-status.env | tr -d '\"')" >> "$GITHUB_ENV"
+      # Layer the E2E-only fixtures on top of the base seed (ADR-0034): the dedicated manage-admins + accept-invite
+      # people that the base seed.sql deliberately does NOT carry (its 7-person cast is coupled to the pgTAP count
+      # invariants — 60_terms_gate, 20_guards). Applied here, AFTER `db reset`, so only this job gets them.
+      - name: Load the E2E-only fixtures (dedicated manage-admins + accept-invite users)
+        run: |
+          DB_URL=$(sed -n 's/^DB_URL=//p' supabase-status.env | tr -d '"')
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed-e2e.sql
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
       # E2E-05 reads the recovery email from the local mail catcher (Inbucket/Mailpit) that `supabase start`
       # brings up; like E2E-02 this job is manual and will need CI iteration the first time.
-      - name: Run the full-stack e2e (E2E-02 lockout + E2E-05 recovery + E2E-08 roles + E2E-11 two-factor + E2E-15 terms + E2E-18 notices)
+      - name: Run the full-stack e2e (E2E-02 lockout + E2E-05 recovery + E2E-08 roles + E2E-09/10/17 manage-admins + E2E-11 two-factor + E2E-15 terms + E2E-03 invite + E2E-18 notices)
         # --workers=1 (serial): these are stateful full-stack specs sharing ONE seeded Supabase DB, and they
         # run against `next dev`. In parallel a slow spec starves the other worker, which made a sibling spec
         # sit long enough on a page for the real idle session-timeout (TP1-05) to fire mid-test. Serial removes
         # the contention and the cross-spec state races; reliability matters more than wall-clock here.
-        run: npx playwright test --workers=1 e2e/sign-in.full-stack.spec.ts e2e/password-reset.full-stack.spec.ts e2e/role-based-access.full-stack.spec.ts e2e/two-factor.full-stack.spec.ts e2e/accept-terms.full-stack.spec.ts e2e/accept-invite.full-stack.spec.ts e2e/security-alert-emails.full-stack.spec.ts
+        run: npx playwright test --workers=1 e2e/sign-in.full-stack.spec.ts e2e/password-reset.full-stack.spec.ts e2e/role-based-access.full-stack.spec.ts e2e/manage-admins.full-stack.spec.ts e2e/two-factor.full-stack.spec.ts e2e/accept-terms.full-stack.spec.ts e2e/accept-invite.full-stack.spec.ts e2e/security-alert-emails.full-stack.spec.ts
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
