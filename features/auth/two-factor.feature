@@ -49,6 +49,13 @@ Feature: Two-factor protection (mandatory TOTP, forced enrolment, step-up, devic
     Then they are shown a new factor to enrol
     And verifying the new device removes the old one, leaving exactly one verified factor
 
+  @audience:administrator @usecase:replacement-distinct-factor @category:adverse @security @severity:high
+  Scenario: The new device is enrolled as a distinct factor and does not collide with the current one
+    Given an administrator replacing their authenticator while the current factor is still verified
+    When the new factor is enrolled before the old one is removed
+    Then it is created with its own distinct identity, not one that clashes with the current factor
+    And the replacement is not failed by a duplicate-factor error from the authenticator service
+
   @audience:administrator @usecase:device-replacement-google @category:happy @security @severity:high
   Scenario: Replacing a device uses Google re-auth and the current code for a Google-only administrator
     Given a Google-only administrator who wants to move to a new authenticator
