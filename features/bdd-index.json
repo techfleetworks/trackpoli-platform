@@ -815,6 +815,17 @@
   },
   {
     "feature": "auth/two-factor.feature",
+    "scenario": "The new device is enrolled as a distinct factor and does not collide with the current one",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "replacement-distinct-factor",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/two-factor.feature",
     "scenario": "The only Admin manager who loses their device cannot self-recreate from the app",
     "domain": "auth",
     "audience": "administrator-manager",
