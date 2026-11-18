@@ -102,14 +102,15 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-  # Full-stack lockout scenario (E2E-02): drives the real sign-in against a local Supabase stack (seed +
-  # Edge Functions) with Cloudflare Turnstile TEST keys. MANUAL for now: the local-stack + functions-secrets
-  # wiring below cannot be verified without Docker on a dev machine and WILL need CI iteration before it is
-  # promoted to run on every PR, exactly like database.yml. The steps most likely to need adjustment are the
-  # Edge Functions' secrets and reading the local anon/service-role keys from `supabase status`.
+  # Full-stack scenarios (E2E-02 lockout, E2E-05 recovery, E2E-11 two-factor, E2E-18 security notices): drive
+  # the real app and the Edge Functions against a local Supabase stack (seed + functions) with Cloudflare
+  # Turnstile TEST keys. These are the executable acceptance checks for TP1-02/03/04/05/06/08/09/10/12, so the
+  # job now runs on every PR (it was workflow_dispatch-only while the local-stack + functions-secrets wiring was
+  # being iterated). It still runs no credentials: the keys are read from `supabase status` and Turnstile uses
+  # the always-pass TEST keys. (E2E-18 proves the internal-only notice contract; the LIVE email-delivery check
+  # stays domain-blocked — Q-1-21 — in docs/TODO.md until the Porkbun SMTP secrets exist.)
   e2e-full-stack:
-    name: e2e (full stack · E2E-02, E2E-05, E2E-11)
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    name: e2e (full stack · E2E-02, E2E-05, E2E-08, E2E-11, E2E-15, E2E-18, E2E-04)
     runs-on: ubuntu-latest
     env:
       E2E_FULL_STACK: "1"
@@ -128,7 +129,11 @@ jobs:
         run: npm ci
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned, not `latest`: resolving "latest" calls the GitHub releases API, which is rate-limited on
+          # shared runners and intermittently fails this step ("Failed to resolve latest Supabase CLI release:
+          # rate limit exceeded"), leaving `supabase: command not found`. An exact version downloads the asset
+          # directly with no API resolve, so this merge-blocking full-stack job is deterministic. Bump deliberately.
+          version: 3.2.0
       - name: Give the Edge Functions their local secrets
         run: |
           cat > supabase/functions/.env <<EOF
@@ -150,12 +155,81 @@ jobs:
         run: npx playwright install --with-deps chromium
       # E2E-05 reads the recovery email from the local mail catcher (Inbucket/Mailpit) that `supabase start`
       # brings up; like E2E-02 this job is manual and will need CI iteration the first time.
-      - name: Run the full-stack e2e (E2E-02 lockout + E2E-05 recovery + E2E-11 two-factor)
-        run: npx playwright test e2e/sign-in.full-stack.spec.ts e2e/password-reset.full-stack.spec.ts e2e/two-factor.full-stack.spec.ts
+      - name: Run the full-stack e2e (E2E-02 lockout + E2E-05 recovery + E2E-08 roles + E2E-11 two-factor + E2E-15 terms + E2E-18 notices)
+        # --workers=1 (serial): these are stateful full-stack specs sharing ONE seeded Supabase DB, and they
+        # run against `next dev`. In parallel a slow spec starves the other worker, which made a sibling spec
+        # sit long enough on a page for the real idle session-timeout (TP1-05) to fire mid-test. Serial removes
+        # the contention and the cross-spec state races; reliability matters more than wall-clock here.
+        run: npx playwright test --workers=1 e2e/sign-in.full-stack.spec.ts e2e/password-reset.full-stack.spec.ts e2e/role-based-access.full-stack.spec.ts e2e/two-factor.full-stack.spec.ts e2e/accept-terms.full-stack.spec.ts e2e/accept-invite.full-stack.spec.ts e2e/security-alert-emails.full-stack.spec.ts
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report-full-stack
+          path: playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop --no-backup
+
+  # Safe-sessions scenarios (E2E-06 idle timeout, E2E-07 cross-tab sign-out; TP1-05, ADR-0010). SEPARATE job
+  # because it shortens the session limits via env so the idle timeout fires in SECONDS — those short limits
+  # would expire the other full-stack specs mid-run, so it cannot share the e2e-full-stack job. Same
+  # credential-free local-stack setup; one spec, two tests that enrol abe / bea.
+  e2e-full-stack-sessions:
+    name: e2e (full stack · E2E-06, E2E-07 safe sessions)
+    runs-on: ubuntu-latest
+    env:
+      E2E_FULL_STACK: "1"
+      INTERNAL_CALL_SECRET: e2e-internal-call-secret
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA"
+      TURNSTILE_SECRET_KEY: "1x0000000000000000000000000000000AA"
+      NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321"
+      # Shortened session limits (TP1-05 acceptance: "limits are config, not code"), read server-side by
+      # src/lib/config.ts and passed to the client by the layout, so the idle warning + timeout fire in seconds.
+      SESSION_IDLE_MS: "6000"
+      SESSION_WARN_LEAD_MS: "3000"
+      SESSION_ACTIVITY_PING_MS: "1000"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - uses: supabase/setup-cli@v1
+        with:
+          # Pinned, not `latest`: resolving "latest" calls the GitHub releases API, which is rate-limited on
+          # shared runners and intermittently fails this step ("Failed to resolve latest Supabase CLI release:
+          # rate limit exceeded"), leaving `supabase: command not found`. An exact version downloads the asset
+          # directly with no API resolve, so this merge-blocking full-stack job is deterministic. Bump deliberately.
+          version: 3.2.0
+      - name: Give the Edge Functions their local secrets
+        run: |
+          cat > supabase/functions/.env <<EOF
+          INTERNAL_CALL_SECRET=${INTERNAL_CALL_SECRET}
+          TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY}
+          ALLOWED_ORIGINS=
+          SITE_URL=http://localhost:3000/admin
+          EOF
+      - name: Start Supabase (DB + auth + functions) and seed
+        run: |
+          supabase start
+          supabase db reset
+      - name: Export the local anon + service-role keys for the app
+        run: |
+          supabase status -o env > supabase-status.env
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(sed -n 's/^ANON_KEY=//p' supabase-status.env | tr -d '\"')" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$(sed -n 's/^SERVICE_ROLE_KEY=//p' supabase-status.env | tr -d '\"')" >> "$GITHUB_ENV"
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Run the safe-sessions e2e (E2E-06 idle timeout + E2E-07 cross-tab sign-out)
+        run: npx playwright test --workers=1 e2e/safe-sessions.full-stack.spec.ts
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-full-stack-sessions
           path: playwright-report/
           retention-days: 7
           if-no-files-found: ignore

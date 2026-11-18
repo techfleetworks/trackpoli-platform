@@ -9,19 +9,41 @@ import { test, expect, type Page } from "@playwright/test";
 
 const MAIL_BASE = process.env.SUPABASE_INBUCKET_URL ?? "http://127.0.0.1:54324";
 
-// Read the local mail catcher for a mailbox. Returns the recovery link found in the latest message, or null
-// when there is no mail for that address. Tolerant of the two common Inbucket/Mailpit shapes.
+// Read the local mail catcher for an address. Returns the recovery link in the latest message to that
+// address, or null when there is none. The current Supabase CLI ships Mailpit; older ones ship Inbucket,
+// whose API differs — so try Mailpit first, then fall back to Inbucket.
+const RECOVERY_LINK = /\/auth\/confirm\?token_hash=[^"'\s<>]+/;
+
 async function latestRecoveryLink(address: string): Promise<string | null> {
+  return (await viaMailpit(address)) ?? (await viaInbucket(address));
+}
+
+// Mailpit: GET /api/v1/messages (newest first) → {messages:[{ID,To:[{Address}]}]}; GET /api/v1/message/{ID} → {HTML,Text}.
+async function viaMailpit(address: string): Promise<string | null> {
+  const res = await fetch(`${MAIL_BASE}/api/v1/messages?limit=200`);
+  if (!res.ok) return null;
+  const data = (await res.json()) as { messages?: Array<{ ID: string; To?: Array<{ Address: string }> }> };
+  const msgs = data.messages;
+  if (!Array.isArray(msgs)) return null; // not Mailpit — let the Inbucket fallback try
+  const mine = msgs.find((m) => (m.To ?? []).some((t) => t.Address?.toLowerCase() === address.toLowerCase()));
+  if (!mine) return null;
+  const body = (await (await fetch(`${MAIL_BASE}/api/v1/message/${mine.ID}`)).json()) as { HTML?: string; Text?: string };
+  const match = `${body.HTML ?? ""}${body.Text ?? ""}`.match(RECOVERY_LINK);
+  return match ? match[0] : null;
+}
+
+// Inbucket (older CLI): GET /api/v1/mailbox/{mailbox}; GET /api/v1/mailbox/{mailbox}/{id} → {body:{html,text}}.
+async function viaInbucket(address: string): Promise<string | null> {
   const mailbox = address.split("@")[0];
-  const listRes = await fetch(`${MAIL_BASE}/api/v1/mailbox/${encodeURIComponent(mailbox)}`);
-  if (!listRes.ok) return null;
-  const list = (await listRes.json()) as Array<{ id: string }>;
+  const res = await fetch(`${MAIL_BASE}/api/v1/mailbox/${encodeURIComponent(mailbox)}`);
+  if (!res.ok) return null;
+  const list = (await res.json()) as Array<{ id: string }>;
   if (!Array.isArray(list) || list.length === 0) return null;
   const id = list[list.length - 1].id;
-  const msgRes = await fetch(`${MAIL_BASE}/api/v1/mailbox/${encodeURIComponent(mailbox)}/${id}`);
-  const msg = (await msgRes.json()) as { body?: { html?: string; text?: string } };
-  const html = `${msg.body?.html ?? ""}${msg.body?.text ?? ""}`;
-  const match = html.match(/\/auth\/confirm\?token_hash=[^"'\s<>]+/);
+  const msg = (await (await fetch(`${MAIL_BASE}/api/v1/mailbox/${encodeURIComponent(mailbox)}/${id}`)).json()) as {
+    body?: { html?: string; text?: string };
+  };
+  const match = `${msg.body?.html ?? ""}${msg.body?.text ?? ""}`.match(RECOVERY_LINK);
   return match ? match[0] : null;
 }
 
@@ -29,7 +51,7 @@ async function requestReset(page: Page, email: string): Promise<void> {
   await page.goto("/admin/forgot-password");
   await page.getByLabel("Email", { exact: true }).fill(email);
   const submit = page.getByRole("button", { name: "Send reset link" });
-  await expect(submit).toBeEnabled(); // waits for the Turnstile test token
+  await expect(submit).toBeEnabled({ timeout: 20_000 }); // waits for the Turnstile test token (slow to load under CI)
   await submit.click();
   await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
 }
