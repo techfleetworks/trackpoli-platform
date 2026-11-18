@@ -176,7 +176,14 @@ export function buildMfaPorts(): MfaPorts {
   return {
     async enroll() {
       const supabase = await createServerSupabase();
-      const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+      // A UNIQUE friendlyName per factor. Supabase enforces unique friendly names per user, so device
+      // replacement — which enrols the NEW factor while the current one is still verified (ADR-0009) — fails
+      // with "A factor with the friendly name '' for this user already exists" when both are unnamed. A fresh
+      // id each enrol keeps the two from colliding (the name is internal; nothing in the UI reads it).
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: "totp",
+        friendlyName: `totp-${crypto.randomUUID()}`,
+      });
       if (error || !data) {
         throw new Error(`mfa enroll failed: ${error?.message ?? "no data"}`);
       }
