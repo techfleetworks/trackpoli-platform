@@ -251,12 +251,12 @@ invite email, and the live-status middleware invite gate — all verified by uni
 judge-arch reviews. These are **acceptance / verification / infra items** that cannot be finished in code alone;
 all are harness- or domain-blocked (Q-1-21). TP1-09 cannot be marked closed until E2E-03/04 are green.
 
-- [ ] **Make E2E-03 and E2E-04 pass and promote them off the gate.** **Update (harness merged, PR #67,
-      2026-11-18):** `e2e/accept-invite.full-stack.spec.ts` now runs on every PR; **E2E-04 is active and green**,
-      but **E2E-03 (the happy path) is still a `test.fixme` stub** — it needs a way to create an invite in setup
-      (a manager-session/aal2 harness helper, or the TP1-13 manager invite UI) and the `latestInviteLink`
-      Mailpit reader wired. Remaining before this closes: finish that helper + the invite-link reader, un-fixme
-      E2E-03, get it green. Historical detail follows. The full-stack spec
+- [x] **Make E2E-03 and E2E-04 pass and promote them off the gate.** Done — **PR #71** (merged 2026-11-18)
+      un-fixmed E2E-03: a real invite-creation path in setup + a Mailpit `latestInviteLink` reader + a
+      `seed-e2e.sql` overlay (dedicated E2E people, applied only in the full-stack job so the base 7-person
+      cast and the pgTAP count invariants stay intact; **ADR-0034**). E2E-03 and E2E-04 are now real and
+      blocking in the `e2e (full stack)` job — the TP1-09 acceptance criterion ("E2E-03/04 pass") is met.
+      Historical detail follows. The full-stack spec
       (`e2e/accept-invite.full-stack.spec.ts`) is written but skipped — gated on `E2E_FULL_STACK`. It needs the
       full-stack harness (local Supabase stack + the 7-person seed + the Inbucket/Mailpit mail-catcher + Turnstile
       TEST keys), the `latestInviteLink` mail-catcher helper wired (the likely first-run adjustment, per CLI
@@ -295,12 +295,14 @@ verification / forward-dependency items** that cannot be finished in code alone 
       `change-email` now sends the email-changed notice to the **old and new** address via
       `functions/_shared/noticeTemplates.ts` + `notices.ts`, best-effort and reported. Live delivery is still
       domain-blocked — see the TP1-12 section below.
-- [ ] **Make E2E-09, E2E-10 and E2E-17 pass and promote them off the gate.** **Update (harness merged, PR #67,
-      2026-11-18):** the full-stack harness now exists on every PR to build these on, but the manage-admins
-      happy-path specs are still stubbed/absent — they need a manager-session (aal2) harness helper to drive the
-      manager actions, the Mailpit invite-link reader, and seed expansion (the 7-person seed is fully allocated).
-      This is the next real code push after the harness. Remaining: build the helper + reader + seed, write/finish
-      the specs, get them green. The behaviour is enumerated in
+- [x] **Make E2E-09, E2E-10 and E2E-17 pass and promote them off the gate.** Done — **PR #71** (merged
+      2026-11-18): E2E-09 (deactivate ends access), E2E-10 (self-target refusal) and E2E-17 (recreate keeps the
+      audit trail + reissues an invite) now drive the real `/admin/admins` list and dialogs as a seeded aal2
+      manager, backed by the `seed-e2e.sql` overlay (**ADR-0034**). **E2E-10 is narrowed to the self-target
+      refusal (`cannot_target_self`)**: the global last-manager demotion guard can't fire in the shared seed
+      (mia/max/tom are all active managers), so it is cited to its data-layer proof — the migration-002 pgTAP
+      (`supabase/tests/database/*`) — rather than reproduced flakily in the UI. All three are real and blocking in
+      the `e2e (full stack)` job; the TP1-10 acceptance criterion is met. Historical detail follows. The behaviour is enumerated in
       `features/admins/manage-admins.feature`; the full-stack specs need the same harness as TP1-09 (local
       Supabase + seed + edge runtime + mail-catcher), plus a way to drive the manager actions (a harness helper
       or the TP1-10 dialogs). "E2E-09/10/17 pass" is the ticket's acceptance criterion. **Needs:** the full-stack
