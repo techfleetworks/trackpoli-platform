@@ -150,12 +150,21 @@ async function collectSamples() {
   };
 
   const out = {};
+  let envError = null;
   try {
     for (const page of pages) {
       const url = urlFor(page);
       const rows = [];
       for (let i = 0; i < samples; i++) {
-        const run = await lighthouse(url, base);
+        let run;
+        try {
+          run = await lighthouse(url, base);
+        } catch (e) {
+          // A thrown measurement is an environment error, not a pass. Record it, stop, and (after Chrome is
+          // killed in the finally) exit 2 — never let it surface as an unhandled rejection or a silent pass.
+          envError = `Lighthouse run failed for ${url}: ${e.message}`;
+          break;
+        }
         const lhr = run?.lhr;
         rows.push({
           lcpMs: lhr?.audits?.["largest-contentful-paint"]?.numericValue ?? null,
@@ -163,11 +172,13 @@ async function collectSamples() {
           perfScore: lhr?.categories?.performance?.score ?? null,
         });
       }
+      if (envError) break;
       out[url] = rows;
     }
   } finally {
     try { await chrome.kill(); } catch { /* ignore */ }
   }
+  if (envError) die(2, envError);
   return out;
 }
 
