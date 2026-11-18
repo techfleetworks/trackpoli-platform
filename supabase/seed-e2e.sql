@@ -59,8 +59,10 @@ select p.id::text, p.id,
 from e2e_people p;
 
 -- Profiles: all active, so each acting manager can sign in to aal2 and the targets appear in the list.
+-- role is the public.admin_role enum (migration 001). A string LITERAL coerces to it, but p.role from the
+-- temp table is text, which does not implicitly cast to the enum — so cast it explicitly.
 insert into public.profiles (id, email, display_name, role, status, invited_at, activated_at, deactivated_at)
-select p.id, p.email, p.display_name, p.role, 'active', now(), now(), null
+select p.id, p.email, p.display_name, p.role::public.admin_role, 'active', now(), now(), null
 from e2e_people p;
 
 -- Terms + privacy accepted (version '0', as seed.sql), so sign-in goes straight to MFA enrol and never the
