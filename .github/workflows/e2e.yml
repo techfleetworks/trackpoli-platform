@@ -110,7 +110,10 @@ jobs:
   # the always-pass TEST keys. (E2E-18 proves the internal-only notice contract; the LIVE email-delivery check
   # stays domain-blocked — Q-1-21 — in docs/TODO.md until the Porkbun SMTP secrets exist.)
   e2e-full-stack:
-    name: e2e (full stack · E2E-02, E2E-05, E2E-08, E2E-11, E2E-15, E2E-18, E2E-04)
+    # Stable name (no embedded spec list): this is a *required* status check (see
+    # .github/rulesets/e2e-acceptance.json + ADR-0033), and a required context that changes name silently
+    # stops reporting and blocks every PR. The specs it runs are listed in the run step, not the job name.
+    name: e2e (full stack)
     runs-on: ubuntu-latest
     env:
       E2E_FULL_STACK: "1"
@@ -177,7 +180,9 @@ jobs:
   # would expire the other full-stack specs mid-run, so it cannot share the e2e-full-stack job. Same
   # credential-free local-stack setup; one spec, two tests that enrol abe / bea.
   e2e-full-stack-sessions:
-    name: e2e (full stack · E2E-06, E2E-07 safe sessions)
+    # Stable name (see the e2e-full-stack job above / ADR-0033): a required status check keeps a fixed
+    # context so a future spec change cannot silently break the gate.
+    name: e2e (full stack · safe sessions)
     runs-on: ubuntu-latest
     env:
       E2E_FULL_STACK: "1"

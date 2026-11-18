@@ -11,14 +11,19 @@ reason it is not done yet and what it needs to be done.
 
 ## From TP1-02 (merged 2026-11-06, PR #10)
 
-- [ ] **Apply the branch-protection ruleset — and add the now-green full-stack jobs to it.** Run
-      `scripts/apply-ruleset.sh` so the committed ruleset (required status checks + 1 required approval)
-      actually enforces on `main`. Until it is applied, GitHub does not require a review or the routing gate
-      to merge. **This is now the gating step for the harness:** the full-stack specs (E2E-02/05/06/07/08/11/15/18)
-      and the NFR-P1 `lighthouse` job run green on every PR (harness PR #67, lighthouse-stability PR #68) but
-      are NOT yet *required* checks, so they do not block merge. Add their check contexts to the ruleset's
-      required list, then apply it, to make them merge-blocking acceptance. **Needs:** a repo admin to run it;
-      a decision on which contexts become required.
+- [ ] **Apply the acceptance-gates ruleset (narrow ratchet step), then — later — the full `main-protection`.**
+      Per **ADR-0033**, branch protection is split into two separately-appliable rulesets so they can roll out
+      independently. The narrow step is ready: `.github/rulesets/e2e-acceptance.json` requires only the three
+      proven gates — `e2e (full stack)`, `e2e (full stack · safe sessions)`, `lighthouse (NFR-P1 · admin shell
+      LCP)` (the full-stack jobs were renamed to stable, spec-list-free contexts so a required check can't
+      silently go blind). **Needs:** a repo admin to run `scripts/apply-ruleset.sh "" e2e-acceptance.json` to
+      make E2E-02/05/06/07/08/11/15/18 + NFR-P1 merge-blocking; then verify the contexts match on the next PR.
+- [ ] **Apply the broader `main-protection.json` (deferred — needs two prerequisites).** The committed
+      `main-protection.json` additionally requires **1 PR approval** and the `check (*)` jobs incl.
+      `check (dependencies)`. Applying it now would lock out a solo merger and make the unfixable **picomatch**
+      advisory block every merge (`release-deployment-safety`: "do not let a deploy become an outage or a
+      lockout"). **Needs:** a second reviewer in the loop, and picomatch resolved (or a documented audit
+      exception + ADR), before running `scripts/apply-ruleset.sh` on `main-protection.json`.
 
 - [x] **Wire up the full-stack E2E-02 test.** Done — the full-stack harness (PR #67, merged 2026-11-18)
       runs `e2e/sign-in.full-stack.spec.ts` on every PR and it is green. Not yet a *required* check (see the
