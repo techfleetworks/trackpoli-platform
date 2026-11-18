@@ -50,9 +50,14 @@ jobs:
   # NFR-P1 performance budget (TP1-07, P1-12): "the shell loads and is interactive in 2.5s or less (LCP)".
   # check-lighthouse.mjs needs a RUNNING app + Chrome, so it cannot run in the dependency-free gates job. It
   # measures a PRODUCTION build (not `next dev`), so the gallery/shell demo must be opted in at BOTH build
-  # and start with NEXT_PUBLIC_ENABLE_GALLERY=1 (the var is inlined at build time). ubuntu-latest ships
-  # Google Chrome, which chrome-launcher auto-detects. Re-point lighthouse.config.json at real admin screens
-  # as they land; like the full-stack job this may need CI iteration on first run.
+  # and start with NEXT_PUBLIC_ENABLE_GALLERY=1 (the var is inlined at build time). Re-point
+  # lighthouse.config.json at real admin screens as they land.
+  #
+  # STABILITY (ADR-0032): the gate must stay green on an unchanged build without weakening what it detects.
+  # We do NOT rely on the runner's auto-detected, unpinned Google Chrome (it drifts between runs and its
+  # version alone moves the trace and the score). Instead we install a FIXED Chrome-for-Testing build and
+  # export CHROME_PATH; chrome-launcher honours CHROME_PATH, so no app change is needed. The script then runs
+  # a deterministic simulate-throttled, median-of-5 measurement (see check-lighthouse.mjs / the config).
   lighthouse:
     name: lighthouse (NFR-P1 · admin shell LCP)
     runs-on: ubuntu-latest
@@ -64,6 +69,15 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      # Pin Chrome so the measurement browser does not drift. Action pinned to a commit SHA; chrome-version
+      # pinned to an exact Chrome-for-Testing build (bump both deliberately, never float).
+      - name: Pin Chrome (fixed version for a stable measurement)
+        id: pin-chrome
+        uses: browser-actions/setup-chrome@48ad923757ca74d66703209fe939badbdf80f2f4 # v2.2.0
+        with:
+          chrome-version: "158.0.8127.36"
+      - name: Export CHROME_PATH (chrome-launcher honours it)
+        run: echo "CHROME_PATH=${{ steps.pin-chrome.outputs.chrome-path }}" >> "$GITHUB_ENV"
       - name: Install
         run: npm ci
       - name: Build (gallery enabled so the shell demo is reachable)
