@@ -17,7 +17,7 @@ test.describe("E2E-02: repeated wrong passwords lock the account", () => {
     for (let attempt = 1; attempt <= 5; attempt++) {
       await page.getByLabel("Email", { exact: true }).fill(email);
       await page.getByLabel("Password", { exact: true }).fill(`definitely-wrong-${attempt}`);
-      await expect(submit).toBeEnabled(); // waits for the Turnstile test token
+      await expect(submit).toBeEnabled({ timeout: 20_000 }); // waits for the Turnstile test token (slow to load under CI)
       await submit.click();
 
       if (attempt < 5) {

@@ -47,7 +47,7 @@ async function signInAndEnrol(page: Page): Promise<void> {
   await page.getByLabel("Email", { exact: true }).fill(ADMIN);
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   const submit = page.getByRole("button", { name: "Sign in" });
-  await expect(submit).toBeEnabled();
+  await expect(submit).toBeEnabled({ timeout: 20_000 }); // waits for the Turnstile test token (slow to load under CI)
   await submit.click();
 
   await expect(page).toHaveURL(/\/admin\/mfa\/enrol/);

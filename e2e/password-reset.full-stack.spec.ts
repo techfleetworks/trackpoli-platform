@@ -51,7 +51,7 @@ async function requestReset(page: Page, email: string): Promise<void> {
   await page.goto("/admin/forgot-password");
   await page.getByLabel("Email", { exact: true }).fill(email);
   const submit = page.getByRole("button", { name: "Send reset link" });
-  await expect(submit).toBeEnabled(); // waits for the Turnstile test token
+  await expect(submit).toBeEnabled({ timeout: 20_000 }); // waits for the Turnstile test token (slow to load under CI)
   await submit.click();
   await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
 }

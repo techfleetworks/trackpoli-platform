@@ -83,7 +83,7 @@ async function signIn(page: Page, email: string, password: string): Promise<void
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(password);
   const submit = page.getByRole("button", { name: "Sign in" });
-  await expect(submit).toBeEnabled(); // waits for the Turnstile test token
+  await expect(submit).toBeEnabled({ timeout: 20_000 }); // waits for the Turnstile test token (slow to load under CI)
   await submit.click();
 }
 
