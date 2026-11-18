@@ -62,8 +62,24 @@ async function freshCode(secret: string, used: Set<string>): Promise<string> {
   return code;
 }
 
+// A programmatic sign-out (page.request.post) broadcasts on the auth channel, which can redirect the still-open
+// page to /sign-in and ABORT a racing goto (net::ERR_ABORTED). Retry the navigation a few times so the re-sign-in
+// after sign-out is not flaky; a real user signs out via a full navigation, so this is a test-mechanics guard only.
+async function gotoSignIn(page: Page): Promise<void> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await page.goto("/admin/sign-in", { waitUntil: "domcontentloaded" });
+      return;
+    } catch (error) {
+      const aborted = error instanceof Error && error.message.includes("ERR_ABORTED");
+      if (!aborted || attempt >= 4) throw error;
+      await page.waitForTimeout(300);
+    }
+  }
+}
+
 async function signIn(page: Page, email: string, password: string): Promise<void> {
-  await page.goto("/admin/sign-in");
+  await gotoSignIn(page);
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(password);
   const submit = page.getByRole("button", { name: "Sign in" });
