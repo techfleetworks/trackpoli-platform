@@ -115,7 +115,11 @@ jobs:
         run: npm ci
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned, not `latest`: resolving "latest" calls the GitHub releases API, which is rate-limited on
+          # shared runners and intermittently fails this step ("Failed to resolve latest Supabase CLI release:
+          # rate limit exceeded"), leaving `supabase: command not found`. An exact version downloads the asset
+          # directly with no API resolve, so this merge-blocking full-stack job is deterministic. Bump deliberately.
+          version: 3.2.0
       - name: Give the Edge Functions their local secrets
         run: |
           cat > supabase/functions/.env <<EOF
@@ -182,7 +186,11 @@ jobs:
         run: npm ci
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned, not `latest`: resolving "latest" calls the GitHub releases API, which is rate-limited on
+          # shared runners and intermittently fails this step ("Failed to resolve latest Supabase CLI release:
+          # rate limit exceeded"), leaving `supabase: command not found`. An exact version downloads the asset
+          # directly with no API resolve, so this merge-blocking full-stack job is deterministic. Bump deliberately.
+          version: 3.2.0
       - name: Give the Edge Functions their local secrets
         run: |
           cat > supabase/functions/.env <<EOF
