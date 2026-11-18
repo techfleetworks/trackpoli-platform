@@ -18,6 +18,13 @@
 --   tgt-recreate@example.test    Administrator, active, terms accepted       (E2E-17 recreate target)
 --   mgr-invite@example.test   Administrator Manager, active, terms accepted  (accept-invite E2E-03 acting manager; enrols MFA)
 
+-- One transaction for the whole overlay: psql runs statements in autocommit, so a temporary table created
+-- with `on commit drop` outside an explicit transaction is dropped at the end of its own CREATE statement,
+-- before the inserts can see it. Wrapping in begin/commit keeps the temp table alive across all four inserts
+-- and makes the overlay atomic (with ON_ERROR_STOP=1 in the apply step, any failure stops psql before the
+-- commit, so the job fails closed with nothing half-applied).
+begin;
+
 -- The dedicated people, inline (NOT added to tests.people — that table drives the pgTAP cast and stays the 7).
 create temporary table e2e_people (id uuid, name text, email text, display_name text, role text) on commit drop;
 insert into e2e_people (id, name, email, display_name, role) values
@@ -61,3 +68,5 @@ from e2e_people p;
 insert into public.policy_acceptances (admin_id, admin_email, document, version)
 select p.id, p.email, d.document, '0'
 from e2e_people p cross join (values ('terms'), ('privacy')) d (document);
+
+commit;
