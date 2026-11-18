@@ -40,7 +40,9 @@ async function viaMailpit(address: string): Promise<string | null> {
   if (!Array.isArray(msgs)) return null; // not Mailpit — let the Inbucket fallback try
   const mine = msgs.find((m) => (m.To ?? []).some((t) => t.Address?.toLowerCase() === address.toLowerCase()));
   if (!mine) return null;
-  const body = (await (await fetch(`${MAIL_BASE}/api/v1/message/${mine.ID}`)).json()) as { HTML?: string; Text?: string };
+  const bodyRes = await fetch(`${MAIL_BASE}/api/v1/message/${mine.ID}`);
+  if (!bodyRes.ok) return null; // transient mail-catcher error → the null path (clear "no invite email" poll timeout), not a throw
+  const body = (await bodyRes.json()) as { HTML?: string; Text?: string };
   const match = `${body.HTML ?? ""}${body.Text ?? ""}`.match(INVITE_LINK);
   return match ? match[0] : null;
 }
@@ -53,9 +55,9 @@ async function viaInbucket(address: string): Promise<string | null> {
   const list = (await res.json()) as Array<{ id: string }>;
   if (!Array.isArray(list) || list.length === 0) return null;
   const id = list[list.length - 1].id;
-  const msg = (await (await fetch(`${MAIL_BASE}/api/v1/mailbox/${encodeURIComponent(mailbox)}/${id}`)).json()) as {
-    body?: { html?: string; text?: string };
-  };
+  const msgRes = await fetch(`${MAIL_BASE}/api/v1/mailbox/${encodeURIComponent(mailbox)}/${id}`);
+  if (!msgRes.ok) return null; // transient error → the null path, not a throw
+  const msg = (await msgRes.json()) as { body?: { html?: string; text?: string } };
   const match = `${msg.body?.html ?? ""}${msg.body?.text ?? ""}`.match(INVITE_LINK);
   return match ? match[0] : null;
 }
