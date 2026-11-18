@@ -68,7 +68,10 @@ async function freshCode(secret: string, used: Set<string>): Promise<string> {
 async function gotoSignIn(page: Page): Promise<void> {
   for (let attempt = 0; ; attempt++) {
     try {
-      await page.goto("/admin/sign-in", { waitUntil: "domcontentloaded" });
+      // Default waitUntil "load" (not "domcontentloaded"): the Cloudflare Turnstile script loads async, and
+      // returning before it is ready left the widget uninitialised ("Cannot find Widget"), so its token never
+      // fired and the Sign in button stayed disabled. Waiting for load matches the other full-stack sign-ins.
+      await page.goto("/admin/sign-in");
       return;
     } catch (error) {
       const aborted = error instanceof Error && error.message.includes("ERR_ABORTED");
