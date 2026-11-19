@@ -1,5 +1,5 @@
 Feature: Public Party Directory (Phase 3)
-  Any visitor can browse Nigeria's registered political parties without signing in (ADR-0032). The
+  Any visitor can browse Nigeria's registered political parties without signing in (ADR-0036). The
   directory reads the published party projection (fixtures standing in for the Supabase published view),
   supports live text search and an All/Registered quick filter, reports the result count, and links each
   party to its profile. The screens are keyboard-operable with a visible focus and announce state to
