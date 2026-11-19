@@ -25,11 +25,12 @@ import {
   refreshStillWorks,
   signIn,
   uniqueEmail,
+  test,
 } from "./_harness.ts";
 
 // --- Permission & self-target guards ----------------------------------------------------------------------
 
-Deno.test("deactivate-admin: a plain Administrator (aal2) is refused forbidden (@usecase:manage-manager-only)", async () => {
+test("deactivate-admin: a plain Administrator (aal2) is refused forbidden (@usecase:manage-manager-only)", async () => {
   const plain = await createPerson({ prefix: "plain", role: "admin", status: "active" });
   const target = await createPerson({ prefix: "victim", role: "admin", status: "active" });
   try {
@@ -44,7 +45,7 @@ Deno.test("deactivate-admin: a plain Administrator (aal2) is refused forbidden (
   }
 });
 
-Deno.test("change-role: a manager without aal2 is refused mfa_required (@usecase:manage-requires-aal2)", async () => {
+test("change-role: a manager without aal2 is refused mfa_required (@usecase:manage-requires-aal2)", async () => {
   const mgr = await createPerson({ prefix: "aal1mgr", role: "admin_manager", status: "active" });
   const target = await createPerson({ prefix: "role-target", role: "admin", status: "active" });
   try {
@@ -59,7 +60,7 @@ Deno.test("change-role: a manager without aal2 is refused mfa_required (@usecase
   }
 });
 
-Deno.test("deactivate-admin: deactivating your own account is cannot_target_self", async () => {
+test("deactivate-admin: deactivating your own account is cannot_target_self", async () => {
   const mgr = await createManagerAal2("self-deact");
   try {
     const r = await callFn("deactivate-admin", { token: mgr.accessToken, body: { admin_id: mgr.id } });
@@ -71,7 +72,7 @@ Deno.test("deactivate-admin: deactivating your own account is cannot_target_self
   }
 });
 
-Deno.test("recreate-admin: recreating your own account is cannot_target_self (nothing deleted)", async () => {
+test("recreate-admin: recreating your own account is cannot_target_self (nothing deleted)", async () => {
   const mgr = await createManagerAal2("self-recreate");
   try {
     const r = await callFn("recreate-admin", { token: mgr.accessToken, body: { admin_id: mgr.id } });
@@ -85,7 +86,7 @@ Deno.test("recreate-admin: recreating your own account is cannot_target_self (no
 
 // --- Deactivate session-kill (@usecase:E2E-09) ------------------------------------------------------------
 
-Deno.test("deactivate-admin: ends the target's access at once — status, event and session-kill", async () => {
+test("deactivate-admin: ends the target's access at once — status, event and session-kill", async () => {
   const mgr = await createManagerAal2("deact-mgr");
   const target = await createPerson({ prefix: "deact-target", role: "admin", status: "active" });
   try {
@@ -112,7 +113,7 @@ Deno.test("deactivate-admin: ends the target's access at once — status, event 
 
 // --- Recreate snapshot preserved (@usecase:E2E-17 / @usecase:recreate-audit) ------------------------------
 
-Deno.test("recreate-admin: the account_deleted snapshot carries the identity and survives the delete; a fresh invite gets a new id", async () => {
+test("recreate-admin: the account_deleted snapshot carries the identity and survives the delete; a fresh invite gets a new id", async () => {
   const mgr = await createManagerAal2("recreate-mgr");
   const email = uniqueEmail("recreate-target");
   const target = await createPerson({ prefix: "Recreate Target", role: "admin", status: "active", email });
@@ -149,7 +150,7 @@ Deno.test("recreate-admin: the account_deleted snapshot carries the identity and
 
 // --- Change-email happy path + rollback + unlink (@usecase:change-email / @usecase:change-email-rollback) --
 
-Deno.test("change-email: updates both stores, records the event, revokes sessions, runs the unlink path", async () => {
+test("change-email: updates both stores, records the event, revokes sessions, runs the unlink path", async () => {
   const mgr = await createManagerAal2("ce-mgr");
   const oldEmail = uniqueEmail("ce-old");
   const target = await createPerson({ prefix: "ce-target", role: "admin", status: "active", email: oldEmail });
@@ -179,7 +180,7 @@ Deno.test("change-email: updates both stores, records the event, revokes session
   }
 });
 
-Deno.test("change-email: a failed profile write restores the auth email so the two stores never diverge", async () => {
+test("change-email: a failed profile write restores the auth email so the two stores never diverge", async () => {
   // Deterministic profile-write failure, no fault injection: a DEACTIVATED holder owns profiles.email = clash
   // but a DIFFERENT auth email. change-email(target → clash): the clash pre-check passes (deactivated is free),
   // the auth update to `clash` succeeds (no auth user owns it), then the profiles.email update to `clash`
@@ -211,7 +212,7 @@ Deno.test("change-email: a failed profile write restores the auth email so the t
   }
 });
 
-Deno.test("change-email: changing to an address held by an active admin is email_in_use (nothing changed)", async () => {
+test("change-email: changing to an address held by an active admin is email_in_use (nothing changed)", async () => {
   const mgr = await createManagerAal2("ce-dup-mgr");
   const taken = uniqueEmail("ce-taken");
   const holder = await createPerson({ prefix: "ce-holder", role: "admin", status: "active", email: taken });
@@ -232,7 +233,7 @@ Deno.test("change-email: changing to an address held by an active admin is email
 
 // --- Last-manager: the function's 409 mapping (the race is owned by pgTAP + last_manager_race.sh) ----------
 
-Deno.test("change-role: the sole active manager cannot self-demote — the guard surfaces as last_manager", async () => {
+test("change-role: the sole active manager cannot self-demote — the guard surfaces as last_manager", async () => {
   // The guard (migration 002) is GLOBAL: it fires only when a demote would leave zero active managers. To reach
   // it honestly we reduce the active-manager count to a single ephemeral manager — deactivating the seeded
   // managers one at a time, each step still leaving >= 1 so the guard permits it — then have that sole manager
@@ -286,7 +287,7 @@ Deno.test("change-role: the sole active manager cannot self-demote — the guard
   }
 });
 
-Deno.test("change-role: demoting a NON-last manager succeeds and revokes the target's sessions", async () => {
+test("change-role: demoting a NON-last manager succeeds and revokes the target's sessions", async () => {
   // The positive half of @usecase:change-role-last-manager: with other active managers present (the seed cast),
   // demoting one manager to admin succeeds and revokes their sessions.
   const mgr = await createManagerAal2("demote-mgr");

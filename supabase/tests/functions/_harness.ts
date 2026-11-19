@@ -19,6 +19,15 @@ export function env(name: string): string {
   return v;
 }
 
+// Register a test with Deno's op/resource LEAK sanitizers OFF. These are integration tests: the supabase-js
+// client keeps background resources alive (a realtime heartbeat timer, HTTP keep-alive sockets) that outlive a
+// single test, which the default sanitizers flag as a leak even though every assertion already passed. We
+// deliberately create short-lived clients per call and tear fixtures down ourselves, so the sanitizers add
+// only false failures here. Assertion failures still fail the test normally.
+export function test(name: string, fn: () => Promise<void>): void {
+  Deno.test({ name, sanitizeOps: false, sanitizeResources: false, fn });
+}
+
 const SUPABASE_URL = env("SUPABASE_URL");
 const SERVICE_ROLE_KEY = env("SUPABASE_SERVICE_ROLE_KEY");
 const ANON_KEY = env("SUPABASE_ANON_KEY");

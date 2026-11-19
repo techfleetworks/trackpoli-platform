@@ -18,17 +18,18 @@ import {
   getProfile,
   signIn,
   uniqueEmail,
+  test,
 } from "./_harness.ts";
 
 // --- Permission & contract (what verifyCaller + _shared/serve uniquely own) -------------------------------
 
-Deno.test("invite-admin: no bearer token is 401 unauthenticated", async () => {
+test("invite-admin: no bearer token is 401 unauthenticated", async () => {
   const r = await callFn("invite-admin", { body: { email: uniqueEmail("x"), display_name: "X", role: "admin" } });
   assertEquals(r.status, 401);
   assertEquals(r.code, "unauthenticated");
 });
 
-Deno.test("invite-admin: a plain Administrator (aal2) is refused forbidden (@usecase:invite-manager-only)", async () => {
+test("invite-admin: a plain Administrator (aal2) is refused forbidden (@usecase:invite-manager-only)", async () => {
   // A non-manager with a verified aal2 session still cannot invite — access is decided from the profile role.
   const plain = await createPerson({ prefix: "plain-admin", role: "admin", status: "active" });
   try {
@@ -44,7 +45,7 @@ Deno.test("invite-admin: a plain Administrator (aal2) is refused forbidden (@use
   }
 });
 
-Deno.test("invite-admin: a manager without aal2 is refused mfa_required", async () => {
+test("invite-admin: a manager without aal2 is refused mfa_required", async () => {
   const mgr = await createPerson({ prefix: "aal1-mgr", role: "admin_manager", status: "active" });
   try {
     const s = await signIn(mgr.email); // aal1 only — no MFA
@@ -59,7 +60,7 @@ Deno.test("invite-admin: a manager without aal2 is refused mfa_required", async 
   }
 });
 
-Deno.test("invite-admin: an unknown body field is rejected 422 validation_failed", async () => {
+test("invite-admin: an unknown body field is rejected 422 validation_failed", async () => {
   const mgr = await createManagerAal2("validate-mgr");
   try {
     const r = await callFn("invite-admin", {
@@ -75,7 +76,7 @@ Deno.test("invite-admin: an unknown body field is rejected 422 validation_failed
 
 // --- Duplicate email (@usecase:invite-duplicate-email) ----------------------------------------------------
 
-Deno.test("invite-admin: inviting an email already held by an active admin is email_in_use, nothing created", async () => {
+test("invite-admin: inviting an email already held by an active admin is email_in_use, nothing created", async () => {
   const mgr = await createManagerAal2("dup-mgr");
   const taken = uniqueEmail("taken");
   const existing = await createPerson({ prefix: "existing", role: "admin", status: "active", email: taken });
@@ -107,7 +108,7 @@ Deno.test("invite-admin: inviting an email already held by an active admin is em
 
 // --- Rollback (@usecase:invite-rollback) ------------------------------------------------------------------
 
-Deno.test("invite-admin: a failed profile insert deletes the just-created auth user (no orphan)", async () => {
+test("invite-admin: a failed profile insert deletes the just-created auth user (no orphan)", async () => {
   // Deterministic profile-insert failure with no fault injection: a DEACTIVATED holder owns profiles.email =
   // `addr` but has a DIFFERENT auth email, so (1) the email_in_use pre-check passes (deactivated is free),
   // (2) inviteUserByEmail(addr) SUCCEEDS creating a new auth user with auth email = addr, then (3) the profile
@@ -149,7 +150,7 @@ Deno.test("invite-admin: a failed profile insert deletes the just-created auth u
 
 // --- Resend rate limit (@usecase:resend-rate-limited) -----------------------------------------------------
 
-Deno.test("resend-invite: the fixed-window limit throttles the 4th resend per invited admin (Retry-After)", async () => {
+test("resend-invite: the fixed-window limit throttles the 4th resend per invited admin (Retry-After)", async () => {
   // resend-invite enforces the rate limit BEFORE the send, so the throttle is observable regardless of whether
   // the underlying invite send succeeds locally: the first three calls are not rate_limited; the fourth is
   // refused 429 rate_limited with a Retry-After. (MAX_PER_ADMIN=3 / 1h window.)
@@ -170,7 +171,7 @@ Deno.test("resend-invite: the fixed-window limit throttles the 4th resend per in
   }
 });
 
-Deno.test("resend-invite: only an invited profile can be resent (active target is conflict)", async () => {
+test("resend-invite: only an invited profile can be resent (active target is conflict)", async () => {
   const mgr = await createManagerAal2("resend-conflict-mgr");
   const activeTarget = await createPerson({ prefix: "active-target", role: "admin", status: "active" });
   try {
@@ -185,7 +186,7 @@ Deno.test("resend-invite: only an invited profile can be resent (active target i
 
 // --- Stale terms (record-terms version conflict; Q-1-22) --------------------------------------------------
 
-Deno.test("record-terms: a stale policy version is refused 409 conflict; the current version is accepted", async () => {
+test("record-terms: a stale policy version is refused 409 conflict; the current version is accepted", async () => {
   // record-terms runs at aal1 with allowInvited. An invited administrator who submits a version that is not the
   // current one (the text changed while they read) gets a conflict; submitting the current versions succeeds.
   // (The data-layer terms GATE — RLS blocking a manager who has not accepted — is owned by pgTAP
