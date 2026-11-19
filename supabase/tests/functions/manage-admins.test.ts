@@ -266,15 +266,23 @@ Deno.test("change-role: the sole active manager cannot self-demote — the guard
     // The guard refused the change, so the role is unchanged.
     assertEquals((await getProfile(mgr.id))?.role, "admin_manager", "the refused demote must not have applied");
   } finally {
-    // Restore the seed managers so later tests / jobs see the original cast.
+    // Restore the seed managers so later tests / jobs see the original cast. Do NOT swallow a restore
+    // failure: a silently-corrupted cast would poison later tests, so a failed restore throws here and fails
+    // THIS test loudly instead (judge-arch finding). (Deno runs test files serially by default — we do not
+    // pass --parallel — so no concurrent manager-dependent test can observe the transient collapse; the only
+    // residual is a hard process kill between the collapse and this finally, which no in-test code can cover.)
+    const restoreFailures: string[] = [];
     for (const id of collapsed) {
-      await admin
+      const { error } = await admin
         .from("profiles")
         .update({ status: "active", deactivated_at: null, deactivated_by: null })
-        .eq("id", id)
-        .catch(() => undefined);
+        .eq("id", id);
+      if (error) restoreFailures.push(`${id}: ${error.message}`);
     }
     for (const id of mgr.cleanup) await deletePerson(id);
+    if (restoreFailures.length > 0) {
+      throw new Error(`CRITICAL: failed to restore the seeded managers (cast left corrupted for later tests): ${restoreFailures.join("; ")}`);
+    }
   }
 });
 

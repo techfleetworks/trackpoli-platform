@@ -81,6 +81,7 @@ jobs:
           INTERNAL_CALL_SECRET=${INTERNAL_CALL_SECRET}
           ALLOWED_ORIGINS=
           SITE_URL=http://localhost:3000/admin
+          APP_URL=http://localhost:3000/admin
           EOF
 
       # Starts Postgres + Auth + the edge runtime (serving every function at /functions/v1/<name>), applies

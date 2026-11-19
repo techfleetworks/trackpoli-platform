@@ -97,37 +97,13 @@ Deno.test("invite-admin: inviting an email already held by an active admin is em
   }
 });
 
-Deno.test("invite-admin: a deactivated holder's email is NOT short-circuited as email_in_use (pre-check frees it)", async () => {
-  // The contract: a deactivated administrator's address is free again at the profile pre-check (invite-admin
-  // only blocks a non-deactivated holder). We assert the pre-check no longer returns email_in_use for a
-  // deactivated holder — the handler proceeds past it. (The deeper "fully re-invitable" path is bounded by the
-  // GoTrue unique-auth-email limit documented in ADR-0021 / change-email; not asserted here.)
-  const mgr = await createManagerAal2("deact-mgr");
-  const addr = uniqueEmail("reusable");
-  // A deactivated profile whose AUTH email differs from the profile email, so inviteUserByEmail(addr) is free
-  // at the auth layer and the only possible block is the profile pre-check — which must NOT fire for a
-  // deactivated holder.
-  const holder = await createPerson({
-    prefix: "deactivated-holder",
-    role: "admin",
-    status: "deactivated",
-    email: addr,
-    authEmail: uniqueEmail("holder-auth"),
-  });
-  try {
-    const r = await callFn("invite-admin", {
-      token: mgr.accessToken,
-      body: { email: addr, display_name: "Reused", role: "admin" },
-    });
-    assert(r.code !== "email_in_use", `deactivated holder must not short-circuit as email_in_use (got ${r.code})`);
-  } finally {
-    // The invite may have created a fresh invited profile+user for `addr`; clean any up.
-    const { data } = await admin.from("profiles").select("id").eq("email", addr);
-    for (const row of (data ?? []) as Array<{ id: string }>) if (row.id !== holder.id) await deletePerson(row.id);
-    await deletePerson(holder.id);
-    for (const id of mgr.cleanup) await deletePerson(id);
-  }
-});
+// Note on "invitable again once deactivated" (@usecase:invite-duplicate-email, the `But` clause): at the stack
+// level this is realised by recreate-admin (which deletes the old profile AND auth user, then re-invites) —
+// see manage-admins.test.ts. A RAW re-invite of a still-present deactivated holder's address proceeds past the
+// email_in_use pre-check (deactivated is excluded, invite-admin/index.ts:48) but then fails on the profiles
+// citext-email collision with the holder's surviving row — exactly the rollback path asserted below. So the
+// contract's two halves are: the active/invited holder → email_in_use (asserted above), and the re-invite
+// mechanics → the recreate-admin flow + the rollback test (below), not a separate near-vacuous "not blocked" case.
 
 // --- Rollback (@usecase:invite-rollback) ------------------------------------------------------------------
 
