@@ -101,9 +101,14 @@ jobs:
 
       - name: Run the edge-function integration tests
         # --allow-all: the tests make network calls to the local stack and read the keys from the environment.
-        # Serial within each file (Deno's default); the tests use ephemeral, uniquely-addressed, self-cleaning
-        # people so they do not cross-contaminate.
-        run: deno test --allow-all supabase/tests/functions/
+        # --node-modules-dir=auto: jsr:@supabase/supabase-js pulls npm deps (e.g. @supabase/realtime-js) that
+        #   Deno must materialise into node_modules to resolve (the edge runtime does this for the functions;
+        #   this standalone `deno test` process needs it told explicitly).
+        # --no-check: these are runtime INTEGRATION tests; we assert real behaviour against the served stack, not
+        #   types. Skipping the type-check of the large supabase-js dependency graph keeps the run fast and avoids
+        #   coupling the suite to that package's .d.ts under Deno's checker. Deno files run serially by default
+        #   (no --parallel); the tests use ephemeral, uniquely-addressed, self-cleaning people, so no cross-talk.
+        run: deno test --allow-all --node-modules-dir=auto --no-check supabase/tests/functions/
 
       - name: Stop Supabase
         if: always()

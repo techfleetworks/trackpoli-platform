@@ -37,7 +37,8 @@ supabase start && supabase db reset
 supabase status -o env   # export ANON_KEY / SERVICE_ROLE_KEY
 # the edge functions read APP_URL for the invite redirect; set it in supabase/functions/.env
 SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_ANON_KEY=... SUPABASE_SERVICE_ROLE_KEY=... \
-  INTERNAL_CALL_SECRET=e2e-internal-call-secret deno test --allow-all supabase/tests/functions/
+  INTERNAL_CALL_SECRET=e2e-internal-call-secret \
+  deno test --allow-all --node-modules-dir=auto --no-check supabase/tests/functions/
 ```
 
 CI runs it as the `function-tests` job in `.github/workflows/database.yml`. Tests create ephemeral,
