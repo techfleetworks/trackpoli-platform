@@ -749,6 +749,17 @@
   },
   {
     "feature": "auth/two-factor.feature",
+    "scenario": "Forced two-factor enrolment is enforced on the dashboard landing page",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "enrol-enforced-on-root",
+    "category": "boundary",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/two-factor.feature",
     "scenario": "No data is reachable until the second factor is satisfied",
     "domain": "auth",
     "audience": "administrator",
@@ -787,6 +798,28 @@
     "audience": "administrator",
     "usecase": "device-replacement-google",
     "category": "happy",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/two-factor.feature",
+    "scenario": "The device-replacement endpoint accepts a valid re-authentication and never fails closed with a server error",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "replacement-endpoint-contract",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/two-factor.feature",
+    "scenario": "The new device is enrolled as a distinct factor and does not collide with the current one",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "replacement-distinct-factor",
+    "category": "adverse",
     "quality": "security",
     "severity": "high",
     "status": "covered"

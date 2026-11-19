@@ -62,12 +62,31 @@ async function freshCode(secret: string, used: Set<string>): Promise<string> {
   return code;
 }
 
+// A programmatic sign-out (page.request.post) broadcasts on the auth channel, which can redirect the still-open
+// page to /sign-in and ABORT a racing goto (net::ERR_ABORTED). Retry the navigation a few times so the re-sign-in
+// after sign-out is not flaky; a real user signs out via a full navigation, so this is a test-mechanics guard only.
+async function gotoSignIn(page: Page): Promise<void> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      // Default waitUntil "load" (not "domcontentloaded"): the Cloudflare Turnstile script loads async, and
+      // returning before it is ready left the widget uninitialised ("Cannot find Widget"), so its token never
+      // fired and the Sign in button stayed disabled. Waiting for load matches the other full-stack sign-ins.
+      await page.goto("/admin/sign-in");
+      return;
+    } catch (error) {
+      const aborted = error instanceof Error && error.message.includes("ERR_ABORTED");
+      if (!aborted || attempt >= 4) throw error;
+      await page.waitForTimeout(300);
+    }
+  }
+}
+
 async function signIn(page: Page, email: string, password: string): Promise<void> {
-  await page.goto("/admin/sign-in");
+  await gotoSignIn(page);
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(password);
   const submit = page.getByRole("button", { name: "Sign in" });
-  await expect(submit).toBeEnabled(); // waits for the Turnstile test token
+  await expect(submit).toBeEnabled({ timeout: 20_000 }); // waits for the Turnstile test token (slow to load under CI)
   await submit.click();
 }
 
@@ -80,8 +99,19 @@ async function secretFrom(response: Response): Promise<string> {
 
 test.describe("E2E-11: two-factor enrolment, step-up, and device replacement", () => {
   test.skip(!process.env.E2E_FULL_STACK, "requires the full Supabase stack + seed + Turnstile test keys");
+  // This scenario mutates shared seed state (it enrols abe a factor), and a Playwright retry re-runs against
+  // the SAME Supabase stack — not a fresh `db reset` — so on a retry abe already has a factor and the first
+  // assertion (forced enrolment) can never hold. A full-stack, stateful flow is not safely retryable, so turn
+  // retries off here rather than let a retry fail misleadingly at a different step.
+  test.describe.configure({ retries: 0 });
 
   test("enrol at first sign-in, a code is required next sign-in, then replace the device", async ({ page }) => {
+    // The flow verifies the CURRENT device's TOTP three times (enrol, step-up, re-auth). A code is single-use
+    // per 30s window, so freshCode() waits for a new window between reuses; across three reuses that waiting
+    // can approach the 60s default on its own. Give the whole flow room so a legitimate window wait is not a
+    // timeout. freshCode always returns within one 30s window, so this is an upper bound, not a typical run.
+    test.setTimeout(180_000);
+
     const used = new Set<string>();
 
     // 1) First sign-in forces enrolment before any data route.
@@ -96,7 +126,7 @@ test.describe("E2E-11: two-factor enrolment, step-up, and device replacement", (
 
     await expect(page.getByRole("heading", { name: "Scan the QR code" })).toBeVisible();
     await page.getByRole("button", { name: "Continue" }).click();
-    await page.getByLabel("6-digit code").fill(await freshCode(secret1, used));
+    await page.getByRole("textbox", { name: /digit code/i }).fill(await freshCode(secret1, used));
     await page.getByRole("button", { name: "Verify and turn on" }).click();
 
     await expect(page.getByRole("heading", { name: "Two-step verification is on" })).toBeVisible();
@@ -127,7 +157,7 @@ test.describe("E2E-11: two-factor enrolment, step-up, and device replacement", (
 
     await expect(dialog.getByRole("heading", { name: "Add your new device" })).toBeVisible();
     await dialog.getByRole("button", { name: "Continue" }).click();
-    await dialog.getByLabel("6-digit code").fill(await freshCode(secret2, used));
+    await dialog.getByRole("textbox", { name: /digit code/i }).fill(await freshCode(secret2, used));
     await dialog.getByRole("button", { name: "Replace device" }).click();
 
     await expect(dialog.getByRole("heading", { name: "Authenticator device replaced" })).toBeVisible();

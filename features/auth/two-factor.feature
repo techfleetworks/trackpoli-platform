@@ -49,6 +49,13 @@ Feature: Two-factor protection (mandatory TOTP, forced enrolment, step-up, devic
     Then they are shown a new factor to enrol
     And verifying the new device removes the old one, leaving exactly one verified factor
 
+  @audience:administrator @usecase:replacement-distinct-factor @category:adverse @security @severity:high
+  Scenario: The new device is enrolled as a distinct factor and does not collide with the current one
+    Given an administrator replacing their authenticator while the current factor is still verified
+    When the new factor is enrolled before the old one is removed
+    Then it is created with its own distinct identity, not one that clashes with the current factor
+    And the replacement is not failed by a duplicate-factor error from the authenticator service
+
   @audience:administrator @usecase:device-replacement-google @category:happy @security @severity:high
   Scenario: Replacing a device uses Google re-auth and the current code for a Google-only administrator
     Given a Google-only administrator who wants to move to a new authenticator
@@ -61,6 +68,13 @@ Feature: Two-factor protection (mandatory TOTP, forced enrolment, step-up, devic
     When a device replacement is attempted
     Then it is refused before any new factor is created
     And the current factor is left unchanged
+
+  @audience:administrator @usecase:replacement-endpoint-contract @category:adverse @security @severity:high
+  Scenario: The device-replacement endpoint accepts a valid re-authentication and never fails closed with a server error
+    Given a signed-in administrator submitting a device-replacement step
+    When the request carries a recognised shape: password or Google re-auth with a current code, or a completion with a new code
+    Then the endpoint validates it and returns a typed replacement outcome
+    And a malformed request is refused as a re-authentication failure, not a 500 server error
 
   @audience:administrator @usecase:lost-device-no-self-service @category:negative @security @severity:medium
   Scenario: A lost authenticator is not self-service and must be a manager recreate
@@ -96,3 +110,11 @@ Feature: Two-factor protection (mandatory TOTP, forced enrolment, step-up, devic
     When they enrol a second factor, then later replace the device in Security settings
     Then replacing requires their password and current code
     And a code is required at the next sign-in using the new device
+
+  @audience:administrator @usecase:enrol-enforced-on-root @category:boundary @security @owasp:authorization @severity:high
+  Scenario: Forced two-factor enrolment is enforced on the dashboard landing page
+    Given a signed-in administrator at aal1 with no verified factor
+    When they land on the application root (the dashboard) after signing in
+    Then the middleware funnels them to two-factor enrolment instead of rendering the dashboard
+    And this holds because the middleware matcher gates the basePath root, not only its sub-paths
+    But RLS still denies every aal1 data request regardless, so the routing gate is defence in depth

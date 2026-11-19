@@ -24,11 +24,35 @@ insert into tests.people (name, id) values
   ('dee', '00000000-0000-4000-8000-0000000000d1');
 
 -- Auth users. The local password is only for signing in by hand on a developer machine.
+-- GoTrue scans several auth.users token columns into non-nullable Go strings, so a NULL there fails every
+-- sign-in with "converting NULL to string is unsupported" (error finding user). Real users created through
+-- GoTrue (the invite flow) get '' here; a raw seed insert must set them explicitly or no seeded user can
+-- sign in. Production is unaffected — this is seed-data only.
 insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-                        raw_app_meta_data, raw_user_meta_data)
+                        created_at, updated_at,
+                        raw_app_meta_data, raw_user_meta_data,
+                        confirmation_token, recovery_token, email_change,
+                        email_change_token_new, email_change_token_current,
+                        phone_change, phone_change_token, reauthentication_token)
 select '00000000-0000-0000-0000-000000000000', p.id, 'authenticated', 'authenticated',
        p.name || '@example.test', extensions.crypt('LocalOnly-Passw0rd!', extensions.gen_salt('bf')), now(),
-       '{"provider":"email","providers":["email"]}', '{}'
+       now(), now(),
+       '{"provider":"email","providers":["email"]}', '{}',
+       '', '', '', '', '', '', '', ''
+from tests.people p;
+
+-- Email identities. supabase.auth.getUser() populates user.identities from auth.identities, NOT from
+-- raw_app_meta_data, so a seeded account is recognised as a password account only when it has an identity
+-- row with provider 'email' (getTwoFactorStatus, src/features/settings/security/twoFactor.ts). Without it
+-- every seeded user is treated as Google-only, and device replacement asks for a Google re-auth instead of
+-- the password (found by the full-stack E2E-11 harness). For the email provider GoTrue sets provider_id to
+-- the user id; the id primary key and the generated email column are left to their defaults. Seed-data only;
+-- password sign-in itself uses auth.users.encrypted_password and does not depend on this row.
+insert into auth.identities (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+select p.id::text, p.id,
+       jsonb_build_object('sub', p.id::text, 'email', p.name || '@example.test',
+                          'email_verified', true, 'phone_verified', false),
+       'email', now(), now(), now()
 from tests.people p;
 
 insert into public.profiles (id, email, display_name, role, status, invited_at, activated_at, deactivated_at) values

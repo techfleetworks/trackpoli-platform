@@ -6,17 +6,28 @@ reason it is not done yet and what it needs to be done.
 > **Domain (Q-1-21): the production domain is `trackpoli.com`** (decided 2026-11-11). The items below that
 > say "needs a domain (Q-1-21)" now have their host — see `docs/setup/tp1-02-credentials.md`. Each still
 > needs its service account (Supabase / Vercel / Cloudflare / Google OAuth / Porkbun SMTP / Sentry)
-> provisioned too; the domain alone does not close them.
+> provisioned too; the domain alone does not close them. The per-service, tick-box wiring steps (what to
+> set where, in each service's own dashboard) are collected in **`docs/setup/go-live-wiring.md`**.
 
 ## From TP1-02 (merged 2026-11-06, PR #10)
 
-- [ ] **Apply the branch-protection ruleset.** Run `scripts/apply-ruleset.sh` so the committed ruleset
-      (required status checks + 1 required approval) actually enforces on `main`. Until it is applied,
-      GitHub does not require a review or the routing gate to merge. **Needs:** a repo admin to run it.
+- [ ] **Apply the acceptance-gates ruleset (narrow ratchet step), then — later — the full `main-protection`.**
+      Per **ADR-0033**, branch protection is split into two separately-appliable rulesets so they can roll out
+      independently. The narrow step is ready: `.github/rulesets/e2e-acceptance.json` requires only the three
+      proven gates — `e2e (full stack)`, `e2e (full stack · safe sessions)`, `lighthouse (NFR-P1 · admin shell
+      LCP)` (the full-stack jobs were renamed to stable, spec-list-free contexts so a required check can't
+      silently go blind). **Needs:** a repo admin to run `scripts/apply-ruleset.sh "" e2e-acceptance.json` to
+      make E2E-02/05/06/07/08/11/15/18 + NFR-P1 merge-blocking; then verify the contexts match on the next PR.
+- [ ] **Apply the broader `main-protection.json` (deferred — needs two prerequisites).** The committed
+      `main-protection.json` additionally requires **1 PR approval** and the `check (*)` jobs incl.
+      `check (dependencies)`. Applying it now would lock out a solo merger and make the unfixable **picomatch**
+      advisory block every merge (`release-deployment-safety`: "do not let a deploy become an outage or a
+      lockout"). **Needs:** a second reviewer in the loop, and picomatch resolved (or a documented audit
+      exception + ADR), before running `scripts/apply-ruleset.sh` on `main-protection.json`.
 
-- [ ] **Wire up the full-stack E2E-02 test.** The `e2e (full stack · E2E-02)` CI job is currently
-      skipped by design. **Needs:** the 2FA / dashboard tickets to exist first so the end-to-end
-      sign-in path can be exercised.
+- [x] **Wire up the full-stack E2E-02 test.** Done — the full-stack harness (PR #67, merged 2026-11-18)
+      runs `e2e/sign-in.full-stack.spec.ts` on every PR and it is green. Not yet a *required* check (see the
+      ruleset item above).
 
 - [ ] **Do a real deploy.** Stand the app up on real infrastructure (staging, then production).
       **Needs:** the service accounts (Supabase, Vercel, Cloudflare, Google OAuth, Cloudflare
@@ -35,7 +46,10 @@ be provisioned, not more code.
       sends mail, so this provisioning belongs to TP1-03. **Needs:** a domain + the Supabase/Porkbun
       accounts (Q-1-21).
 
-- [ ] **Make E2E-05 pass and promote it off the gate.** The full-stack recovery spec
+- [x] **Make E2E-05 pass and promote it off the gate.** Done — merged in the full-stack harness (PR #67,
+      2026-11-18): both recovery scenarios run on every PR and are green (reads the recovery link from Mailpit).
+      Not yet a *required* check (ruleset item above). The real-delivery path still depends on the SMTP/domain
+      item below. Historical detail follows. The full-stack recovery spec
       (`e2e/password-reset.full-stack.spec.ts`) is written but skipped — gated on `E2E_FULL_STACK`.
       Stand up the local full-stack harness (Supabase stack + Inbucket/Mailpit mail-catcher + the
       7-person seed + edge functions served + Turnstile TEST keys), get the spec green (the
@@ -49,7 +63,10 @@ The two-factor code shipped on the branch, but these two are **acceptance / veri
 TP1-04** that cannot be completed in code alone — both are **domain-blocked (Q-1-21, E2E-16)**: they need
 the Supabase and Google OAuth stack to be provisioned, not more implementation.
 
-- [ ] **Make E2E-11 pass and promote it off the gate.** The full-stack two-factor spec
+- [x] **Make E2E-11 pass and promote it off the gate.** Done — the full-stack harness (PR #67, 2026-11-18)
+      runs `e2e/two-factor.full-stack.spec.ts` on every PR and it is green (enrol → step-up → device-replace).
+      Not yet a *required* check (ruleset item above). The Google re-auth branch is the separate item below.
+      Historical detail follows. The full-stack two-factor spec
       (`e2e/two-factor.full-stack.spec.ts`) is written but skipped — gated on `E2E_FULL_STACK`. Stand up
       the local full-stack harness (Supabase stack + the 7-person seed + edge functions served + Turnstile
       TEST keys), get the spec green (the TOTP replay timing between reuses is the likely thing to adjust
@@ -74,7 +91,11 @@ the Supabase and Google OAuth stack to be provisioned, not more implementation.
 The safe-sessions code shipped, but these are **acceptance / verification / scope items** that cannot be
 finished in this ticket's code.
 
-- [ ] **Make E2E-06 and E2E-07 pass and promote them off the gate.** The full-stack spec
+- [x] **Make E2E-06 and E2E-07 pass and promote them off the gate.** Done — the full-stack harness (PR #67,
+      2026-11-18) runs `e2e/safe-sessions.full-stack.spec.ts` in its own dedicated `e2e (full stack · E2E-06,
+      E2E-07 safe sessions)` job (with `SESSION_IDLE_MS`/`SESSION_WARN_LEAD_MS`/`SESSION_ACTIVITY_PING_MS`
+      shortened via env) and both tests are green. Not yet a *required* check (ruleset item above). Historical
+      detail follows. The full-stack spec
       (`e2e/safe-sessions.full-stack.spec.ts`) is written but skipped — gated on `E2E_FULL_STACK`. It needs a
       **dedicated** full-stack CI job with the limits shortened via env
       (`SESSION_IDLE_MS`, `SESSION_WARN_LEAD_MS`, `SESSION_ACTIVITY_PING_MS`) — it cannot share the existing
@@ -114,7 +135,10 @@ finished in this ticket's code.
 The role-based-access code shipped, but these are **acceptance / verification / scope items** that cannot be
 finished in this ticket's code.
 
-- [ ] **Make E2E-08 pass and promote it off the gate.** The full-stack spec
+- [x] **Make E2E-08 pass and promote it off the gate.** Done — the full-stack harness (PR #67, 2026-11-18)
+      runs `e2e/role-based-access.full-stack.spec.ts` on every PR and it is green (an Administrator gets the
+      forbidden screen and a 403 from the manager API). Not yet a *required* check (ruleset item above).
+      Historical detail follows. The full-stack spec
       (`e2e/role-based-access.full-stack.spec.ts`) is written but skipped — gated on `E2E_FULL_STACK`. Stand
       up the harness (Supabase stack with the access-token hook enabled + the 7-person seed + Turnstile TEST
       keys), sign in as a plain Administrator, and confirm `/admins` shows the forbidden screen and
@@ -192,7 +216,9 @@ ticket's code.
       **version `1`**, which forces re-acceptance with no code change. Consent recorded against placeholder
       text is a build/test artifact, not production-defensible consent. **Needs:** the approved legal text +
       the content store.
-- [ ] **Make the E2E-15 full-stack spec pass and promote it off the gate.** Done part: the executable
+- [x] **Make the E2E-15 full-stack spec pass and promote it off the gate.** Done — the full-stack harness
+      (PR #67, 2026-11-18) runs `e2e/accept-terms.full-stack.spec.ts` on every PR and it is green. Not yet a
+      *required* check (ruleset item above). Historical detail follows. Done part: the executable
       Playwright spec is now written — `e2e/accept-terms.full-stack.spec.ts` (`E2E_FULL_STACK`-gated/skipped,
       like TP1-03/04/05/06). It drives the real accept flow from `features/terms/accept-terms.feature`:
       an unaccepted administrator (seed `tom`) is funnelled to `/terms` before two-factor, Accept is gated by
@@ -225,7 +251,12 @@ invite email, and the live-status middleware invite gate — all verified by uni
 judge-arch reviews. These are **acceptance / verification / infra items** that cannot be finished in code alone;
 all are harness- or domain-blocked (Q-1-21). TP1-09 cannot be marked closed until E2E-03/04 are green.
 
-- [ ] **Make E2E-03 and E2E-04 pass and promote them off the gate.** The full-stack spec
+- [ ] **Make E2E-03 and E2E-04 pass and promote them off the gate.** **Update (harness merged, PR #67,
+      2026-11-18):** `e2e/accept-invite.full-stack.spec.ts` now runs on every PR; **E2E-04 is active and green**,
+      but **E2E-03 (the happy path) is still a `test.fixme` stub** — it needs a way to create an invite in setup
+      (a manager-session/aal2 harness helper, or the TP1-13 manager invite UI) and the `latestInviteLink`
+      Mailpit reader wired. Remaining before this closes: finish that helper + the invite-link reader, un-fixme
+      E2E-03, get it green. Historical detail follows. The full-stack spec
       (`e2e/accept-invite.full-stack.spec.ts`) is written but skipped — gated on `E2E_FULL_STACK`. It needs the
       full-stack harness (local Supabase stack + the 7-person seed + the Inbucket/Mailpit mail-catcher + Turnstile
       TEST keys), the `latestInviteLink` mail-catcher helper wired (the likely first-run adjustment, per CLI
@@ -264,7 +295,12 @@ verification / forward-dependency items** that cannot be finished in code alone 
       `change-email` now sends the email-changed notice to the **old and new** address via
       `functions/_shared/noticeTemplates.ts` + `notices.ts`, best-effort and reported. Live delivery is still
       domain-blocked — see the TP1-12 section below.
-- [ ] **Make E2E-09, E2E-10 and E2E-17 pass and promote them off the gate.** The behaviour is enumerated in
+- [ ] **Make E2E-09, E2E-10 and E2E-17 pass and promote them off the gate.** **Update (harness merged, PR #67,
+      2026-11-18):** the full-stack harness now exists on every PR to build these on, but the manage-admins
+      happy-path specs are still stubbed/absent — they need a manager-session (aal2) harness helper to drive the
+      manager actions, the Mailpit invite-link reader, and seed expansion (the 7-person seed is fully allocated).
+      This is the next real code push after the harness. Remaining: build the helper + reader + seed, write/finish
+      the specs, get them green. The behaviour is enumerated in
       `features/admins/manage-admins.feature`; the full-stack specs need the same harness as TP1-09 (local
       Supabase + seed + edge runtime + mail-catcher), plus a way to drive the manager actions (a harness helper
       or the TP1-10 dialogs). "E2E-09/10/17 pass" is the ticket's acceptance criterion. **Needs:** the full-stack
@@ -301,7 +337,12 @@ send is **domain-blocked (Q-1-21)**. TP1-12 cannot be marked closed until E2E-18
       Outlook inbox (not spam), to the right address (email-changed to both). Shares the SMTP/domain
       provisioning with the TP1-03 recovery and TP1-09 invite items; the same SMTP set as Supabase Auth's
       custom SMTP also lights those up. **Needs:** a domain + the Porkbun/Supabase accounts (Q-1-21).
-- [ ] **Write the full-stack E2E-18 spec and make it pass.** The behaviour is enumerated in
+- [x] **Write the full-stack E2E-18 spec and make it pass.** Done — `e2e/security-alert-emails.full-stack.spec.ts`
+      was written and merged in the full-stack harness (PR #67, 2026-11-18); it runs on every PR and is green,
+      proving the internal-only notice contract (assertInternalCall 403, Zod `.strict()`+enum 422, the
+      `{ok:true,data:{dispatched:false,reason:"unconfigured"}}` envelope). Not yet a *required* check (ruleset
+      item above). Asserting a notice is actually DELIVERED is the separate SMTP item below. Historical detail
+      follows. The behaviour is enumerated in
       `features/auth/security-alert-emails.feature`, but unlike TP1-03/04/05/06/08, **no executable Playwright
       spec exists yet** (`e2e/security-alert-emails.full-stack.spec.ts` is still to be written). Write it
       (`E2E_FULL_STACK`-gated, mail-catcher assertions: one notice per recipient, email-changed to old+new, no
@@ -332,25 +373,34 @@ section). The rest are **work-in-progress on the harness branch**, not yet merge
       `MFA_PUBLIC_PATHS`, so the live middleware bounced a signed-out visitor (and emailed recovery/invite
       links) to `/sign-in`. A real production-affecting bug, now fixed with a `@security` scenario + unit cases.
 
-- [ ] **Fix the seeded `auth.users` for GoTrue sign-in (test-only).** On the harness branch: the hand-seeded
-      rows left non-nullable GoTrue columns NULL (`confirmation_token` … and `created_at`/`updated_at`), so
-      every seeded sign-in failed with "converting NULL to string is unsupported". Seed now sets them.
-      Production is unaffected (real users are created through GoTrue). **Needs:** land with the harness PR.
+- [x] **Fix the seeded `auth.users` for GoTrue sign-in (test-only).** Done — landed with the harness PR #67
+      (2026-11-18). The hand-seeded rows left non-nullable GoTrue columns NULL (`confirmation_token` … and
+      `created_at`/`updated_at`), so every seeded sign-in failed with "converting NULL to string is unsupported";
+      the seed now sets them (plus `auth.identities` rows so accounts classify as password accounts). Production
+      is unaffected (real users are created through GoTrue).
 
-- [ ] **E2E-05: deliver the recovery email in the local stack.** The forgot-password POST succeeds, but no
-      recovery email reaches the local mail catcher — GoTrue's custom recovery template fails to load locally
-      (a template-fetch "connection refused" in the auth logs), so the mail is not sent. The spec's mail reader
-      was also updated for Mailpit (the current CLI's catcher). **Needs:** make GoTrue send the recovery mail
-      locally (use the default template, or serve the custom one), then E2E-05 can read it.
+- [x] **E2E-05: deliver the recovery email in the local stack.** Resolved — both E2E-05 scenarios pass in CI
+      (the earlier template-fetch "connection refused" did not reproduce once the stack came up cleanly). The
+      spec reads the recovery link from Mailpit.
 
-- [ ] **E2E-11 / likely real bug: forced two-factor enrolment does not fire.** After a successful sign-in, a
-      no-factor administrator reaches the **Dashboard** instead of being funnelled to `/mfa/enrol`. The access
-      token carries `aal1` (confirmed), yet the middleware's `getAuthenticatorAssuranceLevel()` read comes back
-      empty, so `decideMfaGate` falls through to "allow". RLS still denies all data at aal1 (not a data breach),
-      but admins are not being forced to enrol. **Needs:** diagnose why the assurance-level read is null in
-      `updateSession` despite the aal1 JWT, and fix the forced-enrolment routing. Its own ticket.
+- [x] **E2E-11 / real bug: forced two-factor enrolment does not fire.** Root cause was the middleware matcher:
+      with `basePath "/admin"` the glob never matched the bare `/admin` root, so the whole gate was bypassed on
+      the dashboard. Fixed by adding `"/"` to `config.matcher` (**PR #63**). Two more harness-found bugs were
+      banked alongside: password-recovery routes unreachable under the active middleware (**PR #61**) and
+      `/api/mfa/replace` 500ing on every call via a duplicate Zod discriminator (**PR #64**). E2E-11 also needed
+      a seed fix (email identities, so accounts classify as password) and a bigger timeout + `retries:0`.
 
-- [ ] **Finish greening the full-stack specs and promote the job to run on every PR.** Wire all 8 full-stack
-      specs into the job (currently E2E-02/05/11 only), write the missing E2E-18 (security-alert emails) spec,
-      remove the temporary diagnostic step, get them green, and change the job's `if:` from `workflow_dispatch`
-      to run on PRs so E2E-02..18 become merge-blocking acceptance for TP1-02/03/04/05/06/08/09/10/12.
+- [x] **Merge order to land the harness green.** Done — the four harness-found bug fixes merged (#61 recovery
+      routes, #63 root-gating matcher, #64 `/api/mfa/replace` duplicate-discriminator 500, #66 MFA-enrol
+      friendly-name) and the harness branch merged as **PR #67** (2026-11-18); a CI flake (`supabase/setup-cli`
+      `latest` rate-limit) was fixed by pinning the CLI to `3.2.0`. Alongside, the NFR-P1 `lighthouse` gate was
+      stabilised in **PR #68** (ADR-0032): pinned Chrome + `CHROME_PATH`, simulate-throttling with a fixed device
+      model, median-of-5, fail-closed, and a mutation-proven discrimination test — budgets unchanged, so the gate
+      is deterministic (~210ms) and still catches a real regression. **Remaining to make E2E-02/05/06/07/08/11/15/18
+      merge-blocking:** add their job contexts to the required ruleset (see the TP1-02 ruleset item).
+
+- [ ] **E2E-18: live email delivery (still domain-blocked, Q-1-21).** The E2E-18 spec
+      (`e2e/security-alert-emails.full-stack.spec.ts`) proves the internal-only notice contract the harness can
+      prove without SMTP (guard, recipient-from-id, best-effort inert). Asserting a notice is actually DELIVERED
+      needs the Porkbun SMTP secrets + a proven nodemailer-under-Deno path — the same provisioning as the TP1-03
+      recovery and TP1-09 invite items above.

@@ -7,7 +7,9 @@ import { createHmac } from "node:crypto";
 // iteration before it is promoted. It signs in as a plain Administrator (role 'admin', not a manager),
 // completes forced enrolment to reach aal2, then proves the manager route and API are closed to them.
 
-const ADMIN = "abe@example.test"; // a seeded administrator (role 'admin', not a manager), no factor yet
+// bea, not abe: a seeded plain Administrator (role 'admin', not a manager), no factor yet. Using bea keeps
+// this spec's enrolment from colliding with E2E-11/two-factor, which enrols abe in the same shared stack.
+const ADMIN = "bea@example.test";
 const PASSWORD = "LocalOnly-Passw0rd!";
 
 const BASE32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -45,7 +47,7 @@ async function signInAndEnrol(page: Page): Promise<void> {
   await page.getByLabel("Email", { exact: true }).fill(ADMIN);
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   const submit = page.getByRole("button", { name: "Sign in" });
-  await expect(submit).toBeEnabled();
+  await expect(submit).toBeEnabled({ timeout: 20_000 }); // waits for the Turnstile test token (slow to load under CI)
   await submit.click();
 
   await expect(page).toHaveURL(/\/admin\/mfa\/enrol/);
@@ -53,7 +55,7 @@ async function signInAndEnrol(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Continue" }).click();
   const secret = ((await (await begin).json()) as { secret?: string }).secret as string;
   await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByLabel("6-digit code").fill(totp(secret));
+  await page.getByRole("textbox", { name: /digit code/i }).fill(totp(secret));
   await page.getByRole("button", { name: "Verify and turn on" }).click();
   await page.getByRole("button", { name: "Go to dashboard" }).click();
   await expect(page).toHaveURL(/\/admin$/);
@@ -61,6 +63,9 @@ async function signInAndEnrol(page: Page): Promise<void> {
 
 test.describe("E2E-08: an Administrator is denied the manager route and API", () => {
   test.skip(!process.env.E2E_FULL_STACK, "requires the full Supabase stack + seed + Turnstile test keys");
+  // Enrols bea in the shared stack, so a retry against the un-reset DB would start with bea already enrolled
+  // (routed to verify, not enrol) — not safely retryable (see E2E-11). Turn retries off for this suite.
+  test.describe.configure({ retries: 0 });
 
   test("an Admin opening /admins gets the forbidden page, and the manager API returns 403", async ({ page }) => {
     await signInAndEnrol(page);

@@ -72,10 +72,13 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | auth/two-factor.feature | A wrong code at the verify step is refused and the session stays aal1 | auth | administrator | verify-wrong-code | negative | security | medium | covered |
 | auth/two-factor.feature | Enrol at first sign-in, then replace the device, and the next sign-in needs a code | auth | administrator | E2E-11 | happy | security | high | covered |
 | auth/two-factor.feature | Forced enrolment applies to Google sign-ins too | auth | administrator | forced-enrolment-google | permission | security | high | covered |
+| auth/two-factor.feature | Forced two-factor enrolment is enforced on the dashboard landing page | auth | administrator | enrol-enforced-on-root | boundary | security | high | covered |
 | auth/two-factor.feature | No data is reachable until the second factor is satisfied | auth | administrator | aal2-data-gate | permission | security | critical | covered |
 | auth/two-factor.feature | Repeated wrong codes during replacement are rate-limited, not endlessly retriable | auth | administrator | replacement-attempt-cap | adverse | security | medium | covered |
 | auth/two-factor.feature | Replacing a device requires password and the current code for an email administrator | auth | administrator | device-replacement | happy | security | high | covered |
 | auth/two-factor.feature | Replacing a device uses Google re-auth and the current code for a Google-only administrator | auth | administrator | device-replacement-google | happy | security | high | covered |
+| auth/two-factor.feature | The device-replacement endpoint accepts a valid re-authentication and never fails closed with a server error | auth | administrator | replacement-endpoint-contract | adverse | security | high | covered |
+| auth/two-factor.feature | The new device is enrolled as a distinct factor and does not collide with the current one | auth | administrator | replacement-distinct-factor | adverse | security | high | covered |
 | auth/two-factor.feature | The only Admin manager who loses their device cannot self-recreate from the app | auth | administrator-manager | lost-device-only-manager | adverse | security | medium | covered |
 | auth/two-factor.feature | Two-factor cannot be switched off | auth | administrator | no-self-disable | adverse | security | high | covered |
 | design-system/component-accessibility.feature | A disabled control is non-interactive and announced as disabled | design-system | assistive-tech | disabled-control | edge | accessibility | medium | covered |

@@ -23,12 +23,15 @@ async function signIn(page: Page, email: string): Promise<void> {
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   const submit = page.getByRole("button", { name: "Sign in" });
-  await expect(submit).toBeEnabled();
+  await expect(submit).toBeEnabled({ timeout: 20_000 }); // waits for the Turnstile test token (slow to load under CI)
   await submit.click();
 }
 
 test.describe("E2E-15: terms & privacy acceptance before any other screen or data", () => {
   test.skip(!process.env.E2E_FULL_STACK, "requires the full Supabase stack + seed + Turnstile test keys");
+  // These tests mutate shared seed state (tom accepts the current terms), so a retry against the un-reset
+  // stack would not see tom unaccepted again — not safely retryable (see E2E-11). Turn retries off.
+  test.describe.configure({ retries: 0 });
 
   test("an unaccepted administrator is sent to terms before two-factor, accepts, and continues", async ({ page }) => {
     // tom: an active Administrator Manager who has NOT accepted the current policies (seed).
@@ -69,9 +72,10 @@ test.describe("E2E-15: terms & privacy acceptance before any other screen or dat
   });
 
   test("re-submitting the current acceptance succeeds idempotently", async ({ page }) => {
-    // abe already accepted version "0" of both documents in the seed; a retry / double-click must still work.
-    await signIn(page, "abe@example.test");
-    // Settle on the post-sign-in route first (abe has accepted, so the terms gate passes straight to the
+    // max already accepted version "0" of both documents in the seed; a retry / double-click must still work.
+    // (max, not abe: abe is enrolled by E2E-11 in the shared stack, which would route abe to verify, not enrol.)
+    await signIn(page, "max@example.test");
+    // Settle on the post-sign-in route first (max has accepted, so the terms gate passes straight to the
     // two-factor funnel) — this guarantees the session cookie is set before the raw API POSTs below fire.
     await expect(page).toHaveURL(/\/admin\/mfa\/enrol/);
     const body = {
@@ -92,7 +96,7 @@ test.describe("E2E-15: terms & privacy acceptance before any other screen or dat
   });
 
   test("accepting a version that is no longer current is rejected as a stale-version conflict", async ({ page }) => {
-    await signIn(page, "abe@example.test");
+    await signIn(page, "max@example.test");
     await expect(page).toHaveURL(/\/admin\/mfa\/enrol/); // settle on the authenticated route before the raw POST
 
     // Submitting a version that is not the current one (as if the text changed while the user was reading):

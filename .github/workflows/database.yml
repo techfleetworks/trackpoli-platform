@@ -48,3 +48,68 @@ jobs:
       - name: Stop Supabase
         if: always()
         run: supabase stop --no-backup
+
+  # Edge-function integration tests (TP1-09, TP1-10; ADR-0035). Boots the SAME real local Supabase stack as the
+  # full-stack E2E job, serves the Edge Functions, and runs `deno test` against the served runtime — asserting the
+  # true HTTP contract and DB side effects (duplicate email, both rollbacks, the resend rate limit, the stale-terms
+  # conflict, the deactivate session-kill, the recreate snapshot, the last_manager 409 mapping). Credential-free:
+  # the only secret is the committed-test INTERNAL_CALL_SECRET; these post-auth paths do not use Turnstile. A
+  # SEPARATE job from db-tests (its own stack), so the pgTAP suite and these never share a database. Like the
+  # full-stack E2E job, the first green run is owed from CI (no local Docker on the authoring machine).
+  function-tests:
+    name: function-tests (served edge runtime · invite + manage)
+    runs-on: ubuntu-latest
+    env:
+      INTERNAL_CALL_SECRET: e2e-internal-call-secret
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          # Pinned (not a floating range) so the test runtime does not drift between runs. Bump deliberately.
+          deno-version: v2.1.4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          # Pinned for the same reason the full-stack job pins it: resolving "latest" hits the rate-limited GitHub
+          # releases API on shared runners and intermittently leaves `supabase: command not found`.
+          version: 3.2.0
+
+      - name: Give the Edge Functions their local secrets
+        run: |
+          cat > supabase/functions/.env <<EOF
+          INTERNAL_CALL_SECRET=${INTERNAL_CALL_SECRET}
+          ALLOWED_ORIGINS=
+          SITE_URL=http://localhost:3000/admin
+          APP_URL=http://localhost:3000/admin
+          EOF
+
+      # Starts Postgres + Auth + the edge runtime (serving every function at /functions/v1/<name>), applies
+      # migrations 001-010 and the base seed.sql. The function tests create their OWN ephemeral people and do NOT
+      # load supabase/seed-e2e.sql (that overlay is the Playwright job's — ADR-0034).
+      - name: Start Supabase (DB + auth + functions) and seed
+        run: |
+          supabase start
+          supabase db reset
+
+      - name: Export the local anon + service-role keys for the tests
+        run: |
+          supabase status -o env > supabase-status.env
+          echo "SUPABASE_URL=http://127.0.0.1:54321" >> "$GITHUB_ENV"
+          echo "SUPABASE_ANON_KEY=$(sed -n 's/^ANON_KEY=//p' supabase-status.env | tr -d '\"')" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$(sed -n 's/^SERVICE_ROLE_KEY=//p' supabase-status.env | tr -d '\"')" >> "$GITHUB_ENV"
+
+      - name: Run the edge-function integration tests
+        # --allow-all: the tests make network calls to the local stack and read the keys from the environment.
+        # --node-modules-dir=auto: jsr:@supabase/supabase-js pulls npm deps (e.g. @supabase/realtime-js) that
+        #   Deno must materialise into node_modules to resolve (the edge runtime does this for the functions;
+        #   this standalone `deno test` process needs it told explicitly).
+        # --no-check: these are runtime INTEGRATION tests; we assert real behaviour against the served stack, not
+        #   types. Skipping the type-check of the large supabase-js dependency graph keeps the run fast and avoids
+        #   coupling the suite to that package's .d.ts under Deno's checker. Deno files run serially by default
+        #   (no --parallel); the tests use ephemeral, uniquely-addressed, self-cleaning people, so no cross-talk.
+        run: deno test --allow-all --node-modules-dir=auto --no-check supabase/tests/functions/
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop --no-backup
