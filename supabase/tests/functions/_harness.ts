@@ -84,9 +84,12 @@ export async function createPerson(opts: {
 }
 
 // Delete a person (profile row then auth user), tolerant of already-gone rows. Call in a `finally`.
+// NOTE: a PostgREST query builder is a thenable, not a real Promise — it has no `.catch()`. It never rejects
+// (an error is returned in `{ error }`), so we just await and ignore it. Only the GoTrue admin call below is a
+// real Promise we can `.catch()`.
 export async function deletePerson(id: string | undefined | null): Promise<void> {
   if (!id) return;
-  await admin.from("profiles").delete().eq("id", id).catch(() => undefined);
+  await admin.from("profiles").delete().eq("id", id); // resolves to { error }; never rejects
   await admin.auth.admin.deleteUser(id).catch(() => undefined);
 }
 
