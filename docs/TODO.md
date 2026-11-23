@@ -262,8 +262,13 @@ all are harness- or domain-blocked (Q-1-21). TP1-09 cannot be marked closed unti
       TEST keys), the `latestInviteLink` mail-catcher helper wired (the likely first-run adjustment, per CLI
       version), and a way to call `invite-admin` in setup (a harness helper, or the TP1-13 manager invite UI).
       "E2E-03/04 pass" is the ticket's acceptance criterion. **Needs:** the full-stack harness.
-- [ ] **Write the stack-dependent edge-function tests (duplicate email, rollback, rate limit, stale terms).**
-      The ticket calls for Deno function tests against the local stack. The repo has **no Deno test harness** yet
+- [x] **Write the stack-dependent edge-function tests (duplicate email, rollback, rate limit, stale terms).**
+      Done — **PR #73** (merged 2026-11-19, ADR-0035) built the Deno edge-function test tier
+      (`supabase/tests/functions/invite-admins.test.ts`) and a `function-tests` CI job that runs them against the
+      served edge runtime + local stack. All four cases are covered: duplicate email, rollback, the resend
+      fixed-window rate limit, and the record-terms stale-version 409 conflict. Detection was mutation-proven
+      (a planted no-op failed the invite-rollback test). Historical detail follows. The ticket calls for Deno
+      function tests against the local stack. The repo has **no Deno test harness** yet
       (the functions are proven via BDD + the harness-gated e2e); these specific cases need the local Supabase
       stack + the edge runtime served. The behaviour is enumerated in `features/admins/invite-admins.feature`.
       **Needs:** a Deno-test harness + the local stack (part of the same deferred full-stack work).
@@ -307,8 +312,12 @@ verification / forward-dependency items** that cannot be finished in code alone 
       Supabase + seed + edge runtime + mail-catcher), plus a way to drive the manager actions (a harness helper
       or the TP1-10 dialogs). "E2E-09/10/17 pass" is the ticket's acceptance criterion. **Needs:** the full-stack
       harness.
-- [ ] **Write the stack-dependent function tests (last-manager race, deactivate session-kill, recreate
-      snapshot, change-email rollback/unlink).** These need the local Supabase stack + edge runtime; the repo
+- [x] **Write the stack-dependent function tests (last-manager race, deactivate session-kill, recreate
+      snapshot, change-email rollback/unlink).** Done — **PR #73** (merged 2026-11-19, ADR-0035):
+      `supabase/tests/functions/manage-admins.test.ts` covers all four against the served edge runtime + local
+      stack (last-manager guard, deactivate session-kill, recreate snapshot/audit-trail, change-email
+      rollback + Google-identity unlink), run by the `function-tests` CI job. Historical detail follows. These
+      need the local Supabase stack + edge runtime; the repo
       still has no Deno test harness. **Needs:** the Deno-test harness + the local stack.
 - [ ] **Verify the Google-identity unlink on change-email against a live linked account (Q-1-24).** The unlink
       goes through the GoTrue admin REST (`_shared/identities.ts`) and is unverified because Google OAuth is
