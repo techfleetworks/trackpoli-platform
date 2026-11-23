@@ -158,10 +158,15 @@ finished in this ticket's code.
       placeholder. Decide and build the real request-access flow (e.g. notify an Administrator manager).
       **Needs:** its own small ticket.
 
-- [ ] **Finish the RequireTerms guard when the terms screen lands.** The guard slot is inert (option A); the
-      restrictive RLS enforces terms at the data layer meanwhile. When the terms-acceptance screen + API are
-      built, wire RequireTerms to redirect an un-accepted session there and surface acceptance to the client.
-      **Needs:** the terms/onboarding ticket.
+- [x] **Finish the RequireTerms guard when the terms screen lands.** Done differently — superseded by
+      **TP1-08 / [ADR-0019](adr/0019-terms-acceptance-gate-in-middleware-before-two-factor.md)**. Rather than
+      wiring a client-side guard, terms enforcement was re-homed to a **middleware** stage (`decideTermsGate`,
+      `src/features/auth/termsGate.ts`), between the sign-in guard and RequireMfa, with the restrictive RLS
+      (migration 009) as the authorization boundary. The client-side `decideRequireTerms` decision was
+      **retired** in TP1-08 (see `src/features/auth/guards/decisions.test.ts`); ADR-0019 deliberately rejected
+      the `(app)`-layout-only option and deferred the token-claim optimisation, so no client guard is added.
+      The sign-in → `/admin/terms` → acceptance flow is proven end-to-end by E2E-15
+      (`e2e/accept-terms.full-stack.spec.ts`).
 
 - [ ] **Handle the `invited` (onboarding) and `deactivated` states properly.** TP1-06 redirects a deactivated
       session to sign-in and lets an invited one through; the real onboarding/invite flow and a deactivated
