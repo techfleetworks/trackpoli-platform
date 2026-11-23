@@ -1,4 +1,4 @@
-import { test, expect, type Page, type Response } from "@playwright/test";
+import { test, expect, type Locator, type Page, type Response } from "@playwright/test";
 import { createHmac } from "node:crypto";
 
 // Full-stack two-factor scenario (E2E-11, ADR-0009). Gated on E2E_FULL_STACK so the credential-free CI run
@@ -90,6 +90,29 @@ async function signIn(page: Page, email: string, password: string): Promise<void
   await submit.click();
 }
 
+// Fill one or more controlled code/credential fields, then wait for their submit button to become
+// enabled, re-applying the fills until it does (bounded to 20s). Every admin code screen gates its
+// submit button purely on React controlled state (a six-digit regex on the value, client-side only).
+// On a freshly loaded page the step-up code field is reached via a full-page redirect after sign-in, so
+// React hydrates from scratch, and a Playwright .fill() can land in the gap before the component is
+// interactive: its single input event is lost, the value is stranded in the DOM, React's state stays
+// empty, and the button never enables, so the following .click() waited out the entire 180s test budget
+// (observed on CI runs 44446496358 and 44384450045 — both hung on a disabled "Verify" with a six-digit
+// code present). Re-filling once React is live makes the state take, and the bounded enabled-check turns
+// a genuinely stuck field into a fast, legible failure instead of a timeout. This does NOT weaken the
+// scenario: the enabled gate is client-only (six digits present), the server still verifies the real code
+// at the click that follows, and the URL/heading assertions after it are unchanged.
+async function fillAndArm(fields: Array<{ field: Locator; value: string }>, submit: Locator): Promise<void> {
+  for (const { field } of fields) await expect(field).toBeEditable({ timeout: 20_000 });
+  await expect(async () => {
+    for (const { field, value } of fields) {
+      await field.fill("");
+      await field.fill(value);
+    }
+    await expect(submit).toBeEnabled({ timeout: 1_000 });
+  }).toPass({ timeout: 20_000 });
+}
+
 async function secretFrom(response: Response): Promise<string> {
   const body = (await response.json()) as { secret?: string; enrol?: { secret?: string } };
   const secret = body.secret ?? body.enrol?.secret;
@@ -110,6 +133,9 @@ test.describe("E2E-11: two-factor enrolment, step-up, and device replacement", (
     // per 30s window, so freshCode() waits for a new window between reuses; across three reuses that waiting
     // can approach the 60s default on its own. Give the whole flow room so a legitimate window wait is not a
     // timeout. freshCode always returns within one 30s window, so this is an upper bound, not a typical run.
+    // NB: the earlier flake here was NOT the window waits — it was a .click() hanging on a code-entry button
+    // left disabled by a fill-vs-hydration race (see fillAndArm above), which now fails fast rather than
+    // burning this whole budget. The budget is kept only as headroom for a worst-case stack of window waits.
     test.setTimeout(180_000);
 
     const used = new Set<string>();
@@ -126,8 +152,9 @@ test.describe("E2E-11: two-factor enrolment, step-up, and device replacement", (
 
     await expect(page.getByRole("heading", { name: "Scan the QR code" })).toBeVisible();
     await page.getByRole("button", { name: "Continue" }).click();
-    await page.getByRole("textbox", { name: /digit code/i }).fill(await freshCode(secret1, used));
-    await page.getByRole("button", { name: "Verify and turn on" }).click();
+    const enrolVerify = page.getByRole("button", { name: "Verify and turn on" });
+    await fillAndArm([{ field: page.getByRole("textbox", { name: /digit code/i }), value: await freshCode(secret1, used) }], enrolVerify);
+    await enrolVerify.click();
 
     await expect(page.getByRole("heading", { name: "Two-step verification is on" })).toBeVisible();
     await page.getByRole("button", { name: "Go to dashboard" }).click();
@@ -137,8 +164,9 @@ test.describe("E2E-11: two-factor enrolment, step-up, and device replacement", (
     await page.request.post("/admin/api/sign-out");
     await signIn(page, ADMIN, PASSWORD);
     await expect(page).toHaveURL(/\/admin\/sign-in\/verify/);
-    await page.getByLabel("Verification code").fill(await freshCode(secret1, used));
-    await page.getByRole("button", { name: "Verify" }).click();
+    const stepUpVerify = page.getByRole("button", { name: "Verify" });
+    await fillAndArm([{ field: page.getByLabel("Verification code"), value: await freshCode(secret1, used) }], stepUpVerify);
+    await stepUpVerify.click();
     await expect(page).toHaveURL(/\/admin$/);
 
     // 3) Replace the device in Security settings: password + current code -> new device -> new code.
@@ -147,18 +175,27 @@ test.describe("E2E-11: two-factor enrolment, step-up, and device replacement", (
 
     const dialog = page.getByRole("dialog");
     await dialog.getByRole("button", { name: "Get started" }).click(); // the overview/intro step
-    await dialog.getByLabel("Current password").fill(PASSWORD);
-    await dialog.getByLabel("Code from your current device").fill(await freshCode(secret1, used));
+    // The authorize step gates "Continue" on BOTH the password and the current code being present in
+    // React state, so arm them together before authorizing.
+    const authorizeContinue = dialog.getByRole("button", { name: "Continue" });
+    await fillAndArm(
+      [
+        { field: dialog.getByLabel("Current password"), value: PASSWORD },
+        { field: dialog.getByLabel("Code from your current device"), value: await freshCode(secret1, used) },
+      ],
+      authorizeContinue,
+    );
     const authorizeResponse = page.waitForResponse(
       (r) => r.url().includes("/admin/api/mfa/replace") && r.request().method() === "POST",
     );
-    await dialog.getByRole("button", { name: "Continue" }).click();
+    await authorizeContinue.click();
     const secret2 = await secretFrom(await authorizeResponse);
 
     await expect(dialog.getByRole("heading", { name: "Add your new device" })).toBeVisible();
     await dialog.getByRole("button", { name: "Continue" }).click();
-    await dialog.getByRole("textbox", { name: /digit code/i }).fill(await freshCode(secret2, used));
-    await dialog.getByRole("button", { name: "Replace device" }).click();
+    const completeReplace = dialog.getByRole("button", { name: "Replace device" });
+    await fillAndArm([{ field: dialog.getByRole("textbox", { name: /digit code/i }), value: await freshCode(secret2, used) }], completeReplace);
+    await completeReplace.click();
 
     await expect(dialog.getByRole("heading", { name: "Authenticator device replaced" })).toBeVisible();
   });
