@@ -58,6 +58,10 @@ middleware). Several decisions have to be fixed before code:
   RLS (migration 009) already blocks the data until acceptance; the pure decision exists but is not wired into a
   live redirect yet. **`RequireMfa` is not a client wrapper:** MFA is enforced by the middleware aal gate
   (ADR-0009), because `AuthProvider` carries `{ authenticated, role, status }`, not aal or terms acceptance.
+  **(Superseded by [ADR-0019](0019-terms-acceptance-gate-in-middleware-before-two-factor.md), TP1-08.)** The
+  inert `RequireTerms` slot was never wired as a client guard: TP1-08 re-homed terms to a **middleware** stage
+  (`decideTermsGate`) instead — exactly like `RequireMfa` — and **retired** the client-side `decideRequireTerms`
+  decision. RLS (migration 009) remains the boundary; there is no client terms guard, and none is planned.
 - **Scope:** TP1-06 ships the guard system, the shell, the error screens, and a guarded manager route + API
   (E2E-08). The dashboard content, the record screens, and the admin-management actions (invite/roles/deactivate)
   are deferred to their own tickets; their routes exist as guarded placeholders.
