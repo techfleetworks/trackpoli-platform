@@ -73,12 +73,16 @@ export interface AssuranceLevel {
  */
 export async function readAdminClaims(
   supabase: SupabaseClient<Database>,
-): Promise<{ role: AdminRole | null; status: AdminStatus | null }> {
+): Promise<{ role: AdminRole | null; status: AdminStatus | null; sessionStartedAt: number | null }> {
   try {
     const { data } = await supabase.auth.getClaims();
     const claims = data?.claims as Record<string, unknown> | undefined;
-    if (!claims) return { role: null, status: null };
-    return { role: normaliseRole(claims.app_role), status: normaliseStatus(claims.app_status) };
+    if (!claims) return { role: null, status: null, sessionStartedAt: null };
+    return {
+      role: normaliseRole(claims.app_role),
+      status: normaliseStatus(claims.app_status),
+      sessionStartedAt: readSessionStartedAt(claims.session_started_at),
+    };
   } catch (error) {
     // The token should always carry the role claim, so a read failure is an anomaly that fail-CLOSES a real
     // manager out of manager routes — report at warning (Sentry), not debug, so a regression is visible
@@ -86,8 +90,18 @@ export async function readAdminClaims(
     report("warning", "admin claims could not be read (role routing degraded)", {
       reason: error instanceof Error ? error.message : String(error),
     });
-    return { role: null, status: null };
+    return { role: null, status: null, sessionStartedAt: null };
   }
+}
+
+/**
+ * Parse the `session_started_at` access-token claim (migration 012, ADR-0038) — epoch SECONDS — into epoch
+ * MILLISECONDS for the middleware's absolute-cap fallback, or null when the claim is absent or malformed (an
+ * old token issued before migration 012, or no session row). Null simply means "no absolute-cap opinion from
+ * the claim", so routing falls back to the signed activity cookie exactly as before.
+ */
+function readSessionStartedAt(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value * 1000 : null;
 }
 
 /**
@@ -139,6 +153,8 @@ export async function updateSession(
   aal: AssuranceLevel | null;
   role: AdminRole | null;
   status: AdminStatus | null;
+  /** Session start (ms epoch) from the signed `session_started_at` claim; null if absent (migration 012). */
+  sessionStartedAt: number | null;
 }> {
   const nextInit = () =>
     requestHeaders ? NextResponse.next({ request: { headers: requestHeaders } }) : NextResponse.next({ request });
@@ -187,6 +203,7 @@ export async function updateSession(
   let aal: AssuranceLevel | null = null;
   let role: AdminRole | null = null;
   let status: AdminStatus | null = null;
+  let sessionStartedAt: number | null = null;
   if (user) {
     try {
       const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -196,10 +213,11 @@ export async function updateSession(
         reason: error instanceof Error ? error.message : String(error),
       });
     }
-    // Role/status for route gating (ADR-0012). Best-effort; RLS still protects the data regardless.
-    ({ role, status } = await readAdminClaims(supabase));
+    // Role/status for route gating (ADR-0012) + the session-start claim for the absolute-cap fallback
+    // (migration 012, ADR-0038). Best-effort; RLS still protects the data regardless.
+    ({ role, status, sessionStartedAt } = await readAdminClaims(supabase));
   }
-  return { response, user, aal, role, status };
+  return { response, user, aal, role, status, sessionStartedAt };
 }
 
 /**

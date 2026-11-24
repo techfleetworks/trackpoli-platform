@@ -20,7 +20,13 @@ import { decideInviteGate, INVITE_EXEMPT_PATHS } from "@/features/auth/inviteGat
 import { decideSessionGate } from "@/features/auth/session/sessionGate";
 import { decideRoleGate } from "@/features/auth/guards/routeGate";
 import { readTermsAccepted, readInviteStatus } from "@/lib/supabase/server";
-import { ACTIVITY_COOKIE, evaluateActivity, readActivity } from "@/lib/sessionActivity";
+import {
+  ACTIVITY_COOKIE,
+  evaluateActivity,
+  evaluateAbsoluteCap,
+  readActivity,
+  type ActivityState,
+} from "@/lib/sessionActivity";
 import { sessionLimits } from "@/lib/config";
 import { report } from "@/lib/report";
 import { generateNonce, buildCsp, securityHeaderEntries } from "@/lib/securityHeaders";
@@ -54,20 +60,31 @@ export async function middleware(request: NextRequest) {
     return secure(NextResponse.next({ request: { headers: requestHeaders } }));
   }
 
-  const { response, user, aal, role, status } = await updateSession(request, requestHeaders);
+  const { response, user, aal, role, status, sessionStartedAt } = await updateSession(request, requestHeaders);
   const path = normalisePath(request.nextUrl.pathname);
 
-  // Stage 1: session-timeout enforcement (TP1-05). Best-effort: if the cookie or secret cannot be read, the
-  // state is null and the gate allows — RLS still protects the data.
-  let activityState = null;
+  // Stage 1: session-timeout enforcement (TP1-05). The signed activity cookie carries both limits; if it
+  // cannot be read, the IDLE cap has no opinion and stays fail-open (RLS still protects the data). The
+  // ABSOLUTE cap, however, falls back to the tamper-proof session_started_at claim (migration 012, ADR-0038),
+  // so deleting the cookie at an authenticated workstation can no longer extend the session past the 4-hour
+  // hard cap (judge-arch MED-1). The claim read needs no secret, so it still fires if the cookie secret is absent.
+  let activityState: ActivityState | null = null;
   if (user) {
+    const now = Date.now();
+    const limits = sessionLimits();
     try {
       const payload = await readActivity(request.cookies.get(ACTIVITY_COOKIE)?.value, internalCallSecret());
-      if (payload) activityState = evaluateActivity(payload, Date.now(), sessionLimits());
+      if (payload) activityState = evaluateActivity(payload, now, limits);
     } catch (error) {
-      report("debug", "session-timeout enforcement skipped", {
+      report("debug", "session-timeout cookie read skipped", {
         reason: error instanceof Error ? error.message : String(error),
       });
+    }
+    // Absolute-cap fallback: when the cookie gave no opinion (absent, unreadable, or no secret), enforce the
+    // hard cap from the signed claim. The idle cap is deliberately NOT enforced here — it needs the cookie's
+    // last-activity (or the server-side session registry, still to be built).
+    if (activityState === null) {
+      activityState = evaluateAbsoluteCap(sessionStartedAt, now, limits.absoluteMs);
     }
   }
 

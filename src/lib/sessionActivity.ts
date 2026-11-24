@@ -38,6 +38,25 @@ export function evaluateActivity(
   return "active";
 }
 
+/**
+ * Absolute-cap-only check from the tamper-proof `session_started_at` access-token claim (migration 012,
+ * ADR-0038), used as the fallback when the signed `tp-activity` cookie gave no opinion (absent, unreadable,
+ * or no secret). Unlike the cookie — which a client can delete to extend their session — the claim is signed
+ * by the auth server, always present for an authenticated session, and survives a cookie delete, so it closes
+ * the absolute-cap bypass (judge-arch MED-1) with no lockout risk. Only the ABSOLUTE cap is enforceable this
+ * way: "last activity" lives solely in the cookie (or the not-yet-built session registry), so the IDLE cap
+ * still fails open here. Returns "absolute-expired" past the hard cap, else null (within the cap, or no claim
+ * — nothing to enforce, so routing is left to the cookie path exactly as before).
+ */
+export function evaluateAbsoluteCap(
+  sessionStartedAtMs: number | null,
+  now: number,
+  absoluteMs: number,
+): "absolute-expired" | null {
+  if (sessionStartedAtMs === null) return null;
+  return now - sessionStartedAtMs >= absoluteMs ? "absolute-expired" : null;
+}
+
 // --- base64url helpers (edge- and node-safe: btoa/atob are global in both) ---
 
 const B64URL = /^[A-Za-z0-9_-]+$/;

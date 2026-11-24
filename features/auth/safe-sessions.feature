@@ -43,13 +43,23 @@ Feature: Safe sessions (idle + absolute limits, multi-tab sync, session revocati
     Then the HMAC signature no longer matches and the forged cookie is never trusted to extend the session
     And enforcement falls back to the server-side session controls rather than the forged timestamp
 
-  @audience:administrator @usecase:timeout-fail-open @category:adverse @security @owasp:session-management @severity:medium
-  Scenario: A deleted activity cookie fails open to the session's other controls, never a lockout
+  @audience:administrator @usecase:idle-cap-fail-open @category:adverse @security @owasp:session-management @severity:medium
+  Scenario: A deleted activity cookie leaves the idle cap fail-open, never a lockout
     Given a signed-in administrator whose signed activity cookie has been deleted at the workstation
+    And the session is still within the four-hour absolute limit
     When they request a data route
-    Then the idle/absolute middleware check has no signed reading and does not block the request
+    Then the idle check has no signed last-activity reading and does not block the request
     And the session is still subject to the RLS aal2 gate and the Supabase token lifetime
-    And this best-effort, fail-open behaviour is the documented posture (ADR-0010), not an accidental bypass
+    And this fail-open idle posture is the documented behaviour (ADR-0010/0038), not an accidental bypass
+
+  @audience:administrator @usecase:absolute-cap-cookie-delete @category:adverse @security @owasp:session-management @severity:high
+  Scenario: Deleting the activity cookie no longer bypasses the four-hour absolute cap
+    Given a signed-in administrator whose session began more than four hours ago
+    And they delete the signed tp-activity cookie at the workstation to shed the absolute deadline
+    When they request a data route
+    Then the edge middleware reads the tamper-proof session_started_at access-token claim instead
+    And the session is treated as absolute-expired and redirected to /session-expired
+    But the idle cap is still not enforced from the claim, since last-activity lives only in the cookie or the session registry
 
   @audience:administrator @usecase:E2E-07 @category:happy @security @owasp:session-management @severity:high
   Scenario: Signing out in one tab signs out the other within two seconds
