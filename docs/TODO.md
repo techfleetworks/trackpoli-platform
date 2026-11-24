@@ -118,11 +118,22 @@ finished in this ticket's code.
 - [ ] **Make the idle/absolute timeout fail-closed after a grace period (harden the fail-open).** Today a
       deleted/corrupted `tp-activity` cookie reads as absent and the middleware fails open (allows the
       request), so the timeout is bypassable by deleting the cookie at an already-authenticated workstation
-      (judge-arch MED-1; documented in ADR-0010 and covered by a @security fail-open scenario). To close it,
-      stamp `tp-activity` at sign-in / MFA-completion so "authenticated + aal2 + no activity cookie" can be
-      told apart from a legitimate first request, then fail *closed* after a short grace. **Needs:** the
-      server-side session registry (same dependency as the per-device list) to distinguish the two states
-      safely without risking a lockout.
+      (judge-arch MED-1; documented in ADR-0010 and covered by a @security fail-open scenario). Reviewed
+      2026-11-23: **split the two caps — they have different blockers, and the earlier "stamp `tp-activity`
+      at sign-in" plan does not actually close the hole** (a cookie-written baseline is deleted by the same
+      attacker who deletes the activity cookie, so it cannot be told apart from a first request, and failing
+      closed on an absent cookie would lock out every legitimate first request). The baseline must come from
+      somewhere the attacker cannot strip while keeping the `sb-` session cookies.
+    - **Absolute cap — closable *now*, no registry.** Add a signed `session_started_at` **JWT custom claim**
+      via the Supabase access-token auth hook (same mechanism as migration 006's `app_role`/`app_status`).
+      It is tamper-proof, survives a cookie delete, and is always present for an authenticated session (no
+      lockout risk). The middleware enforces the absolute cap from the claim even when `tp-activity` is
+      absent. **Needs:** the Supabase project (Q-1-21) to add the hook + verify; no new table.
+    - **Idle cap — genuinely blocked on server-side activity state.** "Last activity" lives only in the
+      deleted cookie; a tamper-proof idle cap needs a server-side activity store (a session registry), the
+      **same dependency as the per-device Active sessions list** above. Build both correctly in the
+      session-registry ticket when the stack is up. **Needs:** the server-side session registry + the stack
+      (Q-1-21).
 
 - [ ] **Confirm the idle/absolute limits behave with a real Cloudflare + Vercel edge.** The middleware
       enforcement and cookie clearing are unit/e2e-tested against the dev server; verify the signed activity
