@@ -14,6 +14,10 @@ export const MFA_PUBLIC_PATHS = [
   "/auth/google",
   "/api/sign-in",
   "/session-expired",
+  // The account-deactivated screen (TP1-09 follow-up): a deactivated session is redirected here and the screen
+  // destroys the session on mount, so it must render with no session and must not be caught by the two-factor
+  // funnel (same stance as /session-expired).
+  "/deactivated",
   // Password recovery is reachable without a two-factor session: the signed-out entry points
   // (/forgot-password and its /sent subpath, via the prefix match) and their POST endpoint, plus the
   // recovery-session pages — /reset-password and its /api/reset-password, and /auth/confirm (the token-hash

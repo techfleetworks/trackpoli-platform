@@ -185,9 +185,18 @@ finished in this ticket's code.
       The sign-in → `/admin/terms` → acceptance flow is proven end-to-end by E2E-15
       (`e2e/accept-terms.full-stack.spec.ts`).
 
-- [ ] **Handle the `invited` (onboarding) and `deactivated` states properly.** TP1-06 redirects a deactivated
-      session to sign-in and lets an invited one through; the real onboarding/invite flow and a deactivated
-      screen are their own ticket. **Needs:** the invite/onboarding ticket.
+- [x] **Handle the `invited` (onboarding) and `deactivated` states properly.** Done across two tickets.
+      **Invited** shipped in **TP1-09** (ADR-0020): the middleware invite gate (`decideInviteGate`,
+      `src/features/auth/inviteGate.ts`) funnels an invited session to `/accept-invite` on live status (after
+      terms, before two-factor), and the accept-invite screen activates the account. **Deactivated** shipped in
+      this TP1-09 follow-up: instead of the old silent bounce to `/sign-in`, a deactivated session is shown a
+      dedicated account-deactivated screen (`src/app/deactivated`, `src/features/auth/AccountDeactivatedPage.tsx`)
+      that explains a manager removed their access and destroys the session on mount (best-effort sign-out,
+      which also closes the ADR-0021 best-effort-session-kill gap). It reuses the session-expired pattern and is
+      a public, standalone pre-app route; the `(app)` layout and the `RequireActive` guard both route deactivated
+      there. Routing/UX only — RLS (migration 005) is the boundary (ADR-0012). Proven by unit/component tests
+      (`AccountDeactivatedPage.test.tsx`, `wrappers.test.tsx`, `requireMfa.test.ts`), not a live-session E2E
+      (no running stack in CI); a live visual + keyboard pass is part of the pending P1-16 audit.
 
 ## From TP1-07 (branch `feat/tp1-07-admin-workspace-shell`)
 

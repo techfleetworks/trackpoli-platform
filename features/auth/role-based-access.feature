@@ -33,6 +33,14 @@ Feature: Role-based access (route guards, manager-only routes, forbidden + not-f
     Then an email to the support address is composed in their own mail client
     And it is prefilled with their email address and the page they tried to open
 
+  @audience:administrator @usecase:deactivated-account @category:adverse @security @owasp:authorization @severity:high
+  Scenario: A deactivated administrator is shown the account-deactivated screen and their session is ended
+    Given a signed-in administrator whose account has been deactivated by a manager
+    When they open any route inside the admin app
+    Then they are shown the account-deactivated screen explaining that a manager removed their access
+    And their session is destroyed rather than being silently bounced back to the sign-in screen
+    And the database returns no administrator data to them regardless of how they arrived (RLS)
+
   @audience:administrator-manager @usecase:manager-allowed @category:happy @security @owasp:authorization @severity:high
   Scenario: An Administrator manager may open the manager route and read the manager data
     Given a signed-in Administrator manager

@@ -32,6 +32,11 @@ export const TERMS_PASSTHROUGH_PATHS = [
   "/auth/reauth",
   "/api/sign-in",
   "/session-expired",
+  // The account-deactivated screen is a terminal screen like /session-expired: a deactivated session must be
+  // able to reach the explanation (and its self-destruct sign-out) regardless of whether it had accepted the
+  // current policies — otherwise a deactivated-before-accepting (or policies-bumped-after) session would be
+  // sent to /terms and never see why it was removed. RLS blocks its data either way (ADR-0012).
+  "/deactivated",
 ] as const;
 
 export interface TermsGateInput {
