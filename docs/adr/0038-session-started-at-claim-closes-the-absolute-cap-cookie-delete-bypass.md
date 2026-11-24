@@ -6,7 +6,7 @@ Date: 2026-11-23
 
 Accepted
 
-Extends [ADR-0010](0010-safe-sessions-idle-and-absolute-timeouts-a-signed-activity-cookie-cross-tab-sync-and-scoped-sign-out.md)
+Extends [ADR-0010](0010-safe-sessions-idle-and-absolute-timeouts-signed-activity-cookie-cross-tab-sync-and-scoped-sign-out.md)
 (safe sessions) and builds on the access-token hook from migration 006 (ADR-0006 grayscale era / the
 `app_role`/`app_status` claims).
 
