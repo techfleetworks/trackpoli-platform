@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { ACTIVITY_COOKIE, evaluateActivity, readActivity, signActivity } from "./sessionActivity";
+import {
+  ACTIVITY_COOKIE,
+  evaluateActivity,
+  evaluateAbsoluteCap,
+  readActivity,
+  signActivity,
+} from "./sessionActivity";
 
 const limits = { idleMs: 15 * 60_000, absoluteMs: 4 * 60 * 60_000 };
 const SECRET = "test-internal-secret";
@@ -30,6 +36,32 @@ describe("evaluateActivity", () => {
   it("stays active when activity keeps advancing below the absolute cap", () => {
     const now = 3 * 60 * 60_000;
     expect(evaluateActivity({ start: 0, last: now - 60_000 }, now, limits)).toBe("active");
+  });
+});
+
+describe("evaluateAbsoluteCap (the cookie-less fallback from the session_started_at claim)", () => {
+  const ABS = limits.absoluteMs;
+
+  it("is absolute-expired once the session is older than the hard cap", () => {
+    const start = 0;
+    expect(evaluateAbsoluteCap(start, ABS, ABS)).toBe("absolute-expired");
+    expect(evaluateAbsoluteCap(start, ABS + 60_000, ABS)).toBe("absolute-expired");
+  });
+
+  it("allows (null) a session still within the cap — a brand-new session is never expired", () => {
+    const now = 1_000_000;
+    expect(evaluateAbsoluteCap(now, now, ABS)).toBeNull(); // just started
+    expect(evaluateAbsoluteCap(now - (ABS - 1), now, ABS)).toBeNull(); // 1ms before the cap
+  });
+
+  it("gives no opinion (null) when the claim is absent, so routing falls back to the cookie", () => {
+    expect(evaluateAbsoluteCap(null, 10 * ABS, ABS)).toBeNull();
+  });
+
+  it("never reports idle — only the absolute cap is enforceable from the claim", () => {
+    // A long-idle but not-yet-absolute session is allowed here (idle needs the cookie / registry).
+    const now = 3 * 60 * 60_000; // 3h old, under the 4h cap
+    expect(evaluateAbsoluteCap(0, now, ABS)).toBeNull();
   });
 });
 

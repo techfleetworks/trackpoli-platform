@@ -46,13 +46,14 @@ Generated from the feature files by `bdd-index-generate.mjs` - do not edit by ha
 | auth/role-based-access.feature | The forbidden screen offers a working "Request access" recovery action | auth | administrator | forbidden-request-access | happy | functional | low | covered |
 | auth/role-based-access.feature | The manager navigation is hidden for an Administrator but never relied on for security | auth | administrator | manager-nav-hidden | permission | security | medium | covered |
 | auth/role-based-access.feature | The manager navigation is shown to an Administrator manager | auth | administrator-manager | manager-nav-shown | happy | security | low | covered |
-| auth/safe-sessions.feature | A deleted activity cookie fails open to the session's other controls, never a lockout | auth | administrator | timeout-fail-open | adverse | security | medium | covered |
+| auth/safe-sessions.feature | A deleted activity cookie leaves the idle cap fail-open, never a lockout | auth | administrator | idle-cap-fail-open | adverse | security | medium | covered |
 | auth/safe-sessions.feature | A normal sign-out does not revoke the administrator's other devices | auth | administrator | local-sign-out-scope | negative | security | medium | covered |
 | auth/safe-sessions.feature | A tampered last-activity cookie is never accepted to extend a session | auth | administrator | forged-activity-cookie | adverse | security | high | covered |
 | auth/safe-sessions.feature | An expired session calling an API is sent to the session-expired screen | auth | anonymous | expired-api-401 | adverse | security | medium | covered |
 | auth/safe-sessions.feature | An idle session warns, then lands on the session-expired screen keeping the return path | auth | administrator | E2E-06 | happy | security | high | covered |
 | auth/safe-sessions.feature | An over-idle session is rejected server-side, not just in the browser | auth | administrator | middleware-enforced | adverse | security | high | covered |
 | auth/safe-sessions.feature | Choosing Stay signed in extends the session | auth | administrator | stay-signed-in | happy | security | medium | covered |
+| auth/safe-sessions.feature | Deleting the activity cookie no longer bypasses the four-hour absolute cap | auth | administrator | absolute-cap-cookie-delete | adverse | security | high | covered |
 | auth/safe-sessions.feature | Signing out in one tab signs out the other within two seconds | auth | administrator | E2E-07 | happy | security | high | covered |
 | auth/safe-sessions.feature | Signing out other sessions leaves this session signed in | auth | administrator | sign-out-others | happy | security | high | covered |
 | auth/safe-sessions.feature | The session ends at the 4-hour absolute limit even while active | auth | administrator | absolute-limit | adverse | security | high | covered |

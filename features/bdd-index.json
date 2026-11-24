@@ -463,10 +463,10 @@
   },
   {
     "feature": "auth/safe-sessions.feature",
-    "scenario": "A deleted activity cookie fails open to the session's other controls, never a lockout",
+    "scenario": "A deleted activity cookie leaves the idle cap fail-open, never a lockout",
     "domain": "auth",
     "audience": "administrator",
-    "usecase": "timeout-fail-open",
+    "usecase": "idle-cap-fail-open",
     "category": "adverse",
     "quality": "security",
     "severity": "medium",
@@ -536,6 +536,17 @@
     "category": "happy",
     "quality": "security",
     "severity": "medium",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/safe-sessions.feature",
+    "scenario": "Deleting the activity cookie no longer bypasses the four-hour absolute cap",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "absolute-cap-cookie-delete",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
     "status": "covered"
   },
   {

@@ -1,6 +1,6 @@
 -- Privileges, the helper functions and the access token hook (migrations 001 to 011).
 begin;
-select plan(83);
+select plan(87);
 
 -- ============ every table has row-level security, and the API roles hold only the grants the plan gives them ============
 select is((select count(*)::int from pg_class c join pg_namespace n on n.oid = c.relnamespace
@@ -97,6 +97,32 @@ select ok(has_table_privilege('supabase_auth_admin', 'public.profiles', 'select'
           'the auth service (supabase_auth_admin) is granted select on public.profiles');
 select ok(exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'profiles' and policyname = 'profiles_auth_admin_read'),
           'the profiles_auth_admin_read policy exists so the auth service reads a profile via RLS');
+
+-- session_started_at claim (migration 012, ADR-0038): the hook stamps the session's created_at as epoch
+-- seconds, so the edge middleware can enforce the 4-hour ABSOLUTE cap from a tamper-proof claim even when the
+-- tp-activity cookie is deleted. Absent session_id / unknown session -> the claim is omitted (cookie fallback).
+insert into auth.sessions (id, user_id, created_at, updated_at)
+  values ('00000000-0000-0000-0000-0000000000a1', tests.uid('abe'), '2026-01-01T00:00:00Z', now());
+select is(
+  public.custom_access_token_hook(jsonb_build_object(
+    'user_id', tests.uid('abe'),
+    'claims', jsonb_build_object('aal', 'aal2', 'session_id', '00000000-0000-0000-0000-0000000000a1'))) -> 'claims' ->> 'session_started_at',
+  floor(extract(epoch from '2026-01-01T00:00:00Z'::timestamptz))::bigint::text,
+  'the hook stamps session_started_at from auth.sessions.created_at (epoch seconds)');
+select ok(
+  not (public.custom_access_token_hook(jsonb_build_object('user_id', tests.uid('abe'), 'claims', '{"aal":"aal2"}'::jsonb)) -> 'claims' ? 'session_started_at'),
+  'no session_id in the incoming claims -> session_started_at is omitted (the middleware falls back to the cookie)');
+select ok(
+  not (public.custom_access_token_hook(jsonb_build_object(
+    'user_id', tests.uid('abe'),
+    'claims', jsonb_build_object('aal', 'aal2', 'session_id', gen_random_uuid()))) -> 'claims' ? 'session_started_at'),
+  'an unknown session_id -> session_started_at is omitted');
+-- The hook reads auth.sessions as supabase_auth_admin (the role GoTrue runs it under). Unlike public.profiles
+-- (migration 006 needed an explicit grant + RLS policy because that role does not own it), auth.sessions is in
+-- the auth schema that supabase_auth_admin owns, so no grant is issued — assert the privilege holds anyway, so
+-- a future schema reshuffle that revoked it would fail here rather than silently drop the session_started_at claim.
+select ok(has_table_privilege('supabase_auth_admin', 'auth.sessions', 'select'),
+          'the auth service (supabase_auth_admin) can select auth.sessions, so the hook can read created_at');
 
 -- ============ rate_limit_check (fixed window; now() does not move inside this test, so one window) ====================
 select is((select public.rate_limit_check('t1', 3, interval '1 hour')), true,  'call 1 of 3 is allowed');
