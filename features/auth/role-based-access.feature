@@ -26,6 +26,13 @@ Feature: Role-based access (route guards, manager-only routes, forbidden + not-f
     Then the page shows the forbidden screen and the manager API returns 403
     And the manager tables return no rows to them regardless of how they arrived (RLS)
 
+  @audience:administrator @usecase:forbidden-request-access @category:happy @quality:functional @severity:low
+  Scenario: The forbidden screen offers a working "Request access" recovery action
+    Given a signed-in Administrator is shown the forbidden screen for a manager-only route
+    When they choose "Request access"
+    Then an email to the support address is composed in their own mail client
+    And it is prefilled with their email address and the page they tried to open
+
   @audience:administrator-manager @usecase:manager-allowed @category:happy @security @owasp:authorization @severity:high
   Scenario: An Administrator manager may open the manager route and read the manager data
     Given a signed-in Administrator manager

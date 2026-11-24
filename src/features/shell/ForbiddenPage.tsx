@@ -10,12 +10,17 @@ import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/features/auth/useAuth";
 import { roleLabel } from "@/lib/roles";
 import { ErrorScreen } from "./ErrorScreen";
+import { requestAccessMailto } from "./requestAccess";
 import forbiddenIcon from "./assets/forbidden.svg";
 
 export function ForbiddenPage() {
   const { user } = useAuth();
   const params = useSearchParams();
   const from = params.get("from");
+
+  // "Request access" composes an email in the administrator's own mail client to the support/manager address
+  // (client-only mailto, no backend) prefilled with who is asking and the page they hit (TP1-06).
+  const requestAccessHref = requestAccessMailto({ requesterEmail: user?.email ?? null, attemptedPath: from });
 
   return (
     <ErrorScreen
@@ -24,7 +29,7 @@ export function ForbiddenPage() {
       body={`This section is limited to Administrator managers. Your ${roleLabel(user?.role ?? null)} account doesn't include permission to open it.`}
       code={`Error 403 · Forbidden · ${from ?? "this page"}`}
       primary={{ label: "Back to dashboard", href: "/" }}
-      secondary={{ label: "Request access", href: "/settings" }}
+      secondary={{ label: "Request access", href: requestAccessHref }}
     />
   );
 }
