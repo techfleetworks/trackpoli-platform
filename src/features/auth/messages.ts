@@ -162,6 +162,21 @@ export const SESSION_MESSAGES = {
   signOutConfirmBody: "This ends every session except this one. You'll stay signed in on this device.",
 } as const;
 
+// Account-deactivated copy (TP1-09 follow-up, P1-08; ADR-0020/0021). The browser lands on /deactivated when a
+// session's authoritative status is "deactivated" — a manager removed this administrator's access. Deactivation
+// is authoritative in the recomputed access-token claim (migration 006), while the session-kill side-effect is
+// best-effort (ADR-0021), so a still-authenticated-but-deactivated session is a real state. The screen explains
+// why (rather than the old silent bounce to sign-in), destroys the session on mount (best-effort sign-out, like
+// the session-expired screen — OWASP Session Management), and offers a way back to sign-in. The recovery is a
+// manager action, never self-service (same stance as the lost-device copy).
+export const ACCOUNT_MESSAGES = {
+  deactivatedTitle: "Your administrator access has ended",
+  deactivatedBody:
+    "An Administrator manager has deactivated this account, so you've been signed out. If you think this is a mistake, contact an Administrator manager.",
+  backToSignIn: "Back to sign in",
+  deactivatedFootnote: "Your sign-in is closed, but nothing on the political record was changed.",
+} as const;
+
 // Device-replacement copy (ADR-0009, Figma 1296:85823 / 1296:89239). The replacement runs in a Security-tab
 // modal; re-auth is password or Google by account type. A lost device is never self-service — the copy
 // points at the manager-recreate path (role-aware for managers).

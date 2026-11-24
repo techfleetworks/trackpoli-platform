@@ -12,8 +12,14 @@ import { shellDisplayName } from "@/features/shell/displayName";
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser(); // redirects to sign-in when there is no session
   const active = decideRequireActive({ authenticated: true, status: user.status });
-  if (active === "deactivated") redirect("/sign-in"); // no deactivated screen yet; the session is dead to RLS
-  // "onboarding" (invited) and "allow" both render for now — the invite/onboarding flow is a later ticket.
+  // A deactivated session is shown the account-deactivated screen (TP1-09 follow-up), which explains the removal
+  // and destroys the session, instead of the old silent bounce to /sign-in (a confusing re-sign-in loop). RLS
+  // (migration 005) already denies a deactivated session every row, so this is routing/UX only (ADR-0012).
+  if (active === "deactivated") redirect("/deactivated");
+  // "onboarding" (invited) normally never reaches here — the middleware invite gate funnels it to
+  // /accept-invite first (TP1-09, ADR-0020). If middleware is bypassed an invited result falls through and
+  // renders the shell, but RLS (migration 005) confines an invited session to its own profile row, so that is
+  // a cosmetic gap, not an exposure; the real invite handling is the gate, not this layout. "allow" renders.
 
   return <AppShell displayName={shellDisplayName(user)}>{children}</AppShell>;
 }

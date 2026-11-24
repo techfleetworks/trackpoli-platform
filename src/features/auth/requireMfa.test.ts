@@ -47,6 +47,17 @@ describe("decideMfaGate — unauthenticated", () => {
     ).toEqual({ action: "allow" });
   });
 
+  it("treats the account-deactivated screen as public (reachable with or without a session)", () => {
+    // TP1-09 follow-up: a deactivated session is redirected to /deactivated and the screen destroys the
+    // session on mount, so the two-factor funnel must not catch it — at aal1 it stays an "allow", not "enrol".
+    expect(
+      decideMfaGate(input({ authenticated: false, path: "/deactivated", currentLevel: null, nextLevel: null })),
+    ).toEqual({ action: "allow" });
+    expect(
+      decideMfaGate(input({ path: "/deactivated", currentLevel: "aal1", nextLevel: "aal1" })),
+    ).toEqual({ action: "allow" });
+  });
+
   it("treats the password-recovery + email-link-landing routes as public (reachable signed out)", () => {
     for (const path of [
       "/forgot-password",

@@ -50,13 +50,22 @@ describe("RequireSession", () => {
 });
 
 describe("RequireActive", () => {
-  it("renders for an active admin and routes a deactivated one away", () => {
+  it("renders for an active admin and routes a deactivated one to the deactivated screen", () => {
     auth({ role: "admin", status: "active" });
     const { rerender } = render(<RequireActive><p>app</p></RequireActive>);
     expect(screen.getByText("app")).toBeInTheDocument();
 
+    // TP1-09 follow-up: a deactivated session goes to the account-deactivated screen (which explains the
+    // removal and destroys the session), NOT a silent bounce to /sign-in. basePath-relative (ADR-0014).
     auth({ role: "admin", status: "deactivated" });
     rerender(<RequireActive><p>app</p></RequireActive>);
+    expect(replace).toHaveBeenCalledWith("/deactivated");
+    expect(replace).not.toHaveBeenCalledWith("/sign-in");
+  });
+
+  it("routes an unauthenticated visitor to sign-in, not the deactivated screen", () => {
+    auth(null);
+    render(<RequireActive><p>app</p></RequireActive>);
     expect(replace).toHaveBeenCalledWith("/sign-in");
   });
 });

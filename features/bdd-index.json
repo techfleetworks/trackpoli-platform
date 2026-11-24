@@ -353,6 +353,17 @@
   },
   {
     "feature": "auth/role-based-access.feature",
+    "scenario": "A deactivated administrator is shown the account-deactivated screen and their session is ended",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "deactivated-account",
+    "category": "adverse",
+    "quality": "security",
+    "severity": "high",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/role-based-access.feature",
     "scenario": "A guard redirect for a visitor without a session resolves to a single-basePath sign-in URL",
     "domain": "auth",
     "audience": "anonymous",

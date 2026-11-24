@@ -38,6 +38,12 @@ describe("decideTermsGate (TP1-08 — the live terms gate)", () => {
     expect(decideTermsGate({ path: "/session-expired", authenticated: true, termsAccepted: false }).action).toBe("allow");
   });
 
+  it("lets a not-accepted session reach the account-deactivated screen (a terminal screen, like /session-expired)", () => {
+    // TP1-09 follow-up: a deactivated session must see the explanation screen even if it never accepted the
+    // current policies, so /deactivated is a terms passthrough — otherwise it would be trapped on /terms.
+    expect(decideTermsGate({ path: "/deactivated", authenticated: true, termsAccepted: false }).action).toBe("allow");
+  });
+
   it("funnels an authenticated, un-accepted session off /sign-in to /terms (terms-first)", () => {
     expect(decideTermsGate({ path: "/sign-in", authenticated: true, termsAccepted: false }).action).toBe("terms");
   });

@@ -43,7 +43,9 @@ export function RequireSession({ children }: { children: ReactNode }) {
 export function RequireActive({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
   const action = decideRequireActive({ authenticated: isAuthenticated, status: user?.status ?? null });
-  const to = action === "sign-in" || action === "deactivated" ? "/sign-in" : null;
+  // A deactivated session goes to the account-deactivated screen (TP1-09 follow-up), not a silent bounce to
+  // sign-in; not-signed-in still goes to sign-in. Routing/UX only — RLS is the boundary (ADR-0012).
+  const to = action === "deactivated" ? "/deactivated" : action === "sign-in" ? "/sign-in" : null;
   useClientRedirect(to);
   return to ? null : <>{children}</>;
 }
