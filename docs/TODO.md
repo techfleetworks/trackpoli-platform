@@ -150,13 +150,30 @@ finished in this ticket's code.
       session, so they have not been seen running. Once the stack is up, check the shell against the designs
       and run a keyboard + screen-reader pass (part of the P1-16 a11y audit). **Needs:** the full-stack stack.
 
-- [ ] **Surface the profile `display_name` in the shell.** The side nav and top bar currently show the
-      administrator's email as the display name; the real name lives in `profiles.display_name`. Read it
-      (own-row RLS allows it) and pass it to the shell. **Needs:** a small session/profile read; no infra.
+- [x] **Surface the profile `display_name` in the shell.** Already shipped in TP1-06/07 — the item's premise
+      was stale. `readOwnDisplayName` (`src/lib/supabase/server.ts`) reads `profiles.display_name` by own id
+      (own-row RLS, fail-closed to null with a logged warning); `getSessionUser` (`src/features/auth/session.ts`)
+      carries it on `AuthUser.display_name`; the `(app)` layout passes `shellDisplayName(user)` — which prefers
+      the real name and falls back to the email — into the shell, and `SideNav`/`TopBar` render it
+      (`src/features/shell/displayName.ts` + `displayName.test.ts`). Proven by code-reading + unit tests, not a
+      live-session E2E (no running stack in CI).
 
-- [ ] **Wire the "Request access" action on the forbidden screen.** It currently links to Settings as a
-      placeholder. Decide and build the real request-access flow (e.g. notify an Administrator manager).
-      **Needs:** its own small ticket.
+- [x] **Wire the "Request access" action on the forbidden screen.** Done — the action now composes an email in
+      the administrator's **own** mail client to the support/manager address (`NEXT_PUBLIC_SUPPORT_EMAIL`, default
+      `support@trackpoli.com`), prefilled with the requester and the page they hit
+      (`src/features/shell/requestAccess.ts`, wired in `ForbiddenPage.tsx`; `ErrorScreen` now renders a scheme
+      href as a plain `<a>`). A deliberately minimal **client-only mailto** — no backend, no stored request, no
+      SMTP dependency — chosen in `pattern-selector` over an `access_requests` table for a bounded administrator
+      cast. The richer in-app request flow (stored request + manager inbox + audit) is deferred as its own ticket
+      (see "Build the in-app access-request flow" below).
+
+- [ ] **Build the in-app access-request flow (deferred from the forbidden-screen mailto).** The 403 "Request
+      access" ships as a client-only mailto (above). A fuller flow — a stored `access_requests` record, a
+      manager-side inbox to approve/deny, and an audit trail — was deliberately **not** built now: `pattern-selector`
+      judged it speculative structure for a bounded, manager-granted administrator cast (no imminent scale or
+      second-consumer force), and it would incur a new API trust boundary (`owasp-secure-coding-bdd`) and
+      personal-data retention/audit duties (`compliance-data-lifecycle`). Revisit if request volume ever justifies
+      it. **Needs:** its own ticket (migration + RLS + API + manager UI + ADR + `@security` BDD).
 
 - [x] **Finish the RequireTerms guard when the terms screen lands.** Done differently — superseded by
       **TP1-08 / [ADR-0019](adr/0019-terms-acceptance-gate-in-middleware-before-two-factor.md)**. Rather than

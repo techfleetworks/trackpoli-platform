@@ -57,8 +57,25 @@ export function ErrorScreen({
   );
 }
 
+/** A URL carrying a scheme (mailto:, tel:, http(s):) — not an in-app route, so it must not go through next/link. */
+function isSchemeHref(href: string): boolean {
+  return /^[a-z][a-z0-9+.-]*:/i.test(href);
+}
+
 function renderAction(action: ErrorAction, variant: "secondary" | "ghost") {
   if (action.href) {
+    // A scheme URL (mailto:/tel:/external) is a real navigation, not an app route: render a plain <a> so the
+    // browser handles the scheme and basePath is not prepended. In-app routes still go through next/link.
+    if (isSchemeHref(action.href)) {
+      const external = /^https?:/i.test(action.href);
+      return (
+        <Button asChild variant={variant} size="sm" className="h-12 px-6">
+          <a href={action.href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+            {action.label}
+          </a>
+        </Button>
+      );
+    }
     return (
       <Button asChild variant={variant} size="sm" className="h-12 px-6">
         <Link href={action.href}>{action.label}</Link>

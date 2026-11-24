@@ -35,4 +35,23 @@ describe("ErrorScreen - shell shadcn migration parity", () => {
     expect(link.getAttribute("href") ?? "").not.toContain("/admin/admin");
     expect(screen.getByRole("link", { name: "Settings" })).toBeInTheDocument();
   });
+
+  // TP1-06: a scheme href (mailto:/tel:/external) is a real navigation, not an app route — it must render as
+  // a plain <a> carrying the scheme verbatim (never through next/link, which would prepend the basePath).
+  it("renders a mailto scheme href as a plain anchor with the scheme intact", () => {
+    render(
+      <ErrorScreen
+        icon={forbiddenIcon}
+        title="No access"
+        body="b"
+        code="403"
+        primary={{ label: "Back to dashboard", href: "/" }}
+        secondary={{ label: "Request access", href: "mailto:support@trackpoli.com?subject=Hi" }}
+      />,
+    );
+    const link = screen.getByRole("link", { name: "Request access" });
+    expect(link.tagName).toBe("A");
+    expect(link.getAttribute("href")).toBe("mailto:support@trackpoli.com?subject=Hi");
+    expect(link.getAttribute("href")).not.toContain("/admin");
+  });
 });

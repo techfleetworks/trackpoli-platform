@@ -419,6 +419,17 @@
   },
   {
     "feature": "auth/role-based-access.feature",
+    "scenario": "The forbidden screen offers a working \"Request access\" recovery action",
+    "domain": "auth",
+    "audience": "administrator",
+    "usecase": "forbidden-request-access",
+    "category": "happy",
+    "quality": "functional",
+    "severity": "low",
+    "status": "covered"
+  },
+  {
+    "feature": "auth/role-based-access.feature",
     "scenario": "The manager navigation is hidden for an Administrator but never relied on for security",
     "domain": "auth",
     "audience": "administrator",
